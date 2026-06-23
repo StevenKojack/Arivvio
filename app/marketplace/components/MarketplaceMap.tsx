@@ -93,19 +93,24 @@ export function MarketplaceMap({
   const viewportSignatureRef = useRef("");
   const isSheet = layout === "sheet";
   const isSticky = layout === "sticky";
+  const pinsWithCoordinates = useMemo(
+    () => pins.filter((pin) => isValidCoordinates(pin.item.coordinates)),
+    [pins],
+  );
+  const eventPoint = isValidCoordinates(eventCoordinates) ? eventCoordinates : undefined;
   const visiblePoints = useMemo(() => {
-    const points = pins.map((pin) => pin.item.coordinates);
-    return eventCoordinates ? [eventCoordinates, ...points] : points;
-  }, [eventCoordinates, pins]);
+    const points = pinsWithCoordinates.map((pin) => pin.item.coordinates);
+    return eventPoint ? [eventPoint, ...points] : points;
+  }, [eventPoint, pinsWithCoordinates]);
   const bounds = useMemo(() => getBounds(visiblePoints), [visiblePoints]);
-  const center = eventCoordinates ?? getCenter(visiblePoints);
+  const center = eventPoint ?? getCenter(visiblePoints);
   const initialCenterRef = useRef(center);
-  const initialZoomRef = useRef(eventCoordinates ? 10 : 9);
+  const initialZoomRef = useRef(eventPoint ? 10 : 9);
   const hasInteractiveMap = hasMapboxConfig();
 
   useEffect(() => {
-    pinsRef.current = pins;
-  }, [pins]);
+    pinsRef.current = pinsWithCoordinates;
+  }, [pinsWithCoordinates]);
 
   useEffect(() => {
     if (!hasInteractiveMap || !mapContainerRef.current || mapRef.current) {
@@ -127,12 +132,15 @@ export function MarketplaceMap({
 
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
     map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left");
-    map.on("load", () => map.resize());
-    window.setTimeout(() => map.resize(), 0);
+    const handleMapLoad = () => resizeMapSafely(map);
+    const resizeTimeoutId = window.setTimeout(() => resizeMapSafely(map), 0);
+    map.on("load", handleMapLoad);
     mapRef.current = map;
     const markerStore = markerRefs.current;
 
     return () => {
+      window.clearTimeout(resizeTimeoutId);
+      map.off("load", handleMapLoad);
       markerStore.forEach(({ marker }) => marker.remove());
       markerStore.clear();
       eventMarkerRef.current?.remove();
@@ -140,7 +148,9 @@ export function MarketplaceMap({
       popupRef.current?.remove();
       popupRef.current = null;
       map.remove();
-      mapRef.current = null;
+      if (mapRef.current === map) {
+        mapRef.current = null;
+      }
     };
   }, [hasInteractiveMap]);
 
@@ -149,7 +159,14 @@ export function MarketplaceMap({
       return;
     }
 
-    window.setTimeout(() => mapRef.current?.resize(), 0);
+    const map = mapRef.current;
+    const resizeTimeoutId = window.setTimeout(() => {
+      if (mapRef.current === map) {
+        resizeMapSafely(map);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(resizeTimeoutId);
   }, [hasInteractiveMap, layout]);
 
   useEffect(() => {
@@ -169,14 +186,16 @@ export function MarketplaceMap({
       });
     }
 
-    if (eventCoordinates) {
+    if (eventPoint) {
       if (!eventMarkerRef.current) {
         eventMarkerRef.current = new mapboxgl.Marker({
           element: createEventMarker(),
-        }).addTo(map);
+        })
+          .setLngLat([eventPoint.lng, eventPoint.lat])
+          .addTo(map);
+      } else {
+        eventMarkerRef.current.setLngLat([eventPoint.lng, eventPoint.lat]);
       }
-
-      eventMarkerRef.current.setLngLat([eventCoordinates.lng, eventCoordinates.lat]);
     } else if (eventMarkerRef.current) {
       eventMarkerRef.current.remove();
       eventMarkerRef.current = null;
@@ -188,7 +207,7 @@ export function MarketplaceMap({
 
     map.on("click", closePopup);
 
-    const nextIds = new Set(pins.map((pin) => pin.item.id));
+    const nextIds = new Set(pinsWithCoordinates.map((pin) => pin.item.id));
 
     markerRefs.current.forEach((entry, itemId) => {
       if (!nextIds.has(itemId)) {
@@ -197,7 +216,7 @@ export function MarketplaceMap({
       }
     });
 
-    pins.forEach((pin) => {
+    pinsWithCoordinates.forEach((pin) => {
       const isCarted = cartedIds.includes(pin.item.id) || pin.isCarted;
       const signature = `${pin.item.type}:${pin.isActiveRowMatch}:${isCarted}:${Boolean(pin.isCompletedCategory)}`;
       const existingEntry = markerRefs.current.get(pin.item.id);
@@ -241,11 +260,11 @@ export function MarketplaceMap({
     };
   }, [
     cartedIds,
-    eventCoordinates,
+    eventPoint,
     hasInteractiveMap,
     onHoverItem,
     onSelectItem,
-    pins,
+    pinsWithCoordinates,
   ]);
 
   useEffect(() => {
@@ -270,9 +289,9 @@ export function MarketplaceMap({
       return;
     }
 
-    const selectedPin = pins.find((pin) => pin.item.id === selectedItemId);
+    const selectedPin = pinsWithCoordinates.find((pin) => pin.item.id === selectedItemId);
 
-    if (!selectedPin) {
+    if (!selectedPin || !isValidCoordinates(selectedPin.item.coordinates)) {
       return;
     }
 
@@ -280,7 +299,7 @@ export function MarketplaceMap({
       ?.setLngLat([selectedPin.item.coordinates.lng, selectedPin.item.coordinates.lat])
       .setHTML(getPopupHtml(selectedPin.item))
       .addTo(mapRef.current);
-  }, [hasInteractiveMap, pins, selectedItemId]);
+  }, [hasInteractiveMap, pinsWithCoordinates, selectedItemId]);
 
   useEffect(() => {
     function handlePopupAction(event: MouseEvent) {
@@ -337,12 +356,12 @@ export function MarketplaceMap({
 
     map.fitBounds(nextBounds, {
       duration: 120,
-      maxZoom: eventCoordinates ? 12 : 10.5,
+      maxZoom: eventPoint ? 12 : 10.5,
       padding: isSheet
         ? { bottom: 86, left: 36, right: 36, top: 82 }
         : { bottom: 96, left: 56, right: 56, top: 92 },
     });
-  }, [bounds, center.lat, center.lng, eventCoordinates, hasInteractiveMap, isSheet, visiblePoints.length]);
+  }, [bounds, center.lat, center.lng, eventPoint, hasInteractiveMap, isSheet, visiblePoints.length]);
 
   return (
     <section
@@ -360,7 +379,7 @@ export function MarketplaceMap({
           </h2>
         </div>
         <span className="rounded-full bg-neutral-950 px-3 py-1 text-xs font-semibold text-white">
-          {pins.length} pins
+          {pinsWithCoordinates.length} pins
         </span>
       </div>
       <div
@@ -378,9 +397,9 @@ export function MarketplaceMap({
           <FallbackMap
             bounds={bounds}
             cartedIds={cartedIds}
-            eventCoordinates={eventCoordinates}
+            eventCoordinates={eventPoint}
             hoveredItemId={hoveredItemId}
-            pins={pins}
+            pins={pinsWithCoordinates}
             selectedItemId={selectedItemId}
             onHoverItem={onHoverItem}
             onSelectItem={onSelectItem}
@@ -689,6 +708,28 @@ function getCenter(points: Coordinates[]) {
     lat: (bounds.minLat + bounds.maxLat) / 2,
     lng: (bounds.minLng + bounds.maxLng) / 2,
   };
+}
+
+function isValidCoordinates(value?: Coordinates | null): value is Coordinates {
+  return Boolean(
+    value &&
+      Number.isFinite(value.lat) &&
+      Number.isFinite(value.lng) &&
+      Math.abs(value.lat) <= 90 &&
+      Math.abs(value.lng) <= 180,
+  );
+}
+
+function resizeMapSafely(map: MapboxMap | null) {
+  if (!map) {
+    return;
+  }
+
+  try {
+    map.resize();
+  } catch {
+    // Mapbox can throw if a resize races with React unmounting or rerendering the container.
+  }
 }
 
 function toLngLatBounds(bounds: ReturnType<typeof getBounds>): LngLatBoundsLike {
