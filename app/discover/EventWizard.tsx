@@ -8,6 +8,7 @@ import {
   getHoursBetween,
   getDistanceMiles,
   homeAreas,
+  type Coordinates,
   type ServiceName,
 } from "../data/marketplace";
 import {
@@ -69,69 +70,6 @@ type PlanAddition = {
 };
 
 const steps = ["What", "Confirm", "When", "Where", "Guests", "Review"] as const;
-
-const mockVenuePins = [
-  {
-    address: "743 S Lucerne Blvd, Los Angeles, CA 90005",
-    capacity: "Up to 500 guests",
-    id: "ebell",
-    label: "The Ebell of Los Angeles",
-    match: "Elegant indoor venue",
-    neighborhood: "Mid-Wilshire",
-    coordinates: { lat: 34.0607, lng: -118.3246 },
-    position: { x: 42, y: 46 },
-  },
-  {
-    address: "665 W Jefferson Blvd, Los Angeles, CA 90007",
-    capacity: "Large format events",
-    id: "shrine",
-    label: "Shrine Auditorium",
-    match: "Best for conventions and fundraisers",
-    neighborhood: "University Park",
-    coordinates: { lat: 34.0237, lng: -118.2811 },
-    position: { x: 56, y: 66 },
-  },
-  {
-    address: "2651 S La Cienega Blvd, Los Angeles, CA 90034",
-    capacity: "Up to 150 guests",
-    id: "smogshoppe",
-    label: "SmogShoppe",
-    match: "Warm social gatherings",
-    neighborhood: "Culver City",
-    coordinates: { lat: 34.0319, lng: -118.3777 },
-    position: { x: 28, y: 58 },
-  },
-  {
-    address: "7001 Franklin Ave, Hollywood, CA 90028",
-    capacity: "Private club setting",
-    id: "magic-castle",
-    label: "The Magic Castle",
-    match: "Memorable entertainment-led events",
-    neighborhood: "Hollywood",
-    coordinates: { lat: 34.1046, lng: -118.3427 },
-    position: { x: 64, y: 30 },
-  },
-  {
-    address: "13943 Balboa Blvd, Sylmar, CA 91342",
-    capacity: "Racing parties and groups",
-    id: "mb2-raceway",
-    label: "MB2 Raceway Sylmar",
-    match: "Teen-friendly activity venue",
-    neighborhood: "Sylmar",
-    coordinates: { lat: 34.3203, lng: -118.4992 },
-    position: { x: 24, y: 24 },
-  },
-  {
-    address: "606 Hawaii St, El Segundo, CA 90245",
-    capacity: "Private kids party venue",
-    id: "scooters-jungle",
-    label: "Scooter's Jungle El Segundo",
-    match: "Kids activity party venue",
-    neighborhood: "El Segundo",
-    coordinates: { lat: 33.9236, lng: -118.3948 },
-    position: { x: 38, y: 76 },
-  },
-];
 
 export function EventWizard() {
   const searchParams = useSearchParams();
@@ -472,7 +410,7 @@ export function EventWizard() {
             <StepCard
               eyebrow="Step 4"
               title="Where is it?"
-              body="Add one location now, or separate places like ceremony and reception if the event needs them."
+              body="Choose the known place, or draw one clean search area for where the venue should be."
               action={<PrimaryButton label="Continue" onClick={() => setStep(4)} />}
             >
               <LocationStep
@@ -481,7 +419,6 @@ export function EventWizard() {
                   recognition.profile.subtype ??
                   recognition.profile.primaryType
                 }
-                planningContext={planningContext}
                 location={locations[0]}
                 onSelectAddress={(suggestion) =>
                   updateLocation(locations[0].id, {
@@ -505,21 +442,6 @@ export function EventWizard() {
                     selectedLabel: "",
                     selectedVenueId: undefined,
                     zones: mode === "needs_venue" ? getDefaultPlannerZones() : [],
-                  })
-                }
-                onSelectVenue={(venue) =>
-                  updateLocation(locations[0].id, {
-                    context: "likely_venue",
-                    coordinates: venue.coordinates,
-                    kind: "Venue needed",
-                    mode: "needs_venue",
-                    query: venue.neighborhood,
-                    selectedAddress: venue.address,
-                    selectedLabel: venue.label,
-                    selectedVenueId: venue.id,
-                    zones: locations[0]?.zones.length
-                      ? locations[0].zones
-                      : getDefaultPlannerZones(),
                   })
                 }
                 onUpdate={(updates) => updateLocation(locations[0].id, updates)}
@@ -885,24 +807,17 @@ function LocationStep({
   location,
   onSelectAddress,
   onSelectMode,
-  onSelectVenue,
   onUpdate,
-  planningContext,
 }: {
   eventLabel: string;
   location: EventLocation;
   onSelectAddress: (suggestion: AddressSuggestion) => void;
   onSelectMode: (mode: LocationMode) => void;
-  onSelectVenue: (venue: (typeof mockVenuePins)[number]) => void;
   onUpdate: (updates: Partial<EventLocation>) => void;
-  planningContext: ReturnType<typeof derivePlanningContext>;
 }) {
-  const recommendedVenuePins = useMemo(
-    () => getRecommendedVenuePins(planningContext),
-    [planningContext],
-  );
-  const selectedVenue = mockVenuePins.find((venue) => venue.id === location.selectedVenueId);
   const [locationMessage, setLocationMessage] = useState("");
+  const matchedArea = getMatchingHomeArea(location.query);
+  const mapCenter = location.coordinates ?? matchedArea?.coordinates ?? getDefaultMapCenter();
 
   function useCurrentLocation() {
     setLocationMessage("");
@@ -927,7 +842,9 @@ function LocationStep({
           selectedAddress: "",
           selectedLabel: "Current location",
           selectedVenueId: undefined,
-          zones: location.zones.length ? location.zones : getDefaultPlannerZones(),
+          zones: location.zones.length
+            ? normalizePlannerZones(location.zones)
+            : getDefaultPlannerZones(),
         });
         setLocationMessage("Current location is now the anchor for venue matching.");
       },
@@ -948,7 +865,10 @@ function LocationStep({
       selectedAddress: "",
       selectedLabel: matchedArea ? matchedArea.name : "",
       selectedVenueId: undefined,
-      zones: matchedArea && !location.zones.length ? getDefaultPlannerZones() : location.zones,
+      zones:
+        matchedArea && !location.zones.length
+          ? getDefaultPlannerZones()
+          : normalizePlannerZones(location.zones),
     });
 
     if (matchedArea) {
@@ -1010,25 +930,20 @@ function LocationStep({
       ) : null}
 
       {location.mode === "needs_venue" ? (
-        <div className="overflow-hidden rounded-[32px] border border-neutral-200 bg-white shadow-[0_22px_70px_rgba(20,20,20,0.08)]">
-          <div className="grid gap-0 lg:grid-cols-[0.85fr_1.15fr]">
-            <div className="border-b border-neutral-200 p-5 lg:border-b-0 lg:border-r">
-              <p className="text-sm font-semibold text-neutral-950">
-                Venue discovery for {eventLabel}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-neutral-600">
-                Search an area or use your current location. The map is mocked
-                for now, but the data shape is ready for a real map provider.
-              </p>
-              <div className="mt-5 grid gap-3">
-                <button
-                  type="button"
-                  onClick={useCurrentLocation}
-                  className="h-12 rounded-full bg-neutral-950 px-5 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(20,20,20,0.18)] transition hover:-translate-y-0.5 hover:bg-neutral-800"
-                >
-                  Use my current location
-                </button>
-                <label className="text-sm font-semibold text-neutral-800">
+        <div className="overflow-hidden rounded-[34px] border border-neutral-200 bg-white shadow-[0_24px_80px_rgba(20,20,20,0.1)]">
+          <div className="border-b border-neutral-200 bg-white/90 p-5 backdrop-blur">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+              <div className="max-w-xl">
+                <p className="text-sm font-semibold text-neutral-950">
+                  Venue area for {eventLabel}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-neutral-600">
+                  Search a city, use your current location, then draw the one
+                  area where you want Arivio to look for venues.
+                </p>
+              </div>
+              <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] xl:min-w-[520px]">
+                <label className="min-w-0 text-sm font-semibold text-neutral-800">
                   Search city or area
                   <input
                     value={location.query}
@@ -1037,57 +952,28 @@ function LocationStep({
                     className="mt-2 h-12 w-full rounded-2xl border border-neutral-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-neutral-950"
                   />
                 </label>
+                <button
+                  type="button"
+                  onClick={useCurrentLocation}
+                  className="mt-auto h-12 rounded-full bg-neutral-950 px-5 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(20,20,20,0.18)] transition hover:-translate-y-0.5 hover:bg-neutral-800"
+                >
+                  Use my current location
+                </button>
               </div>
+            </div>
               {locationMessage ? (
                 <p className="mt-3 rounded-2xl bg-[#fbfbfa] px-4 py-3 text-xs font-semibold text-neutral-600">
                   {locationMessage}
                 </p>
               ) : null}
-              <div className="mt-5 space-y-2">
-                {recommendedVenuePins.map((venue) => (
-                  <button
-                    key={venue.id}
-                    type="button"
-                    onClick={() => onSelectVenue(venue)}
-                    className={`w-full rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 ${
-                      location.selectedVenueId === venue.id
-                        ? "border-neutral-950 bg-neutral-950 text-white shadow-[0_18px_46px_rgba(20,20,20,0.18)]"
-                        : "border-neutral-200 bg-[#fbfbfa] text-neutral-950 hover:border-neutral-400"
-                    }`}
-                  >
-                    <span className="block text-sm font-semibold">{venue.label}</span>
-                    <span
-                      className={`mt-1 block text-xs ${
-                        location.selectedVenueId === venue.id
-                          ? "text-neutral-300"
-                          : "text-neutral-500"
-                      }`}
-                    >
-                      {venue.match} · {venue.capacity}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <VenueDiscoveryMap
-              pins={recommendedVenuePins}
-              selectedVenueId={location.selectedVenueId}
-              zones={location.zones}
-              onSelectVenue={onSelectVenue}
-              onZonesChange={(zones) => onUpdate({ zones })}
-            />
           </div>
-          {selectedVenue ? (
-            <div className="border-t border-neutral-200 bg-[#fbfbfa] px-5 py-4">
-              <p className="text-sm font-semibold text-neutral-950">
-                Selected venue signal: {selectedVenue.label}
-              </p>
-              <p className="mt-1 text-sm text-neutral-600">
-                {selectedVenue.address}. If this venue is not already in
-                Arivio, this becomes a future vendor onboarding lead.
-              </p>
-            </div>
-          ) : null}
+          <VenueDiscoveryMap
+            center={mapCenter}
+            zones={location.zones}
+            onZonesChange={(zones) =>
+              onUpdate({ zones: normalizePlannerZones(zones) })
+            }
+          />
         </div>
       ) : null}
     </div>
@@ -1165,46 +1051,26 @@ function LocationSignal({
 }
 
 function VenueDiscoveryMap({
-  onSelectVenue,
-  pins,
-  selectedVenueId,
+  center,
   zones,
   onZonesChange,
 }: {
-  pins: typeof mockVenuePins;
-  onSelectVenue: (venue: (typeof mockVenuePins)[number]) => void;
-  selectedVenueId?: string;
+  center: Coordinates;
   zones: MapZone[];
   onZonesChange: (zones: MapZone[]) => void;
 }) {
   return (
     <ZoneMapEditor
-      defaultLabel="Search area"
+      defaultLabel="Venue search area"
+      heightClassName="h-[58vh] min-h-[520px] max-h-[720px]"
+      mapCenter={center}
+      mapZoom={10.5}
       onZonesChange={onZonesChange}
-      subtitle="Draw circles or polygons around acceptable venue areas."
+      singleZone
+      subtitle="Draw one venue search area. Circle and freeform replace each other."
       title="Venue search map"
       zones={zones}
-    >
-      {pins.map((venue) => {
-        const isSelected = selectedVenueId === venue.id;
-
-        return (
-          <button
-            key={venue.id}
-            type="button"
-            data-zone-control
-            onClick={() => onSelectVenue(venue)}
-            onPointerDown={(event) => event.stopPropagation()}
-            className={`absolute z-10 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white px-4 py-2 text-xs font-semibold shadow-[0_18px_42px_rgba(20,20,20,0.24)] transition hover:-translate-y-[58%] ${
-              isSelected ? "bg-[#ff5a5f] text-white" : "bg-neutral-950 text-white"
-            }`}
-            style={{ left: `${venue.position.x}%`, top: `${venue.position.y}%` }}
-          >
-            {venue.label}
-          </button>
-        );
-      })}
-    </ZoneMapEditor>
+    />
   );
 }
 
@@ -1450,59 +1316,26 @@ function mergeServices(
   return Array.from(new Set([...current, ...incoming]));
 }
 
-function getRecommendedVenuePins(
-  context: ReturnType<typeof derivePlanningContext>,
-) {
-  const scoredPins = mockVenuePins
-    .map((venue) => ({
-      score: scoreVenuePin(venue, context),
-      venue,
-    }))
-    .sort((left, right) => right.score - left.score);
-
-  return scoredPins.map(({ venue }) => venue);
-}
-
 function getDefaultPlannerZones(): MapZone[] {
   return [
     {
       center: { x: 50, y: 50 },
       id: `search-zone-${Date.now()}`,
-      label: "Search area 1",
+      label: "Venue search area",
       radiusPct: 26,
       type: "radius",
     },
   ];
 }
 
-function scoreVenuePin(
-  venue: (typeof mockVenuePins)[number],
-  context: ReturnType<typeof derivePlanningContext>,
-) {
-  const text = `${venue.label} ${venue.match} ${venue.capacity}`.toLowerCase();
-  let score = 0;
+function normalizePlannerZones(zones: MapZone[]) {
+  const zone = zones[0];
 
-  if (context.activityFocused && /raceway|jungle|activity|kids|teen|play|racing/.test(text)) {
-    score += 40;
-  }
+  return zone ? [{ ...zone, label: "Venue search area" }] : [];
+}
 
-  if (context.lifeStage === "teen" && /raceway|teen|activity|racing/.test(text)) {
-    score += 32;
-  }
-
-  if (context.lifeStage === "kids" && /jungle|kids|play/.test(text)) {
-    score += 32;
-  }
-
-  if (context.lifeStage === "teen" && /auditorium|expo|club|ballroom|elegant/.test(text)) {
-    score -= 30;
-  }
-
-  if (context.homeEvent) {
-    score -= 18;
-  }
-
-  return score;
+function getDefaultMapCenter(): Coordinates {
+  return homeAreas[0]?.coordinates ?? { lat: 34.0522, lng: -118.2437 };
 }
 
 function getLocationContextLabel(context: EventLocation["context"]) {
