@@ -25,7 +25,7 @@ type QuoteCartDrawerProps = {
   isAuthLoading: boolean;
   isLoggedIn: boolean;
   isRequestingQuotes: boolean;
-  variant?: "panel" | "compact" | "bar";
+  variant?: "panel" | "compact" | "bar" | "workspace";
   onRemove: (lineId: number) => void;
   onRequestQuotes: () => void;
   onUpdateTime: (
@@ -54,6 +54,7 @@ export function QuoteCartDrawer({
   const total = cart.reduce((sum, line) => sum + getLineQuote(line), 0);
   const isCompact = variant === "compact";
   const isBar = variant === "bar";
+  const isWorkspace = variant === "workspace";
 
   if (isBar) {
     return (
@@ -102,7 +103,9 @@ export function QuoteCartDrawer({
       className={`min-w-0 rounded-[28px] border border-neutral-200 bg-white/95 shadow-[0_22px_70px_rgba(20,20,20,0.08)] backdrop-blur transition duration-200 ease-out hover:shadow-[0_26px_82px_rgba(20,20,20,0.1)] ${
         isCompact
           ? "max-h-[52vh] overflow-y-auto p-4"
-          : "sticky top-24 h-fit p-5"
+          : isWorkspace
+            ? "max-h-[calc(100vh-6.5rem)] overflow-y-auto p-4"
+            : "sticky top-24 h-fit p-5"
       }`}
     >
       <div className="flex items-start justify-between gap-4">

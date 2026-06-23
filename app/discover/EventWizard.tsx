@@ -20,6 +20,11 @@ import {
   getContextServices,
 } from "@/lib/event-intelligence/context";
 import { AddressAutocomplete, type AddressSuggestion } from "./components/AddressAutocomplete";
+import {
+  ZoneMapEditor,
+  summarizeMapZones,
+  type MapZone,
+} from "../components/maps/ZoneMapEditor";
 import { CalendarPicker } from "./components/CalendarPicker";
 import { ServiceRecommendationCard } from "./components/ServiceRecommendationCard";
 import { StepCard } from "./components/StepCard";
@@ -53,6 +58,7 @@ type EventLocation = {
   selectedAddress: string;
   selectedLabel: string;
   selectedVenueId?: string;
+  zones: MapZone[];
 };
 
 type PlanAddition = {
@@ -151,6 +157,7 @@ export function EventWizard() {
       query: "",
       selectedAddress: "",
       selectedLabel: "",
+      zones: [],
     },
   ]);
   const [guestCount, setGuestCount] = useState(60);
@@ -217,6 +224,11 @@ export function EventWizard() {
       params.set("lat", String(eventAnchor.lat));
       params.set("lng", String(eventAnchor.lng));
       params.set("locationContext", locations[0]?.context || "venue_needed");
+    }
+
+    const primaryZone = locations[0]?.zones.find((zone) => zone.type === "radius");
+    if (primaryZone?.radiusPct) {
+      params.set("searchRadiusMiles", String(Math.round(primaryZone.radiusPct * 0.75)));
     }
 
     return `/marketplace?${params.toString()}`;
@@ -480,6 +492,7 @@ export function EventWizard() {
                     query: suggestion.label,
                     selectedAddress: suggestion.address,
                     selectedLabel: suggestion.label,
+                    zones: [],
                   })
                 }
                 onSelectMode={(mode) =>
@@ -491,6 +504,7 @@ export function EventWizard() {
                     selectedAddress: "",
                     selectedLabel: "",
                     selectedVenueId: undefined,
+                    zones: mode === "needs_venue" ? getDefaultPlannerZones() : [],
                   })
                 }
                 onSelectVenue={(venue) =>
@@ -503,6 +517,9 @@ export function EventWizard() {
                     selectedAddress: venue.address,
                     selectedLabel: venue.label,
                     selectedVenueId: venue.id,
+                    zones: locations[0]?.zones.length
+                      ? locations[0].zones
+                      : getDefaultPlannerZones(),
                   })
                 }
                 onUpdate={(updates) => updateLocation(locations[0].id, updates)}
@@ -910,6 +927,7 @@ function LocationStep({
           selectedAddress: "",
           selectedLabel: "Current location",
           selectedVenueId: undefined,
+          zones: location.zones.length ? location.zones : getDefaultPlannerZones(),
         });
         setLocationMessage("Current location is now the anchor for venue matching.");
       },
@@ -930,6 +948,7 @@ function LocationStep({
       selectedAddress: "",
       selectedLabel: matchedArea ? matchedArea.name : "",
       selectedVenueId: undefined,
+      zones: matchedArea && !location.zones.length ? getDefaultPlannerZones() : location.zones,
     });
 
     if (matchedArea) {
@@ -1053,7 +1072,9 @@ function LocationStep({
             <VenueDiscoveryMap
               pins={recommendedVenuePins}
               selectedVenueId={location.selectedVenueId}
+              zones={location.zones}
               onSelectVenue={onSelectVenue}
+              onZonesChange={(zones) => onUpdate({ zones })}
             />
           </div>
           {selectedVenue ? (
@@ -1147,26 +1168,23 @@ function VenueDiscoveryMap({
   onSelectVenue,
   pins,
   selectedVenueId,
+  zones,
+  onZonesChange,
 }: {
   pins: typeof mockVenuePins;
   onSelectVenue: (venue: (typeof mockVenuePins)[number]) => void;
   selectedVenueId?: string;
+  zones: MapZone[];
+  onZonesChange: (zones: MapZone[]) => void;
 }) {
   return (
-    <div className="relative min-h-[430px] overflow-hidden bg-[linear-gradient(135deg,#e6ece6,#f4efe8)]">
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px)] bg-[size:38px_38px]" />
-      <div className="absolute left-5 top-5 rounded-full bg-white/90 px-4 py-2 text-xs font-semibold text-neutral-700 shadow-[0_14px_34px_rgba(20,20,20,0.12)] backdrop-blur">
-        Map-first venue discovery
-      </div>
-      <div className="absolute bottom-5 left-5 right-5 rounded-3xl bg-white/90 p-4 shadow-[0_18px_50px_rgba(20,20,20,0.12)] backdrop-blur">
-        <p className="text-sm font-semibold text-neutral-950">
-          Mock map contract
-        </p>
-        <p className="mt-1 text-sm leading-6 text-neutral-600">
-          Pins, selection, current location, and city search are wired as UI
-          contracts so Google Maps or Mapbox can replace the mock layer next.
-        </p>
-      </div>
+    <ZoneMapEditor
+      defaultLabel="Search area"
+      onZonesChange={onZonesChange}
+      subtitle="Draw circles or polygons around acceptable venue areas."
+      title="Venue search map"
+      zones={zones}
+    >
       {pins.map((venue) => {
         const isSelected = selectedVenueId === venue.id;
 
@@ -1174,7 +1192,9 @@ function VenueDiscoveryMap({
           <button
             key={venue.id}
             type="button"
+            data-zone-control
             onClick={() => onSelectVenue(venue)}
+            onPointerDown={(event) => event.stopPropagation()}
             className={`absolute z-10 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white px-4 py-2 text-xs font-semibold shadow-[0_18px_42px_rgba(20,20,20,0.24)] transition hover:-translate-y-[58%] ${
               isSelected ? "bg-[#ff5a5f] text-white" : "bg-neutral-950 text-white"
             }`}
@@ -1184,7 +1204,7 @@ function VenueDiscoveryMap({
           </button>
         );
       })}
-    </div>
+    </ZoneMapEditor>
   );
 }
 
@@ -1443,6 +1463,18 @@ function getRecommendedVenuePins(
   return scoredPins.map(({ venue }) => venue);
 }
 
+function getDefaultPlannerZones(): MapZone[] {
+  return [
+    {
+      center: { x: 50, y: 50 },
+      id: `search-zone-${Date.now()}`,
+      label: "Search area 1",
+      radiusPct: 26,
+      type: "radius",
+    },
+  ];
+}
+
 function scoreVenuePin(
   venue: (typeof mockVenuePins)[number],
   context: ReturnType<typeof derivePlanningContext>,
@@ -1505,7 +1537,11 @@ function getLocationSummary(locations: EventLocation[]) {
         location.selectedAddress ||
         location.query ||
         "Flexible";
-      return `${location.kind}: ${value}`;
+      const zoneSummary = location.zones.length
+        ? ` (${summarizeMapZones(location.zones)})`
+        : "";
+
+      return `${location.kind}: ${value}${zoneSummary}`;
     })
     .join(" | ");
 }

@@ -12,6 +12,7 @@ import { MAPBOX_ACCESS_TOKEN, MAPBOX_STYLE_ID, hasMapboxConfig } from "@/lib/map
 export type MarketplaceMapPin = {
   isActiveRowMatch: boolean;
   isCarted: boolean;
+  isCompletedCategory?: boolean;
   item: MarketplaceItem;
 };
 
@@ -66,6 +67,11 @@ const fallbackBounds = {
   minLng: -118.55,
 };
 
+type MarkerEntry = {
+  marker: mapboxgl.Marker;
+  signature: string;
+};
+
 export function MarketplaceMap({
   activeCategory,
   cartedIds,
@@ -80,8 +86,10 @@ export function MarketplaceMap({
 }: MarketplaceMapProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapboxMap | null>(null);
-  const markerRefs = useRef<mapboxgl.Marker[]>([]);
+  const markerRefs = useRef<Map<number, MarkerEntry>>(new Map());
+  const eventMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
+  const pinsRef = useRef<MarketplaceMapPin[]>(pins);
   const viewportSignatureRef = useRef("");
   const isSheet = layout === "sheet";
   const isSticky = layout === "sticky";
@@ -91,7 +99,13 @@ export function MarketplaceMap({
   }, [eventCoordinates, pins]);
   const bounds = useMemo(() => getBounds(visiblePoints), [visiblePoints]);
   const center = eventCoordinates ?? getCenter(visiblePoints);
+  const initialCenterRef = useRef(center);
+  const initialZoomRef = useRef(eventCoordinates ? 10 : 9);
   const hasInteractiveMap = hasMapboxConfig();
+
+  useEffect(() => {
+    pinsRef.current = pins;
+  }, [pins]);
 
   useEffect(() => {
     if (!hasInteractiveMap || !mapContainerRef.current || mapRef.current) {
@@ -101,14 +115,14 @@ export function MarketplaceMap({
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
     const map = new mapboxgl.Map({
       attributionControl: false,
-      center: [center.lng, center.lat],
+      center: [initialCenterRef.current.lng, initialCenterRef.current.lat],
       container: mapContainerRef.current,
       cooperativeGestures: false,
       dragRotate: false,
       pitchWithRotate: false,
       scrollZoom: true,
       style: getMapboxStyleUrl(),
-      zoom: eventCoordinates ? 10 : 9,
+      zoom: initialZoomRef.current,
     });
 
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
@@ -116,16 +130,19 @@ export function MarketplaceMap({
     map.on("load", () => map.resize());
     window.setTimeout(() => map.resize(), 0);
     mapRef.current = map;
+    const markerStore = markerRefs.current;
 
     return () => {
-      markerRefs.current.forEach((marker) => marker.remove());
-      markerRefs.current = [];
+      markerStore.forEach(({ marker }) => marker.remove());
+      markerStore.clear();
+      eventMarkerRef.current?.remove();
+      eventMarkerRef.current = null;
       popupRef.current?.remove();
       popupRef.current = null;
       map.remove();
       mapRef.current = null;
     };
-  }, [center.lat, center.lng, eventCoordinates, hasInteractiveMap]);
+  }, [hasInteractiveMap]);
 
   useEffect(() => {
     if (!mapRef.current || !hasInteractiveMap) {
@@ -142,24 +159,27 @@ export function MarketplaceMap({
 
     const map = mapRef.current;
 
-    markerRefs.current.forEach((marker) => marker.remove());
-    markerRefs.current = [];
-    popupRef.current?.remove();
-    popupRef.current = new mapboxgl.Popup({
-      className: "arivio-map-popup",
-      closeButton: true,
-      closeOnClick: false,
-      maxWidth: "320px",
-      offset: 22,
-    });
+    if (!popupRef.current) {
+      popupRef.current = new mapboxgl.Popup({
+        className: "arivio-map-popup",
+        closeButton: true,
+        closeOnClick: false,
+        maxWidth: "320px",
+        offset: 22,
+      });
+    }
 
     if (eventCoordinates) {
-      const eventMarker = new mapboxgl.Marker({
-        element: createEventMarker(),
-      })
-        .setLngLat([eventCoordinates.lng, eventCoordinates.lat])
-        .addTo(map);
-      markerRefs.current.push(eventMarker);
+      if (!eventMarkerRef.current) {
+        eventMarkerRef.current = new mapboxgl.Marker({
+          element: createEventMarker(),
+        }).addTo(map);
+      }
+
+      eventMarkerRef.current.setLngLat([eventCoordinates.lng, eventCoordinates.lat]);
+    } else if (eventMarkerRef.current) {
+      eventMarkerRef.current.remove();
+      eventMarkerRef.current = null;
     }
 
     const closePopup = () => {
@@ -168,12 +188,31 @@ export function MarketplaceMap({
 
     map.on("click", closePopup);
 
+    const nextIds = new Set(pins.map((pin) => pin.item.id));
+
+    markerRefs.current.forEach((entry, itemId) => {
+      if (!nextIds.has(itemId)) {
+        entry.marker.remove();
+        markerRefs.current.delete(itemId);
+      }
+    });
+
     pins.forEach((pin) => {
       const isCarted = cartedIds.includes(pin.item.id) || pin.isCarted;
+      const signature = `${pin.item.type}:${pin.isActiveRowMatch}:${isCarted}:${Boolean(pin.isCompletedCategory)}`;
+      const existingEntry = markerRefs.current.get(pin.item.id);
+
+      if (existingEntry?.signature === signature) {
+        existingEntry.marker.setLngLat([pin.item.coordinates.lng, pin.item.coordinates.lat]);
+        return;
+      }
+
+      existingEntry?.marker.remove();
       const markerElement = createProviderMarker({
         color: categoryColors[pin.item.type] ?? "#111111",
         isActive: pin.isActiveRowMatch,
         isCarted,
+        isCompleted: Boolean(pin.isCompletedCategory),
         item: pin.item,
       });
 
@@ -195,7 +234,7 @@ export function MarketplaceMap({
       const marker = new mapboxgl.Marker({ element: markerElement })
         .setLngLat([pin.item.coordinates.lng, pin.item.coordinates.lat])
         .addTo(map);
-      markerRefs.current.push(marker);
+      markerRefs.current.set(pin.item.id, { marker, signature });
     });
     return () => {
       map.off("click", closePopup);
@@ -214,7 +253,7 @@ export function MarketplaceMap({
       return;
     }
 
-    markerRefs.current.forEach((marker) => {
+    markerRefs.current.forEach(({ marker }) => {
       const element = marker.getElement();
       const itemId = Number(element.dataset.arivioItemId);
       const isFocused = itemId === hoveredItemId || itemId === selectedItemId;
@@ -260,7 +299,7 @@ export function MarketplaceMap({
         return;
       }
 
-      const pin = pins.find((candidate) => candidate.item.id === itemId);
+      const pin = pinsRef.current.find((candidate) => candidate.item.id === itemId);
 
       if (pin) {
         onAddItem(pin.item);
@@ -270,7 +309,7 @@ export function MarketplaceMap({
     document.addEventListener("click", handlePopupAction);
 
     return () => document.removeEventListener("click", handlePopupAction);
-  }, [onAddItem, pins]);
+  }, [onAddItem]);
 
   useEffect(() => {
     if (!mapRef.current || !hasInteractiveMap) {
@@ -402,6 +441,7 @@ function FallbackMap({
         const isHovered = hoveredItemId === pin.item.id;
         const isSelected = selectedItemId === pin.item.id;
         const isCarted = cartedIds.includes(pin.item.id) || pin.isCarted;
+        const isCompleted = Boolean(pin.isCompletedCategory);
         const color = categoryColors[pin.item.type] ?? "#111111";
 
         return (
@@ -416,6 +456,8 @@ function FallbackMap({
                 ? "scale-110 ring-4 ring-neutral-950/10"
                 : isCarted
                   ? "ring-4 ring-emerald-600/25"
+                  : isCompleted
+                    ? "opacity-45 grayscale"
                   : pin.isActiveRowMatch
                     ? ""
                     : "opacity-80"
@@ -438,11 +480,13 @@ function createProviderMarker({
   color,
   isActive,
   isCarted,
+  isCompleted,
   item,
 }: {
   color: string;
   isActive: boolean;
   isCarted: boolean;
+  isCompleted: boolean;
   item: MarketplaceItem;
 }) {
   const marker = document.createElement("button");
@@ -451,7 +495,7 @@ function createProviderMarker({
   marker.dataset.arivioCarted = String(isCarted);
   marker.innerHTML = `
     <span class="relative z-10">${getServiceIcon(item.type, 18)}</span>
-    ${isCarted ? '<span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-emerald-600 text-[10px] font-black text-white">✓</span>' : ""}
+    ${isCarted ? '<span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-emerald-600 text-white"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span>' : ""}
     <span class="absolute -bottom-1.5 left-1/2 h-3.5 w-3.5 -translate-x-1/2 rotate-45 rounded-[3px] border-b-2 border-r-2 border-white" style="background:${isCarted ? "#256f4a" : color};"></span>
   `;
   marker.style.backgroundColor = isCarted ? "#256f4a" : color;
@@ -475,7 +519,8 @@ function createProviderMarker({
     "hover:ring-neutral-950/10",
     "hover:shadow-[0_24px_56px_rgba(20,20,20,0.28)]",
     isCarted ? "ring-4 ring-emerald-600/30" : "",
-    isActive ? "" : "opacity-80",
+    isCompleted && !isCarted ? "opacity-45 grayscale" : "",
+    isActive || isCarted || isCompleted ? "" : "opacity-80",
   ]
     .filter(Boolean)
     .join(" ");
@@ -515,11 +560,14 @@ function getPopupHtml(item: MarketplaceItem) {
         <p style="margin: 7px 0 0; font-size: 13px; line-height: 1.45; color: #666;">${escapeHtml(
           item.location,
         )}</p>
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px;">
           <p style="margin: 0; font-size: 13px; font-weight: 800; color: #111;">${escapeHtml(
             item.price,
           )}</p>
-          <button type="button" data-arivio-add-quote="${item.id}" style="border: 0; border-radius: 999px; background: #111; color: #fff; cursor: pointer; padding: 8px 12px; font-size: 12px; font-weight: 800;">Add to quote</button>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <a href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noreferrer" style="border-radius: 999px; border: 1px solid #e5e5e5; color: #333; padding: 8px 10px; font-size: 12px; font-weight: 800; text-decoration: none;">Details</a>
+            <button type="button" data-arivio-add-quote="${item.id}" style="border: 0; border-radius: 999px; background: #111; color: #fff; cursor: pointer; padding: 8px 12px; font-size: 12px; font-weight: 800;">Add</button>
+          </div>
         </div>
       </div>
     </div>

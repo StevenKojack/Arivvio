@@ -4,6 +4,11 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { allServices, eventTypes } from "../../data/marketplace";
+import {
+  ZoneMapEditor,
+  summarizeMapZones,
+  type MapZone,
+} from "../../components/maps/ZoneMapEditor";
 import { createBrowserSupabaseClient, hasSupabaseConfig } from "@/lib/supabase/client";
 import { ensureCurrentProfile } from "@/lib/repositories/profilesRepository";
 import {
@@ -23,6 +28,15 @@ export function VendorOnboardingForm() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["DJ"]);
   const [city, setCity] = useState("Los Angeles");
   const [radius, setRadius] = useState(30);
+  const [territoryZones, setTerritoryZones] = useState<MapZone[]>([
+    {
+      center: { x: 50, y: 50 },
+      id: "vendor-zone-1",
+      label: "Service territory 1",
+      radiusPct: 28,
+      type: "radius",
+    },
+  ]);
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [phone, setPhone] = useState("");
   const [serviceName, setServiceName] = useState("DJ package");
@@ -132,6 +146,7 @@ export function VendorOnboardingForm() {
         maximumGuests,
         minimumGuests,
         tags,
+        territoryZones,
         travelMode,
       });
       const vendor = await createVendorBusiness(supabase, {
@@ -249,6 +264,14 @@ export function VendorOnboardingForm() {
           />
         </label>
       </div>
+
+      <ZoneMapEditor
+        defaultLabel="Service territory"
+        onZonesChange={setTerritoryZones}
+        subtitle="Define where this business is willing to provide service."
+        title="Vendor territory map"
+        zones={territoryZones}
+      />
 
       <div className="rounded-lg bg-[#f7f7f5] p-5">
         <h2 className="text-xl font-semibold tracking-tight">Starter service</h2>
@@ -430,6 +453,7 @@ function buildStructuredVendorDescription(input: {
   maximumGuests: number;
   minimumGuests: number;
   tags: string[];
+  territoryZones: MapZone[];
   travelMode: string;
 }) {
   return [
@@ -438,6 +462,7 @@ function buildStructuredVendorDescription(input: {
     `Travel: ${input.travelMode}`,
     `Guest range: ${input.minimumGuests}-${input.maximumGuests}`,
     `Life stages: ${input.lifeStages.join(", ")}`,
+    `Territories: ${summarizeMapZones(input.territoryZones)}`,
     `Tags: ${input.tags.join(", ")}`,
   ]
     .filter(Boolean)

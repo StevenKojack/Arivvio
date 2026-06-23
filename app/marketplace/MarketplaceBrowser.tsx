@@ -63,6 +63,7 @@ type CartLine = {
   persisted: boolean;
   priceAdjustment: number;
   serviceEnd: string;
+  serviceId?: string | null;
   serviceName: ServiceName;
   serviceStart: string;
   serviceTitle: string;
@@ -109,6 +110,7 @@ export function MarketplaceBrowser() {
   const initialLocation = searchParams.get("location") ?? "";
   const initialNotes = searchParams.get("notes") ?? "";
   const initialLocationContext = searchParams.get("locationContext") ?? "";
+  const initialSearchRadiusMiles = Number(searchParams.get("searchRadiusMiles") ?? 0);
   const initialRecommendedServices =
     initialEventType === "All" ? [] : eventPlanPresets[initialEventType].recommended;
   const [providers, setProviders] = useState<MarketplaceItem[]>(demoItems);
@@ -278,6 +280,12 @@ export function MarketplaceBrowser() {
         item.type === "Venue" ||
         !item.serviceRadiusMiles ||
         miles <= item.serviceRadiusMiles;
+      const withinPlannerSearchRegion =
+        !eventCoordinates ||
+        item.type !== "Venue" ||
+        !Number.isFinite(initialSearchRadiusMiles) ||
+        initialSearchRadiusMiles <= 0 ||
+        miles <= initialSearchRadiusMiles;
       const isNearEnough =
         !eventCoordinates || item.type === "Venue" || driveMinutes <= 60;
       const matchesAvailability = isAvailableAt(
@@ -294,6 +302,7 @@ export function MarketplaceBrowser() {
         matchesQuery &&
         matchesCity &&
         withinRadius &&
+        withinPlannerSearchRegion &&
         isNearEnough &&
         matchesAvailability &&
         isMarketplaceItemCompatible(item, planningContext)
@@ -325,6 +334,7 @@ export function MarketplaceBrowser() {
     globalQuoteContext,
     normalizedQuery,
     providers,
+    initialSearchRadiusMiles,
     planningContext,
     savedEvent?.city,
     selectedEvent,
@@ -336,6 +346,10 @@ export function MarketplaceBrowser() {
   const canPersistCart = Boolean(profile && savedEvent);
   const cartedIds = useMemo(
     () => Array.from(new Set(cart.map((line) => line.item.id))),
+    [cart],
+  );
+  const cartedServiceNames = useMemo(
+    () => Array.from(new Set(cart.map((line) => line.serviceName))),
     [cart],
   );
   const selectedServiceCountByVendor = useMemo(() => {
@@ -364,6 +378,9 @@ export function MarketplaceBrowser() {
       pinMap.set(item.id, {
         isActiveRowMatch: true,
         isCarted: cartedIds.includes(item.id),
+        isCompletedCategory:
+          !cartedIds.includes(item.id) &&
+          itemMatchesServices(item, cartedServiceNames),
         item,
       });
     });
@@ -372,12 +389,36 @@ export function MarketplaceBrowser() {
       pinMap.set(line.item.id, {
         isActiveRowMatch: activeIds.has(line.item.id),
         isCarted: true,
+        isCompletedCategory: false,
         item: line.item,
       });
     });
 
+    if (selectedMapItemId && !pinMap.has(selectedMapItemId)) {
+      const selectedItem =
+        filteredItems.find((item) => item.id === selectedMapItemId) ??
+        providers.find((item) => item.id === selectedMapItemId);
+
+      if (selectedItem) {
+        pinMap.set(selectedItem.id, {
+          isActiveRowMatch: false,
+          isCarted: cartedIds.includes(selectedItem.id),
+          isCompletedCategory: false,
+          item: selectedItem,
+        });
+      }
+    }
+
     return Array.from(pinMap.values());
-  }, [activeRow, cart, cartedIds]);
+  }, [
+    activeRow,
+    cart,
+    cartedIds,
+    cartedServiceNames,
+    filteredItems,
+    providers,
+    selectedMapItemId,
+  ]);
 
   const setMapHoverItem = useCallback((itemId: number | null) => {
     if (hoverFrameRef.current) {
@@ -692,6 +733,7 @@ export function MarketplaceBrowser() {
       persisted: false,
       priceAdjustment: serviceOption.priceAdjustment ?? 0,
       serviceEnd: endTime,
+      serviceId: serviceOption.serviceId ?? item.serviceId ?? null,
       serviceName: serviceOption.service,
       serviceStart: startTime,
       serviceTitle: serviceOption.title,
@@ -726,7 +768,7 @@ export function MarketplaceBrowser() {
         estimatedPrice,
         eventId: savedEvent.id,
         itemType: serviceOption.service === "Venue" ? "venue" : "vendor_service",
-        serviceId: serviceOption.serviceId ?? item.serviceId ?? null,
+        serviceId: line.serviceId ?? null,
         startTime,
         vendorId: item.vendorId ?? null,
         venueId: item.venueId ?? null,
@@ -798,7 +840,7 @@ export function MarketplaceBrowser() {
     });
   }, []);
 
-  function renderQuoteCart(variant: "panel" | "compact" | "bar" = "panel") {
+  function renderQuoteCart(variant: "panel" | "compact" | "bar" | "workspace" = "panel") {
     return (
       <QuoteCartDrawer
         canPersistCart={canPersistCart}
@@ -888,7 +930,7 @@ export function MarketplaceBrowser() {
           estimated_price: getLineQuote(line),
           event_id: savedEvent.id,
           id: line.cartItemId ?? String(line.id),
-          service_id: line.item.serviceId ?? null,
+          service_id: line.serviceId ?? line.item.serviceId ?? null,
           start_time: line.serviceStart,
           vendor_id: line.item.vendorId ?? null,
           venue_id: line.item.venueId ?? null,
@@ -912,7 +954,7 @@ export function MarketplaceBrowser() {
 
   return (
     <>
-      <div className="relative min-h-[calc(100vh-5rem)] w-full overflow-x-clip rounded-[32px] border border-white/70 bg-white/45 p-3 shadow-[0_24px_80px_rgba(20,20,20,0.08)] backdrop-blur sm:p-4">
+      <div className="relative min-h-[calc(100vh-5rem)] w-full overflow-x-clip">
         <EventContextPanel
           eventDate={eventDate}
           eventLocationLabel={eventLocationLabel}
@@ -936,8 +978,11 @@ export function MarketplaceBrowser() {
           onUseCurrentLocation={useCurrentLocation}
         />
 
-        <div className="mt-4 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,56%)_minmax(440px,44%)]">
-          <div className="min-w-0 space-y-4 pb-28 xl:pb-4">
+        <div className="mt-3 grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(430px,44vw)_minmax(280px,320px)] 2xl:grid-cols-[minmax(0,1fr)_minmax(560px,46vw)_320px]">
+          <section
+            className="min-w-0 space-y-4 pb-28 xl:pb-4"
+            aria-label="Vendor discovery"
+          >
           <div className="xl:hidden">
             <button
               type="button"
@@ -949,10 +994,6 @@ export function MarketplaceBrowser() {
             <div className="fixed bottom-5 left-4 right-24 z-40">
               {renderQuoteCart("bar")}
             </div>
-          </div>
-
-          <div className="sticky top-3 z-30 hidden xl:block">
-            {renderQuoteCart("bar")}
           </div>
 
           {marketplaceRows.length ? (
@@ -985,9 +1026,12 @@ export function MarketplaceBrowser() {
               </p>
             </div>
           )}
-        </div>
+        </section>
 
-        <aside className="relative hidden min-w-0 self-stretch xl:block" aria-label="Persistent marketplace map">
+        <aside
+          className="relative hidden min-w-0 self-stretch xl:block"
+          aria-label="Interactive map workspace"
+        >
           <div className="sticky top-3">
             <MarketplaceMap
               activeCategory={activeRow?.title ?? "Best matches"}
@@ -1002,6 +1046,13 @@ export function MarketplaceBrowser() {
               onSelectItem={selectMapItem}
             />
           </div>
+        </aside>
+
+        <aside
+          className="relative hidden min-w-0 self-stretch xl:block"
+          aria-label="Quote cart workspace"
+        >
+          <div className="sticky top-3">{renderQuoteCart("workspace")}</div>
         </aside>
         </div>
       </div>
