@@ -280,7 +280,11 @@ export function EventWizard() {
 
   return (
     <section className="px-6 py-10 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-5xl min-w-0">
+      <div
+        className={`mx-auto min-w-0 transition-[max-width] duration-300 ${
+          step === 3 ? "max-w-7xl" : "max-w-5xl"
+        }`}
+      >
         <StepRail
           canVisitStep={canVisitStep}
           currentStep={step}
@@ -411,6 +415,7 @@ export function EventWizard() {
               eyebrow="Step 4"
               title="Where is it?"
               body="Choose the known place, or draw one clean search area for where the venue should be."
+              layout="wide"
               action={<PrimaryButton label="Continue" onClick={() => setStep(4)} />}
             >
               <LocationStep
@@ -1062,7 +1067,7 @@ function VenueDiscoveryMap({
   return (
     <ZoneMapEditor
       defaultLabel="Venue search area"
-      heightClassName="h-[58vh] min-h-[520px] max-h-[720px]"
+      heightClassName="h-[64vh] min-h-[600px] max-h-[820px]"
       mapCenter={center}
       mapZoom={10.5}
       onZonesChange={onZonesChange}
