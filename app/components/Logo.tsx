@@ -23,7 +23,7 @@ export function Logo({ inverted }: LogoProps) {
           inverted ? "text-white" : "text-neutral-950"
         }`}
       >
-        Arivio
+        Arivvio
       </span>
     </Link>
   );

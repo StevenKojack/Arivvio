@@ -19,23 +19,23 @@ begin
   limit 1;
 
   if seed_owner is null then
-    raise exception 'Create at least one Arivio user/profile before running seed-demo-data.sql.';
+    raise exception 'Create at least one Arivvio user/profile before running seed-demo-data.sql.';
   end if;
 
   delete from public.vendor_businesses
   where owner_id = seed_owner
     and business_name in (
-      'Arivio Demo Venue',
-      'Arivio Demo DJ',
-      'Arivio Demo Catering',
-      'Arivio Demo Photo Booth',
-      'Arivio Demo Rentals',
-      'Arivio Demo Flowers',
-      'Arivio Demo Cake',
-      'Arivio Demo Security',
-      'Arivio Demo Live Music',
-      'Arivio Demo Magic',
-      'Arivio Demo Characters'
+      'Arivvio Demo Venue',
+      'Arivvio Demo DJ',
+      'Arivvio Demo Catering',
+      'Arivvio Demo Photo Booth',
+      'Arivvio Demo Rentals',
+      'Arivvio Demo Flowers',
+      'Arivvio Demo Cake',
+      'Arivvio Demo Security',
+      'Arivvio Demo Live Music',
+      'Arivvio Demo Magic',
+      'Arivvio Demo Characters'
     );
 
   insert into public.vendor_businesses (
@@ -53,29 +53,29 @@ begin
     vacation_mode
   )
   values
-    (seed_owner, 'Arivio Demo Venue', 'Flexible event venue for social and business gatherings.', 'Venue', 'Los Angeles', 35, 'Los Angeles, CA', 34.0522, -118.2437, 'approved', 'https://example.com/demo-venue', false),
-    (seed_owner, 'Arivio Demo DJ', 'DJ and MC services for celebrations and private events.', 'DJ', 'Los Angeles', 40, 'Los Angeles, CA', 34.0522, -118.2537, 'approved', 'https://example.com/demo-dj', false),
-    (seed_owner, 'Arivio Demo Catering', 'Buffet and plated catering packages.', 'Catering', 'Los Angeles', 35, 'Los Angeles, CA', 34.0622, -118.2437, 'approved', 'https://example.com/demo-catering', false),
-    (seed_owner, 'Arivio Demo Photo Booth', 'Open-air booth and digital gallery packages.', 'Photo Booth', 'Los Angeles', 30, 'Los Angeles, CA', 34.0422, -118.2337, 'approved', 'https://example.com/demo-photo-booth', false),
-    (seed_owner, 'Arivio Demo Rentals', 'Tables, chairs, lounge, and party rental bundles.', 'Rentals', 'Los Angeles', 45, 'Los Angeles, CA', 34.0722, -118.2637, 'approved', 'https://example.com/demo-rentals', false),
-    (seed_owner, 'Arivio Demo Flowers', 'Florals for weddings, memorials, and private events.', 'Florals', 'Los Angeles', 30, 'Los Angeles, CA', 34.0822, -118.2737, 'approved', 'https://example.com/demo-flowers', false),
-    (seed_owner, 'Arivio Demo Cake', 'Custom cakes and dessert tables.', 'Cake & Desserts', 'Los Angeles', 25, 'Los Angeles, CA', 34.0322, -118.2237, 'approved', 'https://example.com/demo-cake', false),
-    (seed_owner, 'Arivio Demo Security', 'Event security and guest flow support.', 'Security', 'Los Angeles', 50, 'Los Angeles, CA', 34.0222, -118.2137, 'approved', 'https://example.com/demo-security', false),
-    (seed_owner, 'Arivio Demo Live Music', 'Soloists and small live music groups.', 'Live Music', 'Los Angeles', 35, 'Los Angeles, CA', 34.0922, -118.2837, 'approved', 'https://example.com/demo-live-music', false),
-    (seed_owner, 'Arivio Demo Magic', 'Close-up and stage magic for parties.', 'Magic', 'Los Angeles', 35, 'Los Angeles, CA', 34.0122, -118.2037, 'approved', 'https://example.com/demo-magic', false),
-    (seed_owner, 'Arivio Demo Characters', 'Costumed character performers for family events.', 'Character Performers', 'Los Angeles', 30, 'Los Angeles, CA', 34.1022, -118.2937, 'approved', 'https://example.com/demo-characters', false);
+    (seed_owner, 'Arivvio Demo Venue', 'Flexible event venue for social and business gatherings.', 'Venue', 'Los Angeles', 35, 'Los Angeles, CA', 34.0522, -118.2437, 'approved', 'https://example.com/demo-venue', false),
+    (seed_owner, 'Arivvio Demo DJ', 'DJ and MC services for celebrations and private events.', 'DJ', 'Los Angeles', 40, 'Los Angeles, CA', 34.0522, -118.2537, 'approved', 'https://example.com/demo-dj', false),
+    (seed_owner, 'Arivvio Demo Catering', 'Buffet and plated catering packages.', 'Catering', 'Los Angeles', 35, 'Los Angeles, CA', 34.0622, -118.2437, 'approved', 'https://example.com/demo-catering', false),
+    (seed_owner, 'Arivvio Demo Photo Booth', 'Open-air booth and digital gallery packages.', 'Photo Booth', 'Los Angeles', 30, 'Los Angeles, CA', 34.0422, -118.2337, 'approved', 'https://example.com/demo-photo-booth', false),
+    (seed_owner, 'Arivvio Demo Rentals', 'Tables, chairs, lounge, and party rental bundles.', 'Rentals', 'Los Angeles', 45, 'Los Angeles, CA', 34.0722, -118.2637, 'approved', 'https://example.com/demo-rentals', false),
+    (seed_owner, 'Arivvio Demo Flowers', 'Florals for weddings, memorials, and private events.', 'Florals', 'Los Angeles', 30, 'Los Angeles, CA', 34.0822, -118.2737, 'approved', 'https://example.com/demo-flowers', false),
+    (seed_owner, 'Arivvio Demo Cake', 'Custom cakes and dessert tables.', 'Cake & Desserts', 'Los Angeles', 25, 'Los Angeles, CA', 34.0322, -118.2237, 'approved', 'https://example.com/demo-cake', false),
+    (seed_owner, 'Arivvio Demo Security', 'Event security and guest flow support.', 'Security', 'Los Angeles', 50, 'Los Angeles, CA', 34.0222, -118.2137, 'approved', 'https://example.com/demo-security', false),
+    (seed_owner, 'Arivvio Demo Live Music', 'Soloists and small live music groups.', 'Live Music', 'Los Angeles', 35, 'Los Angeles, CA', 34.0922, -118.2837, 'approved', 'https://example.com/demo-live-music', false),
+    (seed_owner, 'Arivvio Demo Magic', 'Close-up and stage magic for parties.', 'Magic', 'Los Angeles', 35, 'Los Angeles, CA', 34.0122, -118.2037, 'approved', 'https://example.com/demo-magic', false),
+    (seed_owner, 'Arivvio Demo Characters', 'Costumed character performers for family events.', 'Character Performers', 'Los Angeles', 30, 'Los Angeles, CA', 34.1022, -118.2937, 'approved', 'https://example.com/demo-characters', false);
 
-  select id into venue_vendor from public.vendor_businesses where business_name = 'Arivio Demo Venue' limit 1;
-  select id into dj_vendor from public.vendor_businesses where business_name = 'Arivio Demo DJ' limit 1;
-  select id into catering_vendor from public.vendor_businesses where business_name = 'Arivio Demo Catering' limit 1;
-  select id into booth_vendor from public.vendor_businesses where business_name = 'Arivio Demo Photo Booth' limit 1;
-  select id into rentals_vendor from public.vendor_businesses where business_name = 'Arivio Demo Rentals' limit 1;
-  select id into flowers_vendor from public.vendor_businesses where business_name = 'Arivio Demo Flowers' limit 1;
-  select id into cake_vendor from public.vendor_businesses where business_name = 'Arivio Demo Cake' limit 1;
-  select id into security_vendor from public.vendor_businesses where business_name = 'Arivio Demo Security' limit 1;
-  select id into music_vendor from public.vendor_businesses where business_name = 'Arivio Demo Live Music' limit 1;
-  select id into magic_vendor from public.vendor_businesses where business_name = 'Arivio Demo Magic' limit 1;
-  select id into character_vendor from public.vendor_businesses where business_name = 'Arivio Demo Characters' limit 1;
+  select id into venue_vendor from public.vendor_businesses where business_name = 'Arivvio Demo Venue' limit 1;
+  select id into dj_vendor from public.vendor_businesses where business_name = 'Arivvio Demo DJ' limit 1;
+  select id into catering_vendor from public.vendor_businesses where business_name = 'Arivvio Demo Catering' limit 1;
+  select id into booth_vendor from public.vendor_businesses where business_name = 'Arivvio Demo Photo Booth' limit 1;
+  select id into rentals_vendor from public.vendor_businesses where business_name = 'Arivvio Demo Rentals' limit 1;
+  select id into flowers_vendor from public.vendor_businesses where business_name = 'Arivvio Demo Flowers' limit 1;
+  select id into cake_vendor from public.vendor_businesses where business_name = 'Arivvio Demo Cake' limit 1;
+  select id into security_vendor from public.vendor_businesses where business_name = 'Arivvio Demo Security' limit 1;
+  select id into music_vendor from public.vendor_businesses where business_name = 'Arivvio Demo Live Music' limit 1;
+  select id into magic_vendor from public.vendor_businesses where business_name = 'Arivvio Demo Magic' limit 1;
+  select id into character_vendor from public.vendor_businesses where business_name = 'Arivvio Demo Characters' limit 1;
 
   insert into public.vendor_services (
     vendor_id,

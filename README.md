@@ -1,6 +1,6 @@
 # Arivvio
 
-Arivio is building the Airbnb for events: planners create an event, compare nearby venues and providers, build a quote cart, request quotes, and eventually book.
+Arivvio is building the Airbnb for events: planners create an event, compare nearby venues and providers, build a quote cart, request quotes, and eventually book.
 
 ## Run Locally
 
@@ -58,7 +58,7 @@ Once configured, these flows can persist data:
 
 ## Mapbox Setup
 
-Arivio uses Mapbox GL for the marketplace command-center map. Without a Mapbox
+Arivvio uses Mapbox GL for the marketplace command-center map. Without a Mapbox
 key, the marketplace falls back to a local mock map with real provider
 coordinates and interactive pins.
 

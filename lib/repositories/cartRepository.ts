@@ -1,6 +1,6 @@
 import type { PublicTableRow } from "@/lib/supabase/database.types";
 import type { ItemType } from "@/lib/types/domain";
-import type { ArivioSupabaseClient } from "./types";
+import type { ArivvioSupabaseClient } from "./types";
 
 export type CartItemCreateInput = {
   endTime?: string | null;
@@ -27,7 +27,7 @@ export type CartItemQuoteInput = Pick<
 >;
 
 export async function createCartItem(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: CartItemCreateInput,
 ) {
   const { data, error } = await supabase
@@ -54,7 +54,7 @@ export async function createCartItem(
 }
 
 export async function updateCartItemTime(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: {
     cartItemId: string;
     endTime: string;
@@ -79,7 +79,7 @@ export async function updateCartItemTime(
 }
 
 export async function markCartItemsQuoteRequested(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: { eventId: string; ids: string[] },
 ) {
   if (!input.ids.length) {

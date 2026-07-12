@@ -4,7 +4,7 @@ import { Navigation } from "../components/Navigation";
 const steps = [
   "Create a Supabase project at supabase.com.",
   "Copy the Project URL and anon public key from Project Settings > API.",
-  "Create .env.local inside arivio-app with those two values.",
+  "Create .env.local inside the app folder with those two values.",
   "Run supabase/schema.sql in the Supabase SQL Editor.",
   "Restart the local dev server.",
 ];
@@ -22,7 +22,7 @@ export default function SetupPage() {
             Setup
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
-            Connect Arivio to Supabase.
+            Connect Arivvio to Supabase.
           </h1>
           <div className="mt-10 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
             <section className="rounded-lg border border-neutral-200 bg-white p-6">

@@ -178,7 +178,7 @@ export function MarketplaceMap({
 
     if (!popupRef.current) {
       popupRef.current = new mapboxgl.Popup({
-        className: "arivio-map-popup",
+        className: "arivvio-map-popup",
         closeButton: true,
         closeOnClick: false,
         maxWidth: "320px",
@@ -274,7 +274,7 @@ export function MarketplaceMap({
 
     markerRefs.current.forEach(({ marker }) => {
       const element = marker.getElement();
-      const itemId = Number(element.dataset.arivioItemId);
+      const itemId = Number(element.dataset.arivvioItemId);
       const isFocused = itemId === hoveredItemId || itemId === selectedItemId;
 
       element.classList.toggle("scale-110", isFocused);
@@ -304,8 +304,8 @@ export function MarketplaceMap({
   useEffect(() => {
     function handlePopupAction(event: MouseEvent) {
       const target = event.target as HTMLElement | null;
-      const button = target?.closest("[data-arivio-add-quote]");
-      const itemId = Number(button?.getAttribute("data-arivio-add-quote"));
+      const button = target?.closest("[data-arivvio-add-quote]");
+      const itemId = Number(button?.getAttribute("data-arivvio-add-quote"));
 
       if (!itemId) {
         if (
@@ -510,8 +510,8 @@ function createProviderMarker({
 }) {
   const marker = document.createElement("button");
   marker.type = "button";
-  marker.dataset.arivioItemId = String(item.id);
-  marker.dataset.arivioCarted = String(isCarted);
+  marker.dataset.arivvioItemId = String(item.id);
+  marker.dataset.arivvioCarted = String(isCarted);
   marker.innerHTML = `
     <span class="relative z-10">${getServiceIcon(item.type, 18)}</span>
     ${isCarted ? '<span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-emerald-600 text-white"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span>' : ""}
@@ -585,7 +585,7 @@ function getPopupHtml(item: MarketplaceItem) {
           )}</p>
           <div style="display: flex; align-items: center; gap: 6px;">
             <a href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noreferrer" style="border-radius: 999px; border: 1px solid #e5e5e5; color: #333; padding: 8px 10px; font-size: 12px; font-weight: 800; text-decoration: none;">Details</a>
-            <button type="button" data-arivio-add-quote="${item.id}" style="border: 0; border-radius: 999px; background: #111; color: #fff; cursor: pointer; padding: 8px 12px; font-size: 12px; font-weight: 800;">Add</button>
+            <button type="button" data-arivvio-add-quote="${item.id}" style="border: 0; border-radius: 999px; background: #111; color: #fff; cursor: pointer; padding: 8px 12px; font-size: 12px; font-weight: 800;">Add</button>
           </div>
         </div>
       </div>

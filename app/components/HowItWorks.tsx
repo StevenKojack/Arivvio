@@ -1,6 +1,6 @@
 const steps = [
   {
-    title: "Tell Arivio the occasion",
+    title: "Tell Arivvio the occasion",
     body: "Share the event type, location, guest count, budget, and the services you need.",
   },
   {

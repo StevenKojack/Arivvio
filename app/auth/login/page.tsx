@@ -13,7 +13,7 @@ export default function LoginPage() {
             Welcome back
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
-            Log in to Arivio.
+            Log in to Arivvio.
           </h1>
           <Suspense fallback={<div className="mt-10 text-sm font-semibold text-neutral-500">Loading login...</div>}>
             <AuthForm mode="login" />

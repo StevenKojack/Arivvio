@@ -1,10 +1,10 @@
 import type { User } from "@supabase/supabase-js";
 import type { PublicTableRow } from "@/lib/supabase/database.types";
 import { profileRoleForEmail } from "@/lib/auth/roles";
-import type { ArivioSupabaseClient } from "./types";
+import type { ArivvioSupabaseClient } from "./types";
 
 export async function getCurrentProfile(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   user: User,
 ): Promise<PublicTableRow<"profiles"> | null> {
   const { data, error } = await supabase
@@ -21,7 +21,7 @@ export async function getCurrentProfile(
 }
 
 export async function upsertProfile(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: {
     email: string;
     fullName?: string | null;
@@ -49,7 +49,7 @@ export async function upsertProfile(
 }
 
 export async function ensureCurrentProfile(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   user: User,
 ): Promise<PublicTableRow<"profiles">> {
   const existingProfile = await getCurrentProfile(supabase, user);

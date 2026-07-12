@@ -1,6 +1,6 @@
-# Arivio Engineering Guidelines
+# Arivvio Engineering Guidelines
 
-This document defines the engineering standards for Arivio.
+This document defines the engineering standards for Arivvio.
 
 Every implementation should follow these principles:
 

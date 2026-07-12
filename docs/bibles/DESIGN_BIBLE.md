@@ -1,4 +1,4 @@
-# **ARIVIO DESIGN BIBLE**
+# **ARIVVIO DESIGN BIBLE**
 
 ## 
 
@@ -6,7 +6,7 @@
 
 [**TABLE OF CONTENTS	1**](#table-of-contents)
 
-[**Chapter 1: The Arivio Experience	3**](#chapter-1:-the-arivio-experience)
+[**Chapter 1: The Arivvio Experience	3**](#chapter-1:-the-arivvio-experience)
 
 [1.1 Purpose of This Chapter	3](#1.1-purpose-of-this-chapter)
 
@@ -136,7 +136,7 @@
 
 [Chapter 4 Summary	45](#chapter-4-summary)
 
-# **Chapter 1: The Arivio Experience** {#chapter-1:-the-arivio-experience}
+# **Chapter 1: The Arivvio Experience** {#chapter-1:-the-arivvio-experience}
 
 ---
 
@@ -146,15 +146,15 @@ Every great company is remembered for more than the product it builds.
 
 Apple is remembered for making technology feel approachable. Airbnb transformed booking accommodations into a feeling of belonging. The products evolved over time, but the experience they created remained remarkably consistent.
 
-Arivio should be built the same way.
+Arivvio should be built the same way.
 
-This Design Bible is not a specification for interfaces, nor is it a collection of visual preferences. It is the documentation of an experience. Every designer, engineer, writer, product manager, and future leader who contributes to Arivio should be working toward the same emotional outcome, regardless of how the product changes over time.
+This Design Bible is not a specification for interfaces, nor is it a collection of visual preferences. It is the documentation of an experience. Every designer, engineer, writer, product manager, and future leader who contributes to Arivvio should be working toward the same emotional outcome, regardless of how the product changes over time.
 
-Technology will change. Features will come and go. Entire workflows may be redesigned years from now. None of that should affect how Arivio feels.
+Technology will change. Features will come and go. Entire workflows may be redesigned years from now. None of that should affect how Arivvio feels.
 
 That feeling is the purpose of this document.
 
-The chapters that follow will define typography, motion, spacing, navigation, components, and interaction patterns. None of those subjects matter unless they are all working toward the same experience. Before deciding how Arivio should look, we must first decide how it should make people feel.
+The chapters that follow will define typography, motion, spacing, navigation, components, and interaction patterns. None of those subjects matter unless they are all working toward the same experience. Before deciding how Arivvio should look, we must first decide how it should make people feel.
 
 Everything begins here.
 
@@ -168,13 +168,13 @@ The experience is permanent. The interface is temporary.
 
 Most software is designed around functionality.
 
-Arivio is designed around emotion.
+Arivvio is designed around emotion.
 
 That does not mean emotion is more important than functionality. It means functionality only has value when it creates the intended emotional outcome.
 
 People do not wake up excited to use event planning software. They wake up thinking about birthdays, weddings, graduation parties, baby showers, corporate events, anniversaries, fundraisers, and family gatherings. The software is never the destination. It is simply the bridge between an idea and a memory.
 
-Because of that, Arivio should never ask users to admire the product itself.
+Because of that, Arivvio should never ask users to admire the product itself.
 
 The planner should spend their time thinking about the people they are bringing together, not the interface helping them do it.
 
@@ -184,7 +184,7 @@ That is the difference between software that is merely useful and software that 
 
 Design Standard
 
-The event is always the hero. Arivio is the guide.
+The event is always the hero. Arivvio is the guide.
 
 ---
 
@@ -194,7 +194,7 @@ Every product makes an impression before users consciously evaluate it.
 
 Within seconds, people decide whether something feels stressful or calming, confusing or understandable, trustworthy or uncertain. That emotional judgment happens long before they have explored the product's capabilities.
 
-For Arivio, those first moments are among the most important in the entire experience.
+For Arivvio, those first moments are among the most important in the entire experience.
 
 When someone arrives, they should immediately feel lighter.
 
@@ -206,7 +206,7 @@ Relieved.
 
 Relief comes first because planning an event usually begins with pressure. People already expect the process to involve dozens of tabs, endless comparisons, forgotten details, budget anxiety, and uncertainty about what they may have overlooked. They have accepted that feeling as normal because every previous experience has reinforced it.
 
-Arivio should challenge that assumption immediately.
+Arivvio should challenge that assumption immediately.
 
 Before the user understands every feature, before they complete a single task, the product should communicate one simple idea:
 
@@ -248,7 +248,7 @@ People do not become overwhelmed because planning an event is inherently difficu
 
 Eventually, the emotional burden becomes greater than the work itself.
 
-Arivio exists to change that relationship.
+Arivvio exists to change that relationship.
 
 The purpose of the platform is not simply to organize information. Its purpose is to reduce the weight people feel while carrying the responsibility of planning.
 
@@ -258,7 +258,7 @@ Every recommendation should eliminate uncertainty.
 
 Every reminder should prevent unnecessary stress.
 
-Every decision should feel easier because Arivio has already done part of the thinking.
+Every decision should feel easier because Arivvio has already done part of the thinking.
 
 The planner should never feel like they are operating software.
 
@@ -278,7 +278,7 @@ Many digital products confuse energy with confidence.
 
 They use bright colors, constant movement, endless notifications, promotional banners, countdown timers, and visual noise to create excitement.
 
-Arivio rejects that philosophy.
+Arivvio rejects that philosophy.
 
 Planning important events is already emotional.
 
@@ -304,7 +304,7 @@ Confidence is not created by showing more information.
 
 Confidence is created by reducing uncertainty.
 
-That principle should influence every decision made throughout Arivio.
+That principle should influence every decision made throughout Arivvio.
 
 Design Standard
 
@@ -318,7 +318,7 @@ Every meaningful event reflects the personality of the people creating it.
 
 The software should never become more expressive than the event itself.
 
-Arivio should avoid pushing users toward a predefined version of what a wedding, birthday, or celebration should look like. Instead, it should help people express what makes their own event unique.
+Arivvio should avoid pushing users toward a predefined version of what a wedding, birthday, or celebration should look like. Instead, it should help people express what makes their own event unique.
 
 The product should provide structure without creating sameness.
 
@@ -338,7 +338,7 @@ The product provides the structure. The planner provides the personality.
 
 ## **1.7 Guidance Without Dependence** {#1.7-guidance-without-dependence}
 
-The purpose of Arivio is not to make people dependent on the product.
+The purpose of Arivvio is not to make people dependent on the product.
 
 Its purpose is to make them feel capable.
 
@@ -346,23 +346,23 @@ This distinction should influence every interaction inside the platform.
 
 Many products create confidence by encouraging users to rely entirely on the software. The software becomes the expert while the user simply follows instructions. Although this can create efficiency, it often reduces ownership. People feel like the software completed the work instead of them.
 
-Arivio should pursue the opposite outcome.
+Arivvio should pursue the opposite outcome.
 
 The platform should guide people toward better decisions while allowing them to remain the author of their own event. Every recommendation should increase understanding rather than replace judgment. Every suggestion should explain itself naturally. Every completed step should make the planner feel more knowledgeable than they were before.
 
-By the end of the planning process, users should feel that they successfully planned an event themselves. Arivio should simply feel like the experienced partner who made the journey easier.
+By the end of the planning process, users should feel that they successfully planned an event themselves. Arivvio should simply feel like the experienced partner who made the journey easier.
 
 Confidence created through understanding is far more valuable than confidence borrowed from software.
 
 Design Standard
 
-Guide people until they believe in themselves, not until they depend on Arivio.
+Guide people until they believe in themselves, not until they depend on Arivvio.
 
 ---
 
 ## **1.8 Invisible Excellence** {#1.8-invisible-excellence}
 
-The greatest compliment Arivio can receive will rarely mention the product itself.
+The greatest compliment Arivvio can receive will rarely mention the product itself.
 
 Instead, it will sound something like this:
 
@@ -374,7 +374,7 @@ Invisible Excellence means solving problems before users become aware of them. I
 
 Many products compete for attention. They celebrate every new feature, interrupt users with constant notifications, and constantly remind people how intelligent they are.
 
-Arivio should take a quieter approach.
+Arivvio should take a quieter approach.
 
 The platform should earn trust by consistently removing effort, not by demanding admiration. Its intelligence should feel natural. Its organization should feel effortless. Its presence should become almost invisible because every interaction simply feels like the obvious next step.
 
@@ -394,7 +394,7 @@ Trust is rarely created by a single moment.
 
 It is built through hundreds of small moments that consistently behave exactly as users expect.
 
-Every interaction inside Arivio should reinforce the feeling that the platform understands the planner's intentions and is acting in their best interest. Users should never wonder whether something was saved, whether they missed an important detail, or whether the platform is hiding information from them.
+Every interaction inside Arivvio should reinforce the feeling that the platform understands the planner's intentions and is acting in their best interest. Users should never wonder whether something was saved, whether they missed an important detail, or whether the platform is hiding information from them.
 
 Trust grows when the product behaves predictably.
 
@@ -404,7 +404,7 @@ It grows when information is transparent.
 
 It grows when users always know where they are, what has happened, and what comes next.
 
-Because Arivio exists to help people plan some of the most meaningful moments of their lives, trust cannot simply be another design goal.
+Because Arivvio exists to help people plan some of the most meaningful moments of their lives, trust cannot simply be another design goal.
 
 It is the foundation that allows every other experience to exist.
 
@@ -428,7 +428,7 @@ People should never feel like they are interacting with a machine that is proces
 
 They should feel like they are being supported by someone who understands what they are trying to accomplish.
 
-This does not mean Arivio should imitate a person.
+This does not mean Arivvio should imitate a person.
 
 It should not pretend to have emotions, personalities, or conversations where they are unnecessary.
 
@@ -446,7 +446,7 @@ It should never make users feel rushed, judged, or confused.
 
 Great hospitality often goes unnoticed because it quietly removes discomfort before it becomes a problem.
 
-Arivio should approach interaction in exactly the same way.
+Arivvio should approach interaction in exactly the same way.
 
 The product should feel less like software and more like exceptional hospitality.
 
@@ -458,7 +458,7 @@ Design every interaction the way an experienced host would welcome a guest.
 
 ## **1.11 The Responsibility of Every Designer** {#1.11-the-responsibility-of-every-designer}
 
-Every designer who contributes to Arivio inherits more than a design system.
+Every designer who contributes to Arivvio inherits more than a design system.
 
 They inherit responsibility for protecting the emotional experience defined in this chapter.
 
@@ -482,7 +482,7 @@ Modern interfaces are not enough.
 
 Every contribution should reduce the emotional weight carried by the planner.
 
-That is the responsibility shared by every person who works on Arivio.
+That is the responsibility shared by every person who works on Arivvio.
 
 Design Standard
 
@@ -492,13 +492,13 @@ Every decision should leave the user feeling lighter than when they arrived.
 
 ## **Chapter 1 Summary** {#chapter-1-summary}
 
-The purpose of Arivio is not simply to help people organize events.
+The purpose of Arivvio is not simply to help people organize events.
 
 Its purpose is to change how planning feels.
 
 Throughout this Design Bible, every principle, interaction, visual decision, and future system should reinforce a single emotional outcome: planning should feel calmer, clearer, and more manageable than people believed was possible.
 
-Arivio succeeds when users stop thinking about software and start thinking about the people they are bringing together. It succeeds when confidence replaces uncertainty, when organization replaces chaos, and when responsibility feels shared instead of carried alone.
+Arivvio succeeds when users stop thinking about software and start thinking about the people they are bringing together. It succeeds when confidence replaces uncertainty, when organization replaces chaos, and when responsibility feels shared instead of carried alone.
 
 This chapter establishes the standard that every future chapter must protect.
 
@@ -506,11 +506,11 @@ The interface may evolve.
 
 Technology will certainly evolve.
 
-The Arivio experience should not.
+The Arivvio experience should not.
 
 Design Standard
 
-Arivio exists to quietly lift the weight of planning so people can focus on creating meaningful moments together.
+Arivvio exists to quietly lift the weight of planning so people can focus on creating meaningful moments together.
 
 # **Chapter 2: Interaction Philosophy** {#chapter-2:-interaction-philosophy}
 
@@ -518,17 +518,17 @@ Arivio exists to quietly lift the weight of planning so people can focus on crea
 
 ## **2.1 Purpose of This Chapter** {#2.1-purpose-of-this-chapter}
 
-Chapter 1 established what the Arivio experience should feel like.
+Chapter 1 established what the Arivvio experience should feel like.
 
 This chapter defines how that experience is created.
 
 Interaction Philosophy is not about buttons, layouts, animations, or visual design. Those decisions belong later in the Design Bible. Before deciding how something should look, we must first understand how it should behave.
 
-Every interaction teaches users what kind of product they are using. Some products teach users to hesitate. Others teach them to memorize complicated systems or navigate endless choices. Arivio should teach people something very different. It should teach them that planning can feel natural.
+Every interaction teaches users what kind of product they are using. Some products teach users to hesitate. Others teach them to memorize complicated systems or navigate endless choices. Arivvio should teach people something very different. It should teach them that planning can feel natural.
 
 Every interaction, regardless of how small, should reinforce the emotional foundation established in Chapter 1\. The user should leave every screen feeling slightly more confident than when they arrived. If an interaction increases uncertainty, creates unnecessary work, or causes the planner to stop and wonder what to do next, it has failed regardless of how beautiful it looks.
 
-Interaction is the language through which Arivio expresses its philosophy. Every click, gesture, recommendation, transition, and response should communicate the same message:
+Interaction is the language through which Arivvio expresses its philosophy. Every click, gesture, recommendation, transition, and response should communicate the same message:
 
 "You are making progress."
 
@@ -548,7 +548,7 @@ They remember how difficult something felt.
 
 The greatest source of frustration during event planning is not physical effort. It is mental effort. Comparing vendors, remembering deadlines, questioning decisions, switching between different tools, and wondering whether something has been forgotten all consume far more energy than clicking another button.
 
-Arivio should optimize for reducing thinking before reducing clicks.
+Arivvio should optimize for reducing thinking before reducing clicks.
 
 Sometimes the shortest interaction creates the greatest confusion because it asks users to make difficult decisions too quickly. Other times, an additional step creates significantly more confidence because it removes uncertainty before asking the planner to continue.
 
@@ -568,11 +568,11 @@ Reduce decisions before reducing clicks.
 
 One of the greatest responsibilities of good software is knowing when to guide and when to step aside.
 
-People come to Arivio because they want help planning an event. They do not come because they want software to plan their event for them.
+People come to Arivvio because they want help planning an event. They do not come because they want software to plan their event for them.
 
 This distinction should influence every future interaction.
 
-Arivio should continuously guide the planner toward better decisions without ever making them feel like those decisions were taken away. The product should simplify complexity, organize information, surface relevant recommendations, and anticipate obvious needs. At the same time, it should protect the planner's ownership over everything that gives an event meaning.
+Arivvio should continuously guide the planner toward better decisions without ever making them feel like those decisions were taken away. The product should simplify complexity, organize information, surface relevant recommendations, and anticipate obvious needs. At the same time, it should protect the planner's ownership over everything that gives an event meaning.
 
 Taste cannot be automated.
 
@@ -582,11 +582,11 @@ Traditions cannot be automated.
 
 Those decisions belong entirely to the planner.
 
-Arivio exists to make those decisions easier to execute, never easier to replace.
+Arivvio exists to make those decisions easier to execute, never easier to replace.
 
 Design Standard
 
-Arivio guides every decision.
+Arivvio guides every decision.
 
 The planner owns every intention.
 
@@ -598,7 +598,7 @@ Planning an event is emotionally demanding because progress often feels invisibl
 
 People complete dozens of small tasks without ever feeling closer to the finished event. Eventually, they become overwhelmed because the work feels endless.
 
-Arivio should constantly reinforce momentum.
+Arivvio should constantly reinforce momentum.
 
 Every meaningful interaction should leave the planner with a stronger sense of accomplishment than before. Users should feel that the event is becoming more complete with every decision they make.
 
@@ -632,7 +632,7 @@ Every time a planner pauses, there is usually a question in their mind.
 
 Good interaction design anticipates these questions before they become frustration.
 
-Arivio should never force users to search for confidence. Instead, confidence should emerge naturally because the product continuously answers the questions users have without requiring them to ask. The interface should feel like an experienced planner who understands where uncertainty typically appears and quietly removes it before it interrupts momentum.
+Arivvio should never force users to search for confidence. Instead, confidence should emerge naturally because the product continuously answers the questions users have without requiring them to ask. The interface should feel like an experienced planner who understands where uncertainty typically appears and quietly removes it before it interrupts momentum.
 
 This philosophy extends beyond instructions or help documentation. The best interaction explains itself through behavior. A planner should rarely need tutorials because every action naturally reveals the next one.
 
@@ -654,7 +654,7 @@ Simplicity removes unnecessary decisions.
 
 A product can appear visually clean while still asking users to make dozens of exhausting choices. Likewise, a product may contain significant amounts of information while still feeling effortless because every piece of information arrives at exactly the right moment.
 
-Arivio should pursue the second kind of simplicity.
+Arivvio should pursue the second kind of simplicity.
 
 Whenever possible, the platform should eliminate decisions that do not contribute to the planner's goals. Users should spend their mental energy deciding how they want their event to feel, not trying to understand the software.
 
@@ -678,7 +678,7 @@ Attention is a limited resource.
 
 Whenever multiple actions compete for attention, none of them receives the attention it deserves.
 
-Every interaction inside Arivio should have a clearly understood purpose. At any moment, users should instinctively understand what deserves their focus without needing to evaluate competing priorities. This does not mean secondary actions disappear. It means they should never compete with the action that moves the planner forward.
+Every interaction inside Arivvio should have a clearly understood purpose. At any moment, users should instinctively understand what deserves their focus without needing to evaluate competing priorities. This does not mean secondary actions disappear. It means they should never compete with the action that moves the planner forward.
 
 People rarely become overwhelmed because there is too little information.
 
@@ -706,7 +706,7 @@ Speed measures how quickly an interaction finishes.
 
 Momentum measures how consistently users feel they are moving toward success.
 
-There will be moments when Arivio intentionally slows the planner down because a thoughtful decision deserves more attention. There will also be moments where the platform should quietly accelerate repetitive tasks because they no longer require careful consideration.
+There will be moments when Arivvio intentionally slows the planner down because a thoughtful decision deserves more attention. There will also be moments where the platform should quietly accelerate repetitive tasks because they no longer require careful consideration.
 
 Neither approach is inherently correct.
 
@@ -736,9 +736,9 @@ The planner should gradually recognize that the product understands the type of 
 
 This evolution should happen quietly.
 
-People should not feel like they are teaching Arivio.
+People should not feel like they are teaching Arivvio.
 
-They should feel like Arivio is gradually understanding them.
+They should feel like Arivvio is gradually understanding them.
 
 Good personalization reduces work.
 
@@ -754,9 +754,9 @@ Personalization should feel like understanding, not configuration.
 
 Intelligence is only valuable when it removes effort.
 
-Users should never interact with Arivio because they want to experience intelligent software.
+Users should never interact with Arivvio because they want to experience intelligent software.
 
-They interact with Arivio because they want to plan an event.
+They interact with Arivvio because they want to plan an event.
 
 Intelligence should therefore remain in the background, quietly improving recommendations, simplifying organization, anticipating obvious needs, and reducing repetitive work. It should never interrupt the experience simply to demonstrate that it exists.
 
@@ -790,7 +790,7 @@ They discover better ideas halfway through the process.
 
 This behavior should not create anxiety.
 
-Arivio should encourage exploration because exploration often leads to better decisions. Users should feel comfortable trying different possibilities without worrying that they are creating problems or losing progress.
+Arivvio should encourage exploration because exploration often leads to better decisions. Users should feel comfortable trying different possibilities without worrying that they are creating problems or losing progress.
 
 Confidence grows when experimentation feels safe.
 
@@ -812,7 +812,7 @@ Its purpose is to quietly remove itself from the experience.
 
 When every interaction behaves naturally, users stop thinking about software altogether. Their attention shifts entirely toward planning the event, communicating with people, making decisions, and creating meaningful experiences.
 
-This is the highest standard Arivio should pursue.
+This is the highest standard Arivvio should pursue.
 
 Not because invisible design lacks personality.
 
@@ -822,7 +822,7 @@ Every unnecessary interaction asks users to think about the software.
 
 Every thoughtful interaction returns their attention to the event.
 
-Ultimately, that is the role of every designer who contributes to Arivio.
+Ultimately, that is the role of every designer who contributes to Arivvio.
 
 Not to create beautiful interfaces.
 
@@ -836,11 +836,11 @@ The best interaction is the one that quietly disappears behind the experience.
 
 ## **Chapter 2 Summary** {#chapter-2-summary}
 
-Interaction is how Arivio expresses its philosophy.
+Interaction is how Arivvio expresses its philosophy.
 
 Every recommendation, every transition, every form, every search result, every animation, and every future feature should reinforce the emotional foundation established in Chapter 1\. Users should consistently feel calmer, more confident, and more capable with every step they take.
 
-Arivio should never ask people to adapt to the product. The product should continuously adapt to the planner. It should reduce unnecessary decisions, preserve momentum, answer questions before they become uncertainty, and quietly carry as much responsibility as possible without taking ownership away from the person creating the event.
+Arivvio should never ask people to adapt to the product. The product should continuously adapt to the planner. It should reduce unnecessary decisions, preserve momentum, answer questions before they become uncertainty, and quietly carry as much responsibility as possible without taking ownership away from the person creating the event.
 
 When people finish planning, they should not remember how the interface worked.
 
@@ -860,11 +860,11 @@ Every interaction should make planning feel lighter than it did one moment befor
 
 ## **3.1 Purpose of This Chapter** {#3.1-purpose-of-this-chapter}
 
-Every interaction inside Arivio is ultimately a response to human psychology.
+Every interaction inside Arivvio is ultimately a response to human psychology.
 
 People do not experience event planning as a sequence of tasks. They experience it as a constantly evolving emotional journey. At different moments they feel excitement, uncertainty, confidence, stress, pride, hesitation, and relief, often within the same day. These emotional states influence decisions far more than information alone.
 
-For that reason, Arivio should never be designed around workflows in isolation. It should be designed around the psychological needs that exist beneath those workflows.
+For that reason, Arivvio should never be designed around workflows in isolation. It should be designed around the psychological needs that exist beneath those workflows.
 
 This chapter establishes the emotional model every future interaction should be built upon. Before asking what a user needs to do, designers should first understand what the user is feeling.
 
@@ -904,7 +904,7 @@ What if I forget something?
 
 What seemed exciting can quickly become intimidating.
 
-Arivio should protect the excitement that inspired the event in the first place. Planning should never feel like the point where creativity ends and administration begins.
+Arivvio should protect the excitement that inspired the event in the first place. Planning should never feel like the point where creativity ends and administration begins.
 
 The product should preserve inspiration throughout the entire planning journey.
 
@@ -938,7 +938,7 @@ They worry about forgetting details more than making decisions.
 
 The emotional weight grows because the consequences feel personal.
 
-Arivio should continuously reduce this burden.
+Arivvio should continuously reduce this burden.
 
 Not by removing ownership.
 
@@ -968,7 +968,7 @@ Decision fatigue is rarely caused by one difficult decision.
 
 It is caused by too many unnecessary ones.
 
-Arivio should treat the planner's attention as a limited resource.
+Arivvio should treat the planner's attention as a limited resource.
 
 Mental energy should be reserved for decisions that shape the event's identity, not consumed by avoidable complexity.
 
@@ -994,7 +994,7 @@ They worry that they will overlook hidden costs, choose the wrong vendor, exceed
 
 Budget anxiety is uncertainty expressed financially.
 
-Arivio should never amplify this fear.
+Arivvio should never amplify this fear.
 
 Instead, the platform should encourage confidence through clarity.
 
@@ -1022,7 +1022,7 @@ This uncertainty quietly follows every decision they make.
 
 The more important the event becomes, the stronger this feeling grows.
 
-Arivio should become the planner's external memory.
+Arivvio should become the planner's external memory.
 
 Not by replacing personal responsibility, but by giving people confidence that important details are being accounted for.
 
@@ -1048,7 +1048,7 @@ Many planners begin with creative excitement but gradually lose confidence as lo
 
 Eventually, planning becomes administration rather than expression.
 
-Arivio should reverse that progression.
+Arivvio should reverse that progression.
 
 Organization should create more space for creativity, not less.
 
@@ -1088,7 +1088,7 @@ Will anyone be disappointed?
 
 These questions often influence decisions more than practical considerations.
 
-Arivio should never encourage comparison.
+Arivvio should never encourage comparison.
 
 It should reinforce confidence that meaningful experiences are created through thoughtful planning, not competition.
 
@@ -1120,7 +1120,7 @@ It grows when people feel informed rather than persuaded.
 
 Most importantly, trust grows when planners feel they remain in control throughout the entire journey.
 
-Arivio should never ask users to trust the platform because it says they should.
+Arivvio should never ask users to trust the platform because it says they should.
 
 The platform should earn trust by behaving consistently, reducing uncertainty, and quietly proving its reliability every step of the way.
 
@@ -1144,11 +1144,11 @@ Even well-organized planners experience a surge of anxiety in the final days bef
 
 This emotional shift is predictable.
 
-Because it is predictable, it should never surprise Arivio.
+Because it is predictable, it should never surprise Arivvio.
 
 The platform should acknowledge that stress naturally increases as an event approaches and respond by creating reassurance rather than urgency. During this stage, planners need confidence more than they need additional decisions.
 
-The closer an event becomes, the calmer Arivio should become.
+The closer an event becomes, the calmer Arivvio should become.
 
 Design Standard
 
@@ -1176,7 +1176,7 @@ This emotional pattern is common because planning is filled with uncertainty.
 
 People cannot compare every possible outcome.
 
-Arivio should not attempt to eliminate regret entirely.
+Arivvio should not attempt to eliminate regret entirely.
 
 Instead, it should reduce the uncertainty that creates it.
 
@@ -1192,7 +1192,7 @@ Help people trust the decisions they have already made.
 
 ## **3.12 Relief** {#3.12-relief}
 
-Relief is the defining emotional outcome of Arivio.
+Relief is the defining emotional outcome of Arivvio.
 
 Every chapter in this Design Bible ultimately points toward this emotion.
 
@@ -1212,7 +1212,7 @@ Together, these experiences slowly replace stress with confidence.
 
 By the end of planning, users should feel that the process was significantly easier than they expected.
 
-The greatest compliment Arivio can receive is not that planning became effortless.
+The greatest compliment Arivvio can receive is not that planning became effortless.
 
 It is that planning became manageable.
 
@@ -1234,13 +1234,13 @@ This pride does not come from software.
 
 It comes from knowing they created an experience that mattered to other people.
 
-Arivio should never compete for that recognition.
+Arivvio should never compete for that recognition.
 
 Instead, it should quietly support the planner until the event becomes their achievement.
 
 When guests compliment the event, the planner should never think,
 
-"Arivio did a great job."
+"Arivvio did a great job."
 
 They should think,
 
@@ -1276,7 +1276,7 @@ As the event approaches, urgency temporarily increases before finally giving way
 
 After the event, relief naturally evolves into pride and reflection.
 
-Arivio should understand this emotional progression as deeply as it understands the logistical progression of planning.
+Arivvio should understand this emotional progression as deeply as it understands the logistical progression of planning.
 
 The product should never respond only to what the planner is doing.
 
@@ -1296,7 +1296,7 @@ Empathy is understanding.
 
 Designers often assume empathy means making products that are friendly.
 
-At Arivio, empathy means recognizing what users are experiencing before they express it themselves.
+At Arivvio, empathy means recognizing what users are experiencing before they express it themselves.
 
 It means understanding why someone hesitates before asking them to decide.
 
@@ -1330,7 +1330,7 @@ These emotional transitions are not exceptions.
 
 They are the human experience of planning.
 
-Arivio should never treat them as obstacles to overcome.
+Arivvio should never treat them as obstacles to overcome.
 
 They are the foundation upon which every future interaction should be built.
 
@@ -1356,7 +1356,7 @@ Every product speaks a visual language long before a user reads a single word.
 
 People instinctively recognize products that feel calm, trustworthy, premium, or overwhelming within seconds of seeing them. Those judgments are rarely conscious, yet they influence every interaction that follows.
 
-The purpose of Arivio's Design Language is not to create a particular aesthetic trend. Trends change. Technologies evolve. Entire visual systems will inevitably be redesigned throughout the company's lifetime.
+The purpose of Arivvio's Design Language is not to create a particular aesthetic trend. Trends change. Technologies evolve. Entire visual systems will inevitably be redesigned throughout the company's lifetime.
 
 The principles in this chapter should not.
 
@@ -1380,7 +1380,7 @@ Branding is recognition.
 
 Design language is emotion.
 
-The purpose of Arivio's visual system is not simply to become recognizable. Its purpose is to consistently reinforce the emotional experience established throughout this Design Bible. Every visual decision should make people feel calmer, more confident, and more capable than they did before.
+The purpose of Arivvio's visual system is not simply to become recognizable. Its purpose is to consistently reinforce the emotional experience established throughout this Design Bible. Every visual decision should make people feel calmer, more confident, and more capable than they did before.
 
 Beauty alone is not enough.
 
@@ -1406,7 +1406,7 @@ Color is communication before it is decoration.
 
 Every color introduced into the product should have a clear psychological purpose. Color should direct attention, reinforce understanding, communicate meaning, and establish emotional tone. It should never exist simply to create visual excitement.
 
-Arivio should avoid using color as entertainment. Bright colors lose their meaning when everything competes for attention. Instead, restraint should become part of the brand.
+Arivvio should avoid using color as entertainment. Bright colors lose their meaning when everything competes for attention. Instead, restraint should become part of the brand.
 
 When color appears, it should matter.
 
@@ -1512,7 +1512,7 @@ Sharpness communicates precision.
 
 Softness communicates approachability.
 
-Arivio exists in a space where trust and hospitality matter equally.
+Arivvio exists in a space where trust and hospitality matter equally.
 
 The product should therefore avoid visual extremes.
 
@@ -1600,7 +1600,7 @@ Recognition is more valuable than originality.
 
 Photography should celebrate people, not products.
 
-Every image inside Arivio should remind users why they are planning an event in the first place.
+Every image inside Arivvio should remind users why they are planning an event in the first place.
 
 The focus should remain on genuine human moments.
 
@@ -1662,7 +1662,7 @@ Empty states represent possibility.
 
 Many products treat empty states as unfinished screens.
 
-Arivio should treat them as moments of encouragement.
+Arivvio should treat them as moments of encouragement.
 
 An empty state should never make users feel that something is missing.
 
@@ -1716,7 +1716,7 @@ Accessibility should never be viewed as accommodating exceptions.
 
 It should be viewed as designing for reality.
 
-The wider the range of people who can confidently use Arivio, the stronger the product becomes.
+The wider the range of people who can confidently use Arivvio, the stronger the product becomes.
 
 Accessibility ultimately benefits everyone because clarity, predictability, consistency, and thoughtful communication improve every experience.
 
@@ -1758,7 +1758,7 @@ Premium experiences are often misunderstood.
 
 Luxury is frequently associated with complexity, exclusivity, dramatic visuals, or expensive aesthetics.
 
-Arivio should reject that definition.
+Arivvio should reject that definition.
 
 A premium experience is one that feels thoughtfully designed.
 
@@ -1802,13 +1802,13 @@ Design trends change every few years.
 
 Companies often redesign themselves to remain visually current.
 
-Arivio should evolve visually without abandoning its identity.
+Arivvio should evolve visually without abandoning its identity.
 
 This is only possible when the design language is built upon principles rather than aesthetics.
 
 The principles defined in this chapter should remain true regardless of future typography, colors, branding, or visual trends.
 
-Whether Arivio is redesigned in five years or twenty, users should still recognize the same emotional qualities.
+Whether Arivvio is redesigned in five years or twenty, users should still recognize the same emotional qualities.
 
 Calm.
 
@@ -1832,7 +1832,7 @@ Design for decades, not design trends.
 
 Visual design is often mistaken for decoration.
 
-At Arivio, visual design is communication.
+At Arivvio, visual design is communication.
 
 Every color, every type choice, every transition, every illustration, every photograph, every shadow, and every moment of space should exist for one reason: to reinforce the emotional experience established in the previous chapters.
 
@@ -1840,7 +1840,7 @@ The visual language should never compete with the planner's attention.
 
 It should quietly support it.
 
-As Arivio evolves, its visual identity may change, but its psychological purpose should remain constant. People should consistently feel calmer, more confident, and more capable because the design itself is reducing effort rather than demanding attention.
+As Arivvio evolves, its visual identity may change, but its psychological purpose should remain constant. People should consistently feel calmer, more confident, and more capable because the design itself is reducing effort rather than demanding attention.
 
 A timeless design language is not remembered because it was fashionable.
 

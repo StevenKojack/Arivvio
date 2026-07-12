@@ -1,4 +1,4 @@
-# Arivio Maps Specification
+# Arivvio Maps Specification
 
 Version 1.0
 
@@ -46,7 +46,7 @@ The map is not decoration.
 
 The map is not an optional feature.
 
-The map is one of Arivio's primary planning surfaces.
+The map is one of Arivvio's primary planning surfaces.
 
 Its purpose is to help planners understand the physical reality of their event.
 
@@ -56,11 +56,11 @@ While traditional mapping software answers the question:
 
 "Where is this place?"
 
-Arivio answers a different question:
+Arivvio answers a different question:
 
 "How does this place fit into my event?"
 
-This distinction defines every future decision made about maps within Arivio.
+This distinction defines every future decision made about maps within Arivvio.
 
 ---
 
@@ -134,7 +134,7 @@ If an object on the map does not contribute to the planner's current task, it sh
 
 ## **Maps Are Contextual**
 
-There is no single Arivio map.
+There is no single Arivvio map.
 
 Different stages of planning require different maps.
 
@@ -144,7 +144,7 @@ Examples include:
 
 Planner Confirmation Maps
 
-These confirm that Arivio understands where the event is taking place.
+These confirm that Arivvio understands where the event is taking place.
 
 Vendor Territory Maps
 
@@ -230,7 +230,7 @@ Confidence is the map's greatest responsibility.
 
 ## **The Long-Term Vision**
 
-Arivio's map is not designed to compete with mapping software.
+Arivvio's map is not designed to compete with mapping software.
 
 It is designed to become the world's best interface for understanding how an event comes together.
 
@@ -244,7 +244,7 @@ It should represent the planner's confidence that everything is exactly where it
 
 ## **Non-Negotiable Principles**
 
-The following principles apply to every map within Arivio, regardless of future technology or implementation.
+The following principles apply to every map within Arivvio, regardless of future technology or implementation.
 
 • The map exists to reduce uncertainty.
 
@@ -260,7 +260,7 @@ The following principles apply to every map within Arivio, regardless of future 
 
 • The map should always reinforce the planner's current task.
 
-• The planner should never need mapping expertise to use Arivio.
+• The planner should never need mapping expertise to use Arivvio.
 
 • The map should feel responsive, calm, and intelligent.
 
@@ -270,7 +270,7 @@ The following principles apply to every map within Arivio, regardless of future 
 
 ## **Introduction**
 
-This chapter defines the physical experience of every map within Arivio.
+This chapter defines the physical experience of every map within Arivvio.
 
 Previous chapters define why the map exists.
 
@@ -286,13 +286,13 @@ Regardless of future technologies or mapping providers, these principles remain 
 
 The map should never feel embedded.
 
-The map should feel like a natural part of Arivio.
+The map should feel like a natural part of Arivvio.
 
 It should never appear as a third-party widget placed onto a webpage.
 
 Instead, the surrounding interface should feel as though it was designed around the map itself.
 
-The map is one of Arivio's primary planning surfaces.
+The map is one of Arivvio's primary planning surfaces.
 
 It deserves visual importance equal to the Marketplace.
 
@@ -336,7 +336,7 @@ Every map should occupy the same logical position whenever its purpose is simila
 
 # **Marketplace Layout**
 
-The Marketplace represents Arivio's command center.
+The Marketplace represents Arivvio's command center.
 
 It consists of three permanent workspaces.
 
@@ -464,7 +464,7 @@ The experience should resemble defining a business rather than configuring softw
 
 Zones define geographic intent.
 
-They are one of the most powerful tools within Arivio.
+They are one of the most powerful tools within Arivvio.
 
 Planners use zones to describe where they would like their event to occur.
 
@@ -496,7 +496,7 @@ Nothing should feel permanent until explicitly confirmed.
 
 # **Marker Design**
 
-Markers should become one of Arivio's most recognizable visual elements.
+Markers should become one of Arivvio's most recognizable visual elements.
 
 Every category should possess its own professionally illustrated icon.
 
@@ -634,7 +634,7 @@ Every future map implementation must satisfy the following principles.
 
 # **Closing Statement**
 
-The Arivio Map is not simply a place where locations are displayed.
+The Arivvio Map is not simply a place where locations are displayed.
 
 It is one of the company's primary planning workspaces.
 
@@ -644,7 +644,7 @@ Every placement decision, every animation, every interaction, and every visual e
 
 ### **Introduction**
 
-There is no single "Arivio Map."
+There is no single "Arivvio Map."
 
 The map evolves alongside the planner.
 
@@ -664,7 +664,7 @@ The map grows with the event.
 
 The first responsibility of the map is simple.
 
-Confirm that Arivio understands where the planner is talking about.
+Confirm that Arivvio understands where the planner is talking about.
 
 Whether the planner enters:
 
@@ -806,7 +806,7 @@ Someone living in Los Angeles may happily book a venue in Pasadena while refusin
 
 The planner should decide what "nearby" actually means.
 
-Arivio should never force arbitrary distances.
+Arivvio should never force arbitrary distances.
 
 ---
 
@@ -914,7 +914,7 @@ A bachelor party beginning at home, traveling by party bus, ending at a hotel.
 
 A corporate conference across multiple venues.
 
-Arivio should support these naturally.
+Arivvio should support these naturally.
 
 The map should never assume every event happens in one place.
 
@@ -990,7 +990,7 @@ Never greater complexity.
 
 ## **Introduction**
 
-The intelligence behind Arivio's maps is invisible.
+The intelligence behind Arivvio's maps is invisible.
 
 The planner should never feel as though they are configuring mapping software.
 
@@ -1096,7 +1096,7 @@ A planner searching "Downtown Los Angeles"
 
 should not need to define a radius immediately.
 
-Arivio should intelligently estimate a reasonable search area while allowing refinement later.
+Arivvio should intelligently estimate a reasonable search area while allowing refinement later.
 
 Similarly:
 
@@ -1110,7 +1110,7 @@ Geographic intelligence should always begin broad before becoming increasingly p
 
 # **Search Regions**
 
-Search regions define where Arivio searches for recommendations.
+Search regions define where Arivvio searches for recommendations.
 
 They are independent from event locations.
 
@@ -1228,7 +1228,7 @@ Must the planner travel instead?
 
 Is this venue appropriate?
 
-Compatibility is one of Arivio's most valuable forms of intelligence.
+Compatibility is one of Arivvio's most valuable forms of intelligence.
 
 ---
 
@@ -1236,7 +1236,7 @@ Compatibility is one of Arivio's most valuable forms of intelligence.
 
 Locations are more than coordinates.
 
-Arivio should understand what a place is.
+Arivvio should understand what a place is.
 
 Examples include:
 
@@ -1392,7 +1392,7 @@ Local regulations.
 
 These capabilities should improve recommendations without becoming visible complexity.
 
-The planner should simply notice that Arivio consistently recommends sensible solutions.
+The planner should simply notice that Arivvio consistently recommends sensible solutions.
 
 ---
 
@@ -1408,7 +1408,7 @@ Instead they should think:
 
 The intelligence should disappear behind the experience.
 
-The greatest compliment Arivio can receive is that planning simply feels obvious.
+The greatest compliment Arivvio can receive is that planning simply feels obvious.
 
 # **Chapter 5: Marketplace Integration** {#chapter-5:-marketplace-integration}
 
@@ -1430,7 +1430,7 @@ The Marketplace and the Map should behave as one system.
 
 # **The Event Command Center**
 
-The Marketplace is Arivio's operational headquarters.
+The Marketplace is Arivvio's operational headquarters.
 
 Every decision made during planning eventually passes through this screen.
 
@@ -1446,7 +1446,7 @@ Track progress.
 
 Manage their quote cart.
 
-Eventually, this becomes the screen users associate with Arivio.
+Eventually, this becomes the screen users associate with Arivvio.
 
 The Marketplace should become one of the company's defining experiences.
 
@@ -1658,7 +1658,7 @@ Recommendations should never feel random.
 
 The planner should understand why something appears.
 
-Arivio should constantly evaluate:
+Arivvio should constantly evaluate:
 
 Event type.
 
@@ -1696,7 +1696,7 @@ Planning should become easier over time.
 
 Not harder.
 
-As planners make decisions, Arivio gains confidence.
+As planners make decisions, Arivvio gains confidence.
 
 As confidence increases, unnecessary recommendations gradually lose emphasis.
 
@@ -1712,7 +1712,7 @@ The Marketplace acknowledges that this decision has likely been completed.
 
 The planner remains in control.
 
-Arivio simply reduces unnecessary noise.
+Arivvio simply reduces unnecessary noise.
 
 ---
 
@@ -1786,7 +1786,7 @@ The Quote Cart should support exploration rather than pressure immediate booking
 
 Many vendors provide more than one service.
 
-Arivio should never assume which service the planner wants.
+Arivvio should never assume which service the planner wants.
 
 Instead, selecting a vendor should reveal that vendor's available offerings.
 
@@ -1884,7 +1884,7 @@ Instead of saying:
 
 "No vendors found."
 
-Arivio should explain why.
+Arivvio should explain why.
 
 Examples include:
 
@@ -1912,7 +1912,7 @@ The Marketplace should never feel like an online directory.
 
 Directories ask users to search.
 
-Arivio should help planners decide.
+Arivvio should help planners decide.
 
 That difference defines the experience.
 
@@ -1930,7 +1930,7 @@ Never busier.
 
 ## **Introduction**
 
-The map is one of the most interactive surfaces within Arivio.
+The map is one of the most interactive surfaces within Arivvio.
 
 Every interaction should feel immediate, intentional, and effortless.
 
@@ -2040,7 +2040,7 @@ Double-clicking should never become a required interaction.
 
 If supported by the mapping provider, it may zoom naturally.
 
-However, Arivio should never depend upon it.
+However, Arivvio should never depend upon it.
 
 Everything should remain fully usable with single-click interactions.
 
@@ -2168,7 +2168,7 @@ Valet
 
 Each marker belongs to a single visual language.
 
-The iconography should feel handcrafted for Arivio.
+The iconography should feel handcrafted for Arivvio.
 
 Future services should naturally fit this design system.
 
@@ -2402,7 +2402,7 @@ Click commits.
 
 # **Closing Statement**
 
-The map is one of the few places where planners directly interact with the physical world through Arivio.
+The map is one of the few places where planners directly interact with the physical world through Arivvio.
 
 Every gesture should reinforce the feeling that the planner understands their event more clearly than they did a moment before.
 
@@ -2422,7 +2422,7 @@ Its responsibility is not discovery.
 
 Its responsibility is confidence.
 
-The planner should always feel that Arivio understands where the event is taking place before recommendations begin.
+The planner should always feel that Arivvio understands where the event is taking place before recommendations begin.
 
 The planner should never feel that they are manually configuring a map.
 
@@ -2508,7 +2508,7 @@ Destination-only businesses should not dominate recommendations.
 
 The planner has already solved the venue problem.
 
-Arivio should recognize this immediately.
+Arivvio should recognize this immediately.
 
 ---
 
@@ -2528,7 +2528,7 @@ A landmark.
 
 The map immediately confirms the selected location.
 
-The planner should never wonder whether Arivio selected the correct place.
+The planner should never wonder whether Arivvio selected the correct place.
 
 Visual confirmation builds trust.
 
@@ -2584,7 +2584,7 @@ The planner selects:
 
 MB2 Raceway.
 
-Arivio understands:
+Arivvio understands:
 
 Activity venue.
 
@@ -2654,7 +2654,7 @@ Not yet who will host it.
 
 Search areas belong to the planner.
 
-Not to Arivio.
+Not to Arivvio.
 
 There is no universally correct distance.
 
@@ -2664,7 +2664,7 @@ Others refuse to travel more than five.
 
 The planner should always remain in control.
 
-Arivio simply provides intelligent defaults.
+Arivvio simply provides intelligent defaults.
 
 ---
 
@@ -2796,7 +2796,7 @@ Relevant places should appear naturally.
 
 Selection should immediately update the map.
 
-The planner should always know what location Arivio understands.
+The planner should always know what location Arivvio understands.
 
 ---
 
@@ -2868,11 +2868,11 @@ Every service has limits.
 
 Every business operates differently.
 
-One of Arivio's greatest responsibilities is understanding where vendors can realistically provide their services.
+One of Arivvio's greatest responsibilities is understanding where vendors can realistically provide their services.
 
 The planner should never need to think about these limitations.
 
-Instead, Arivio should quietly understand them and recommend only businesses capable of fulfilling the planner's event.
+Instead, Arivvio should quietly understand them and recommend only businesses capable of fulfilling the planner's event.
 
 Vendor Maps exist to define this understanding.
 
@@ -2896,7 +2896,7 @@ Others travel statewide.
 
 Every business should accurately represent how it works.
 
-Arivio should never force every vendor into the same model.
+Arivvio should never force every vendor into the same model.
 
 ---
 
@@ -2930,7 +2930,7 @@ This location becomes the origin of every future service calculation.
 
 Not every business operates the same way.
 
-Arivio recognizes multiple business models.
+Arivvio recognizes multiple business models.
 
 Examples include:
 
@@ -3096,7 +3096,7 @@ Setup time.
 
 Business preferences.
 
-Future versions of Arivio should prioritize realistic travel calculations over straight-line distance.
+Future versions of Arivvio should prioritize realistic travel calculations over straight-line distance.
 
 The planner should never need to understand why.
 
@@ -3270,7 +3270,7 @@ The Marketplace should understand this naturally.
 
 # **Cultural Compatibility**
 
-Culture is one of Arivio's greatest strengths.
+Culture is one of Arivvio's greatest strengths.
 
 Vendors should be able to identify:
 
@@ -3366,7 +3366,7 @@ They should never replace structured business information.
 
 Vendor-generated tags must remain professional.
 
-Arivio should reject:
+Arivvio should reject:
 
 Profanity.
 
@@ -3394,7 +3394,7 @@ Tag quality directly affects recommendation quality.
 
 Many businesses provide multiple services.
 
-Arivio should represent businesses accurately.
+Arivvio should represent businesses accurately.
 
 Examples:
 
@@ -3436,7 +3436,7 @@ Businesses are organizations.
 
 Services are what planners actually purchase.
 
-This distinction should exist throughout Arivio.
+This distinction should exist throughout Arivvio.
 
 ---
 
@@ -3486,7 +3486,7 @@ It is a sequence of places, people, services, and moments.
 
 Traditional mapping software shows where things are.
 
-Arivio should show how everything comes together.
+Arivvio should show how everything comes together.
 
 This chapter defines how the map evolves from a discovery tool into the visual representation of an entire event.
 
@@ -3510,7 +3510,7 @@ A wedding may involve five.
 
 A corporate conference may involve dozens.
 
-Arivio should support every event equally.
+Arivvio should support every event equally.
 
 The complexity of the event should never make the planner feel overwhelmed.
 
@@ -3766,7 +3766,7 @@ Can vendors realistically travel between locations?
 
 Are two services scheduled too closely together?
 
-Future versions of Arivio should answer these questions automatically.
+Future versions of Arivvio should answer these questions automatically.
 
 ---
 
@@ -3814,7 +3814,7 @@ They are two perspectives of the same event.
 
 # **Planner Confidence**
 
-One of Arivio's greatest long-term goals is eliminating uncertainty.
+One of Arivvio's greatest long-term goals is eliminating uncertainty.
 
 By visualizing the event geographically, planners should naturally identify potential problems.
 
@@ -3836,7 +3836,7 @@ The map should quietly expose these issues before they become real problems.
 
 # **Future Event Intelligence**
 
-Future versions of Arivio may visualize:
+Future versions of Arivvio may visualize:
 
 Traffic conditions.
 
@@ -3892,7 +3892,7 @@ The following principles apply to every event map.
 
 # **Closing Statement**
 
-The greatest achievement of Arivio's mapping system is not helping someone find a vendor.
+The greatest achievement of Arivvio's mapping system is not helping someone find a vendor.
 
 It is helping them visualize an event that has not happened yet.
 
@@ -3906,7 +3906,7 @@ The map is not a finished product.
 
 It is a living system.
 
-As Arivio evolves, the map should continuously become more intelligent while remaining just as simple to use.
+As Arivvio evolves, the map should continuously become more intelligent while remaining just as simple to use.
 
 New capabilities should increase confidence, never increase complexity.
 
@@ -3926,7 +3926,7 @@ Artificial intelligence will change.
 
 Data availability will change.
 
-None of these should require Arivio to change what the map fundamentally represents.
+None of these should require Arivvio to change what the map fundamentally represents.
 
 The map should always remain the planner's understanding of their event.
 
@@ -4034,7 +4034,7 @@ The Marketplace should gradually become unique to each planner.
 
 # **Geographic Learning**
 
-As Arivio grows, the map should continuously improve its understanding of geography.
+As Arivvio grows, the map should continuously improve its understanding of geography.
 
 Examples include:
 
@@ -4304,7 +4304,7 @@ Autonomous transportation.
 
 Artificial intelligence.
 
-Whatever technologies emerge, they should strengthen the planner's confidence without changing Arivio's core philosophy.
+Whatever technologies emerge, they should strengthen the planner's confidence without changing Arivvio's core philosophy.
 
 ---
 
@@ -4330,7 +4330,7 @@ Innovation should never exist simply because technology makes it possible.
 
 Every improvement should solve a meaningful planner problem.
 
-Arivio should never chase trends.
+Arivvio should never chase trends.
 
 It should pursue usefulness.
 
@@ -4338,11 +4338,11 @@ It should pursue usefulness.
 
 # **Closing Statement**
 
-The map is designed to become increasingly intelligent throughout the lifetime of Arivio.
+The map is designed to become increasingly intelligent throughout the lifetime of Arivvio.
 
 However, the planner should never experience increasing complexity.
 
-As Arivio grows more capable, the map should become calmer, clearer, and more trustworthy.
+As Arivvio grows more capable, the map should become calmer, clearer, and more trustworthy.
 
 The greatest measure of success is not how many capabilities the map possesses.
 
@@ -4352,7 +4352,7 @@ It is how little effort the planner feels while using it.
 
 ## **Introduction**
 
-This chapter exists to protect the future of Arivio.
+This chapter exists to protect the future of Arivvio.
 
 Technology will evolve.
 
@@ -4362,7 +4362,7 @@ Mapping providers will change.
 
 Entire engineering teams may eventually change.
 
-This chapter ensures that the purpose of Arivio's mapping system never changes.
+This chapter ensures that the purpose of Arivvio's mapping system never changes.
 
 Every future decision involving maps must respect the principles defined here.
 
@@ -4372,7 +4372,7 @@ These standards are permanent unless formally amended through a constitutional r
 
 # **The Mission**
 
-The purpose of the Arivio Map is to help planners understand their event.
+The purpose of the Arivvio Map is to help planners understand their event.
 
 Not navigate roads.
 
@@ -4418,7 +4418,7 @@ Every future feature must simplify planning more than it increases complexity.
 
 Complexity is a cost.
 
-Arivio should spend that cost carefully.
+Arivvio should spend that cost carefully.
 
 ---
 
@@ -4500,7 +4500,7 @@ If two elements compete for attention, one of them probably does not belong.
 
 The planner's attention is valuable.
 
-Arivio should protect it.
+Arivvio should protect it.
 
 ---
 
@@ -4546,7 +4546,7 @@ Never replace them.
 
 Every recommendation should have a reason.
 
-If Arivio cannot explain why something was recommended, the recommendation should not exist.
+If Arivvio cannot explain why something was recommended, the recommendation should not exist.
 
 Future intelligence may become increasingly sophisticated.
 
@@ -4558,7 +4558,7 @@ Trust is built through transparency.
 
 # **The Planner Always Has Final Authority**
 
-Arivio recommends.
+Arivvio recommends.
 
 The planner decides.
 
@@ -4618,7 +4618,7 @@ The system should never imply that one type of event matters more than another.
 
 # **The Map Should Become More Human**
 
-As Arivio evolves, the map should become increasingly capable.
+As Arivvio evolves, the map should become increasingly capable.
 
 It should never become increasingly robotic.
 
@@ -4672,7 +4672,7 @@ Does this strengthen the relationship between the planner and their event?
 
 Would removing this feature make planning harder?
 
-If the answer to these questions is consistently "yes," the feature likely belongs within Arivio.
+If the answer to these questions is consistently "yes," the feature likely belongs within Arivvio.
 
 ---
 
@@ -4684,7 +4684,7 @@ They should remember how effortless planning felt.
 
 If someone finishes planning an event and believes that everything simply made sense, the map has fulfilled its purpose.
 
-The highest achievement of Arivio's mapping system is not technical excellence.
+The highest achievement of Arivvio's mapping system is not technical excellence.
 
 It is making complexity disappear.
 
@@ -4692,7 +4692,7 @@ It is making complexity disappear.
 
 # **Closing Statement**
 
-The Arivio Map is not a product feature.
+The Arivvio Map is not a product feature.
 
 It is one of the company's foundational planning systems.
 
@@ -4702,7 +4702,7 @@ It transforms locations into experiences.
 
 It transforms planning into confidence.
 
-Every future version of Arivio should remain faithful to that purpose.
+Every future version of Arivvio should remain faithful to that purpose.
 
 Only then can the map continue to earn the planner's trust.
 

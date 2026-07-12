@@ -1,5 +1,5 @@
 import type { PublicTableRow } from "@/lib/supabase/database.types";
-import type { ArivioSupabaseClient } from "./types";
+import type { ArivvioSupabaseClient } from "./types";
 
 export type BookingCreateInput = {
   balanceDue: number;
@@ -14,7 +14,7 @@ export type BookingCreateInput = {
 };
 
 export async function createBooking(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: BookingCreateInput,
 ) {
   const { data, error } = await supabase
@@ -51,7 +51,7 @@ export async function createBooking(
 }
 
 export async function getBookingsForPlannerEvents(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   eventIds: string[],
 ) {
   if (!eventIds.length) {
@@ -72,7 +72,7 @@ export async function getBookingsForPlannerEvents(
 }
 
 export async function getBookingsForVendors(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   vendorIds: string[],
 ) {
   if (!vendorIds.length) {
@@ -93,7 +93,7 @@ export async function getBookingsForVendors(
 }
 
 export async function getBookingById(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   bookingId: string,
 ) {
   const { data, error } = await supabase
@@ -110,7 +110,7 @@ export async function getBookingById(
 }
 
 export async function updateBookingNotes(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: {
     bookingId: string;
     plannerNotes?: string | null;

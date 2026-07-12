@@ -13,7 +13,7 @@ export default function SignupPage() {
             Create account
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
-            Create your Arivio account.
+            Create your Arivvio account.
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-neutral-600">
             Start as a planner. You can list services later from your account.

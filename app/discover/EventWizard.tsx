@@ -295,7 +295,7 @@ export function EventWizard() {
             <StepCard
               eyebrow="Step 1"
               title="What are you planning?"
-              body="Type the event naturally. Arivio will quietly shape the plan around it."
+              body="Type the event naturally. Arivvio will quietly shape the plan around it."
               action={
                 <button
                   type="button"
@@ -342,7 +342,7 @@ export function EventWizard() {
             <StepCard
               eyebrow="Step 3"
               title="When is it?"
-              body="Date and time help Arivio estimate availability and pricing without asking for too much."
+              body="Date and time help Arivvio estimate availability and pricing without asking for too much."
               action={<PrimaryButton label="Continue" onClick={() => setStep(3)} />}
             >
               <div className="grid gap-5">
@@ -458,7 +458,7 @@ export function EventWizard() {
             <StepCard
               eyebrow="Step 5"
               title="Guests and budget."
-              body="A simple range is enough. Arivio will use it to keep matches realistic."
+              body="A simple range is enough. Arivvio will use it to keep matches realistic."
               action={<PrimaryButton label="Review plan" onClick={() => setStep(5)} />}
             >
               <div className="grid gap-5">
@@ -907,7 +907,7 @@ function LocationStep({
               Enter the venue or address
             </p>
             <p className="mt-1 text-sm leading-6 text-neutral-600">
-              Arivio will remember whether this looks like a venue or a private
+              Arivvio will remember whether this looks like a venue or a private
               address for better matching later.
             </p>
           </div>
@@ -944,7 +944,7 @@ function LocationStep({
                 </p>
                 <p className="mt-2 text-sm leading-6 text-neutral-600">
                   Search a city, use your current location, then draw the one
-                  area where you want Arivio to look for venues.
+                  area where you want Arivvio to look for venues.
                 </p>
               </div>
               <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] xl:min-w-[520px]">
@@ -1048,7 +1048,7 @@ function LocationSignal({
       </p>
       <p className="mt-1 text-sm leading-6 text-neutral-600">
         {isVenue
-          ? `${label} looks like a real venue. Arivio can use this signal for future venue outreach.`
+          ? `${label} looks like a real venue. Arivvio can use this signal for future venue outreach.`
           : "This looks residential or private, so nearby mobile vendors will matter more than venue matches."}
       </p>
     </div>
@@ -1109,7 +1109,7 @@ function FinalReview({
     <div className="space-y-5">
       <div className="rounded-[30px] border border-neutral-200 bg-[linear-gradient(135deg,#fbfbfa,#ffffff)] p-5">
         <p className="text-sm font-semibold text-neutral-500">
-          Arivio will search for
+          Arivvio will search for
         </p>
         <h2 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-950">
           {eventName}

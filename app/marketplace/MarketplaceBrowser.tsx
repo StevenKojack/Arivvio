@@ -936,7 +936,7 @@ export function MarketplaceBrowser() {
           venue_id: line.item.venueId ?? null,
         })),
         event: savedEvent,
-        message: "Quote requested from Arivio marketplace cart.",
+        message: "Quote requested from Arivvio marketplace cart.",
         plannerId: profile.id,
       });
 

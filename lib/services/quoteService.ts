@@ -11,10 +11,10 @@ import {
 } from "@/lib/repositories/quotesRepository";
 import type { PublicTableRow } from "@/lib/supabase/database.types";
 import type { QuoteStatus } from "@/lib/types/domain";
-import type { ArivioSupabaseClient } from "@/lib/repositories/types";
+import type { ArivvioSupabaseClient } from "@/lib/repositories/types";
 
 export async function requestQuotesFromCart(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: {
     cartItems: CartItemQuoteInput[];
     event: Pick<PublicTableRow<"events">, "guest_count" | "id">;
@@ -55,7 +55,7 @@ export async function requestQuotesFromCart(
 }
 
 export async function respondToQuoteRequest(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: {
     quoteId: string;
     status: Extract<QuoteStatus, "accepted" | "declined" | "countered">;
@@ -70,7 +70,7 @@ export async function respondToQuoteRequest(
 }
 
 export async function confirmAcceptedQuote(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   quote: QuoteRequestRow,
 ) {
   if (quote.status !== "accepted") {

@@ -13,7 +13,7 @@ export function TrustSection() {
             Built for planners and providers
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Why hosts use Arivio: less guessing, clearer timing, better vendor fit.
+            Why hosts use Arivvio: less guessing, clearer timing, better vendor fit.
           </h2>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">

@@ -44,7 +44,7 @@ export function FilterDrawer({
               Event details
             </p>
             <h2 className="mt-1 text-2xl font-semibold tracking-tight">
-              Adjust what Arivio should match
+              Adjust what Arivvio should match
             </h2>
           </div>
           <button

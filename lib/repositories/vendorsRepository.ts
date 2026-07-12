@@ -1,6 +1,6 @@
 import type { PublicTableRow } from "@/lib/supabase/database.types";
 import type { PricingType } from "@/lib/types/domain";
-import type { ArivioSupabaseClient } from "./types";
+import type { ArivvioSupabaseClient } from "./types";
 
 export type VendorBusinessCreateInput = {
   approvalStatus?: "pending" | "approved" | "rejected" | "suspended";
@@ -36,7 +36,7 @@ export type VendorPhotoUploadResult = {
 };
 
 export async function createVendorBusiness(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: VendorBusinessCreateInput,
 ) {
   const { data, error } = await supabase
@@ -64,7 +64,7 @@ export async function createVendorBusiness(
 }
 
 export async function updateVendorBusiness(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: {
     businessName: string;
     category: string;
@@ -99,7 +99,7 @@ export async function updateVendorBusiness(
 }
 
 export async function updateVendorVacationMode(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: {
     id: string;
     vacationMode: boolean;
@@ -120,7 +120,7 @@ export async function updateVendorVacationMode(
 }
 
 export async function getVendorBusinessesByOwner(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   ownerId: string,
 ) {
   const { data, error } = await supabase
@@ -137,7 +137,7 @@ export async function getVendorBusinessesByOwner(
 }
 
 export async function createVendorService(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: VendorServiceCreateInput,
 ) {
   const { data, error } = await supabase
@@ -167,7 +167,7 @@ export async function createVendorService(
 }
 
 export async function updateVendorService(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: Partial<VendorServiceCreateInput> & {
     id: string;
   },
@@ -199,7 +199,7 @@ export async function updateVendorService(
 }
 
 export async function deleteVendorService(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   serviceId: string,
 ) {
   const { error } = await supabase
@@ -213,7 +213,7 @@ export async function deleteVendorService(
 }
 
 export async function getVendorServicesByVendorIds(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   vendorIds: string[],
 ) {
   if (!vendorIds.length) {
@@ -233,7 +233,7 @@ export async function getVendorServicesByVendorIds(
 }
 
 export async function getVendorAvailabilityByVendorIds(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   vendorIds: string[],
 ) {
   if (!vendorIds.length) {
@@ -253,7 +253,7 @@ export async function getVendorAvailabilityByVendorIds(
 }
 
 export async function createAvailabilityWindow(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: {
     date: string;
     endTime: string;
@@ -282,7 +282,7 @@ export async function createAvailabilityWindow(
 }
 
 export async function deleteAvailabilityWindow(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   availabilityId: string,
 ) {
   const { error } = await supabase
@@ -296,7 +296,7 @@ export async function deleteAvailabilityWindow(
 }
 
 export async function getVendorPhotosByVendorIds(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   vendorIds: string[],
 ) {
   if (!vendorIds.length) {
@@ -317,7 +317,7 @@ export async function getVendorPhotosByVendorIds(
 }
 
 export async function uploadVendorPhoto(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: {
     file: File;
     sortOrder: number;
@@ -361,7 +361,7 @@ export async function uploadVendorPhoto(
 }
 
 export async function deleteVendorPhoto(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   photo: VendorPhotoRow,
 ) {
   if (photo.storage_path) {

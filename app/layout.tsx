@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Arivio | Plan any event in one place",
+  title: "Arivvio | Plan any event in one place",
   description:
-    "Find venues, vendors, entertainment, rentals, invitations, and more with Arivio.",
+    "Find venues, vendors, entertainment, rentals, invitations, and more with Arivvio.",
 };
 
 export default function RootLayout({

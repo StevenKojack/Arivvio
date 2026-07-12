@@ -30,7 +30,7 @@ export default function Home() {
             What are you planning?
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-neutral-700 sm:text-xl">
-            Describe the event in your own words. Arivio turns it into a
+            Describe the event in your own words. Arivvio turns it into a
             planning profile, smart questions, and the right vendor stack.
           </p>
           <div className="mt-10 w-full max-w-3xl animate-[fadeUp_360ms_ease-out]">
@@ -59,7 +59,7 @@ export default function Home() {
               Providers
             </p>
             <h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">
-              Bring your service into the Arivio network.
+              Bring your service into the Arivvio network.
             </h2>
             <p className="mt-3 max-w-xl text-base leading-7 text-neutral-600">
               Venues, caterers, entertainers, rental teams, florists, and event

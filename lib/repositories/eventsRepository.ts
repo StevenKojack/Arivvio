@@ -1,6 +1,6 @@
 import type { PublicTableRow } from "@/lib/supabase/database.types";
 import type { EventStatus } from "@/lib/types/domain";
-import type { ArivioSupabaseClient } from "./types";
+import type { ArivvioSupabaseClient } from "./types";
 
 export type EventCreateInput = {
   address?: string | null;
@@ -26,7 +26,7 @@ export type EventWorkspace = {
 };
 
 export async function createEvent(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: EventCreateInput,
 ) {
   const { data, error } = await supabase
@@ -57,7 +57,7 @@ export async function createEvent(
 }
 
 export async function getEventById(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   eventId: string,
 ) {
   const { data, error } = await supabase
@@ -74,7 +74,7 @@ export async function getEventById(
 }
 
 export async function getPlannerEvents(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   plannerId: string,
 ) {
   const { data, error } = await supabase
@@ -91,7 +91,7 @@ export async function getPlannerEvents(
 }
 
 export async function getEventsByIds(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   eventIds: string[],
 ) {
   if (!eventIds.length) {
@@ -111,7 +111,7 @@ export async function getEventsByIds(
 }
 
 export async function getEventWorkspace(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   eventId: string,
 ): Promise<EventWorkspace> {
   const [event, cartItems, quotes, bookings] = await Promise.all([
@@ -125,7 +125,7 @@ export async function getEventWorkspace(
 }
 
 async function getCartItemsForEvent(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   eventId: string,
 ) {
   const { data, error } = await supabase
@@ -141,7 +141,7 @@ async function getCartItemsForEvent(
 }
 
 async function getQuoteRequestsForEvent(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   eventId: string,
 ) {
   const { data, error } = await supabase
@@ -157,7 +157,7 @@ async function getQuoteRequestsForEvent(
 }
 
 async function getBookingsForEvent(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   eventId: string,
 ) {
   const { data, error } = await supabase

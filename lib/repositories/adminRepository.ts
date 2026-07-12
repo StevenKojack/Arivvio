@@ -1,7 +1,7 @@
 import type { ApprovalStatus } from "@/lib/types/domain";
-import type { ArivioSupabaseClient } from "./types";
+import type { ArivvioSupabaseClient } from "./types";
 
-export async function getAdminOverview(supabase: ArivioSupabaseClient) {
+export async function getAdminOverview(supabase: ArivvioSupabaseClient) {
   const [
     profiles,
     vendors,
@@ -29,7 +29,7 @@ export async function getAdminOverview(supabase: ArivioSupabaseClient) {
 }
 
 export async function updateVendorApprovalStatus(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: {
     status: Extract<ApprovalStatus, "approved" | "rejected">;
     vendorId: string;
@@ -49,7 +49,7 @@ export async function updateVendorApprovalStatus(
   return data;
 }
 
-async function getProfiles(supabase: ArivioSupabaseClient) {
+async function getProfiles(supabase: ArivvioSupabaseClient) {
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
@@ -62,7 +62,7 @@ async function getProfiles(supabase: ArivioSupabaseClient) {
   return data ?? [];
 }
 
-async function getVendors(supabase: ArivioSupabaseClient) {
+async function getVendors(supabase: ArivvioSupabaseClient) {
   const { data, error } = await supabase
     .from("vendor_businesses")
     .select("*")
@@ -75,7 +75,7 @@ async function getVendors(supabase: ArivioSupabaseClient) {
   return data ?? [];
 }
 
-async function getEvents(supabase: ArivioSupabaseClient) {
+async function getEvents(supabase: ArivvioSupabaseClient) {
   const { data, error } = await supabase
     .from("events")
     .select("*")
@@ -88,7 +88,7 @@ async function getEvents(supabase: ArivioSupabaseClient) {
   return data ?? [];
 }
 
-async function getQuoteRequests(supabase: ArivioSupabaseClient) {
+async function getQuoteRequests(supabase: ArivvioSupabaseClient) {
   const { data, error } = await supabase
     .from("quote_requests")
     .select("*")
@@ -101,7 +101,7 @@ async function getQuoteRequests(supabase: ArivioSupabaseClient) {
   return data ?? [];
 }
 
-async function getBookings(supabase: ArivioSupabaseClient) {
+async function getBookings(supabase: ArivvioSupabaseClient) {
   const { data, error } = await supabase
     .from("bookings")
     .select("*")
@@ -114,7 +114,7 @@ async function getBookings(supabase: ArivioSupabaseClient) {
   return data ?? [];
 }
 
-async function getServices(supabase: ArivioSupabaseClient) {
+async function getServices(supabase: ArivvioSupabaseClient) {
   const { data, error } = await supabase
     .from("vendor_services")
     .select("*");

@@ -1,6 +1,6 @@
 import type { PublicTableRow } from "@/lib/supabase/database.types";
 import type { QuoteStatus } from "@/lib/types/domain";
-import type { ArivioSupabaseClient } from "./types";
+import type { ArivvioSupabaseClient } from "./types";
 
 export type QuoteRequestCreateInput = {
   endTime?: string | null;
@@ -16,7 +16,7 @@ export type QuoteRequestCreateInput = {
 };
 
 export async function createQuoteRequest(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: QuoteRequestCreateInput,
 ) {
   const { data, error } = await supabase
@@ -46,7 +46,7 @@ export async function createQuoteRequest(
 }
 
 export async function createQuoteRequests(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   records: QuoteRequestCreateInput[],
 ) {
   if (!records.length) {
@@ -81,7 +81,7 @@ export async function createQuoteRequests(
 }
 
 export async function getQuoteRequestsForEvents(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   eventIds: string[],
 ) {
   if (!eventIds.length) {
@@ -102,7 +102,7 @@ export async function getQuoteRequestsForEvents(
 }
 
 export async function getQuoteRequestsForVendors(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   vendorIds: string[],
 ) {
   if (!vendorIds.length) {
@@ -123,7 +123,7 @@ export async function getQuoteRequestsForVendors(
 }
 
 export async function updateQuoteRequestResponse(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: {
     quoteId: string;
     status: Extract<QuoteStatus, "accepted" | "declined" | "countered">;
@@ -148,7 +148,7 @@ export async function updateQuoteRequestResponse(
 }
 
 export async function updateQuoteStatus(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   quoteId: string,
   status: Extract<QuoteStatus, "accepted" | "declined" | "countered" | "cancelled">,
 ) {

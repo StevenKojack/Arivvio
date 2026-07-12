@@ -1,6 +1,6 @@
 import type { PublicTableRow } from "@/lib/supabase/database.types";
 import type { RsvpStatus } from "@/lib/types/domain";
-import type { ArivioSupabaseClient } from "./types";
+import type { ArivvioSupabaseClient } from "./types";
 
 export type GuestInput = {
   email?: string | null;
@@ -12,7 +12,7 @@ export type GuestInput = {
 };
 
 export async function getGuestsForEvent(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   eventId: string,
 ) {
   const { data, error } = await supabase
@@ -29,7 +29,7 @@ export async function getGuestsForEvent(
 }
 
 export async function createGuest(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   input: GuestInput,
 ) {
   const { data, error } = await supabase
@@ -53,7 +53,7 @@ export async function createGuest(
 }
 
 export async function updateGuest(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   guestId: string,
   input: Omit<GuestInput, "eventId">,
 ) {
@@ -78,7 +78,7 @@ export async function updateGuest(
 }
 
 export async function deleteGuest(
-  supabase: ArivioSupabaseClient,
+  supabase: ArivvioSupabaseClient,
   guestId: string,
 ) {
   const { error } = await supabase.from("guests").delete().eq("id", guestId);

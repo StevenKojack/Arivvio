@@ -63,7 +63,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         }
 
         setStatus(
-          "Check your email to confirm your account. After confirming, return to Arivio and log in.",
+          "Check your email to confirm your account. After confirming, return to Arivvio and log in.",
         );
         router.refresh();
         return;
@@ -155,7 +155,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         </Link>
       ) : null}
       <p className="text-center text-sm text-neutral-500">
-        {isSignup ? "Already have an account?" : "New to Arivio?"}{" "}
+        {isSignup ? "Already have an account?" : "New to Arivvio?"}{" "}
         <Link
           className="font-semibold text-neutral-950"
           href={isSignup ? "/auth/login" : "/auth/signup"}

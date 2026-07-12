@@ -1,6 +1,6 @@
-# Arivio Constitution
+# Arivvio Constitution
 
-This document defines the permanent principles that govern every decision made within Arivio.
+This document defines the permanent principles that govern every decision made within Arivvio.
 
 Unlike the Design Bible or Product Bible, this document changes extremely rarely.
 
