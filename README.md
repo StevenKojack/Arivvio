@@ -1,4 +1,4 @@
-# Arivio
+# Arivvio
 
 Arivio is building the Airbnb for events: planners create an event, compare nearby venues and providers, build a quote cart, request quotes, and eventually book.
 
