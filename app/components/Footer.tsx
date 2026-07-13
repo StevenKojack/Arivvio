@@ -18,8 +18,11 @@ export function Footer() {
           <Link className="transition hover:text-[#D4AF37]" href="/#categories">
             Categories
           </Link>
-          <Link className="transition hover:text-[#D4AF37]" href="/marketplace">
-            Marketplace
+          <Link className="transition hover:text-[#D4AF37]" href="/plan">
+            Plan Your Event
+          </Link>
+          <Link className="transition hover:text-[#D4AF37]" href="/vendors">
+            Vendors
           </Link>
           <Link className="transition hover:text-[#D4AF37]" href="/account">
             Account
@@ -27,8 +30,8 @@ export function Footer() {
           <Link className="transition hover:text-[#D4AF37]" href="/">
             Home
           </Link>
-          <Link className="transition hover:text-[#D4AF37]" href="/discover">
-            Start Planning
+          <Link className="transition hover:text-[#D4AF37]" href="/marketplace">
+            Marketplace
           </Link>
         </div>
       </div>

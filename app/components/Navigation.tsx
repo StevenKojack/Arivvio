@@ -17,7 +17,8 @@ type SessionNavState = {
 };
 
 const centerLinks = [
-  { href: "/marketplace", label: "Marketplace" },
+  { href: "/plan", label: "Plan Your Event" },
+  { href: "/vendors", label: "Vendors" },
 ];
 
 export function Navigation() {
