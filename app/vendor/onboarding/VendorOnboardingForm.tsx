@@ -30,10 +30,10 @@ export function VendorOnboardingForm() {
   const [radius, setRadius] = useState(30);
   const [territoryZones, setTerritoryZones] = useState<MapZone[]>([
     {
-      center: { x: 50, y: 50 },
+      center: { lat: 34.0522, lng: -118.2437 },
       id: "vendor-zone-1",
       label: "Service territory 1",
-      radiusPct: 28,
+      radiusMeters: 48280,
       type: "radius",
     },
   ]);

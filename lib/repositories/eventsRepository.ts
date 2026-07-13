@@ -1,4 +1,5 @@
 import type { PublicTableRow } from "@/lib/supabase/database.types";
+import type { LocationProfile } from "@/lib/maps/zones";
 import type { EventStatus } from "@/lib/types/domain";
 import type { ArivvioSupabaseClient } from "./types";
 
@@ -11,6 +12,7 @@ export type EventCreateInput = {
   endTime?: string | null;
   eventType: string;
   guestCount?: number | null;
+  locationProfile?: LocationProfile | null;
   plannerId: string;
   startTime?: string | null;
   status?: EventStatus;
@@ -38,8 +40,13 @@ export async function createEvent(
       city: input.city ?? null,
       date: input.date ?? null,
       end_time: input.endTime ?? null,
+      event_profile: input.locationProfile
+        ? { locationProfile: input.locationProfile }
+        : null,
       event_type: input.eventType,
       guest_count: input.guestCount ?? null,
+      latitude: input.locationProfile?.coordinates?.lat ?? null,
+      longitude: input.locationProfile?.coordinates?.lng ?? null,
       planner_id: input.plannerId,
       start_time: input.startTime ?? null,
       status: input.status ?? "planning",

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   allServices,
@@ -22,10 +22,22 @@ import {
 } from "@/lib/event-intelligence/context";
 import { AddressAutocomplete, type AddressSuggestion } from "./components/AddressAutocomplete";
 import {
+  searchAddressSuggestions,
+  type AddressSuggestion as GeocodingSuggestion,
+} from "@/lib/maps/geocoding";
+import {
   ZoneMapEditor,
   summarizeMapZones,
   type MapZone,
 } from "../components/maps/ZoneMapEditor";
+import {
+  createRadiusZone,
+  getZoneCenter,
+  loadLocationProfile,
+  metersToMiles,
+  saveLocationProfile,
+  type LocationProfile,
+} from "@/lib/maps/zones";
 import { CalendarPicker } from "./components/CalendarPicker";
 import { ServiceRecommendationCard } from "./components/ServiceRecommendationCard";
 import { StepCard } from "./components/StepCard";
@@ -55,6 +67,8 @@ type EventLocation = {
   id: number;
   kind: LocationKind;
   mode: LocationMode | "";
+  currentLocationUsed?: boolean;
+  mapboxPlaceId?: string;
   query: string;
   selectedAddress: string;
   selectedLabel: string;
@@ -86,17 +100,8 @@ export function EventWizard() {
   });
   const [showAdvancedTiming, setShowAdvancedTiming] = useState(false);
   const [isMultiDay, setIsMultiDay] = useState(false);
-  const [locations, setLocations] = useState<EventLocation[]>([
-    {
-      context: "",
-      id: 1,
-      kind: "Venue needed",
-      mode: "",
-      query: "",
-      selectedAddress: "",
-      selectedLabel: "",
-      zones: [],
-    },
+  const [locations, setLocations] = useState<EventLocation[]>(() => [
+    getInitialLocationFromSession(),
   ]);
   const [guestCount, setGuestCount] = useState(60);
   const [budget, setBudget] = useState(6000);
@@ -147,9 +152,11 @@ export function EventWizard() {
       budget: String(budget),
       date: timing.date,
       duration: String(durationHours),
+      entryMode: "event",
       event: profile.marketplaceEventType ?? "Private Party",
       guests: String(guestCount),
       location: locationSummary,
+      locationProfile: "session",
       services: visibleServices.join(","),
       time: timing.startTime,
     });
@@ -165,8 +172,8 @@ export function EventWizard() {
     }
 
     const primaryZone = locations[0]?.zones.find((zone) => zone.type === "radius");
-    if (primaryZone?.radiusPct) {
-      params.set("searchRadiusMiles", String(Math.round(primaryZone.radiusPct * 0.75)));
+    if (primaryZone?.radiusMeters) {
+      params.set("searchRadiusMiles", String(Math.round(metersToMiles(primaryZone.radiusMeters))));
     }
 
     return `/marketplace?${params.toString()}`;
@@ -187,6 +194,14 @@ export function EventWizard() {
     Boolean(timing.date && timing.startTime && timing.endTime) &&
     guestCount > 0 &&
     locations.some((location) => location.mode && (location.mode === "needs_venue" || Boolean(location.query.trim() || location.selectedAddress)));
+
+  useEffect(() => {
+    const profile = buildLocationProfile(locations[0]);
+
+    if (profile.locationMode || profile.coordinates || profile.zone) {
+      saveLocationProfile(profile);
+    }
+  }, [locations]);
 
   function continueFromSearch(nextQuery = query) {
     const cleanQuery = nextQuery.trim();
@@ -282,7 +297,7 @@ export function EventWizard() {
     <section className="px-6 py-10 sm:px-8 lg:px-12">
       <div
         className={`mx-auto min-w-0 transition-[max-width] duration-300 ${
-          step === 3 ? "max-w-7xl" : "max-w-5xl"
+          step === 3 ? "max-w-[1600px]" : "max-w-5xl"
         }`}
       >
         <StepRail
@@ -429,7 +444,9 @@ export function EventWizard() {
                   updateLocation(locations[0].id, {
                     context: suggestion.context,
                     coordinates: suggestion.coordinates,
+                    currentLocationUsed: false,
                     kind: "Already have venue",
+                    mapboxPlaceId: suggestion.id,
                     mode: "has_venue",
                     query: suggestion.label,
                     selectedAddress: suggestion.address,
@@ -440,13 +457,15 @@ export function EventWizard() {
                 onSelectMode={(mode) =>
                   updateLocation(locations[0].id, {
                     context: mode === "needs_venue" ? "venue_needed" : "",
+                    currentLocationUsed: false,
                     kind: mode === "needs_venue" ? "Venue needed" : "Already have venue",
+                    mapboxPlaceId: undefined,
                     mode,
                     query: "",
                     selectedAddress: "",
                     selectedLabel: "",
                     selectedVenueId: undefined,
-                    zones: mode === "needs_venue" ? getDefaultPlannerZones() : [],
+                    zones: mode === "needs_venue" ? getDefaultPlannerZones(eventAnchor ?? getDefaultMapCenter()) : [],
                   })
                 }
                 onUpdate={(updates) => updateLocation(locations[0].id, updates)}
@@ -520,6 +539,7 @@ export function EventWizard() {
                   {canOpenMarketplace ? (
                     <Link
                       href={marketplaceHref}
+                      onClick={() => saveLocationProfile(buildLocationProfile(locations[0]))}
                       className="inline-flex h-12 items-center justify-center rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
                     >
                       Browse matches
@@ -821,8 +841,39 @@ function LocationStep({
   onUpdate: (updates: Partial<EventLocation>) => void;
 }) {
   const [locationMessage, setLocationMessage] = useState("");
+  const [areaSuggestions, setAreaSuggestions] = useState<GeocodingSuggestion[]>([]);
+  const [isSearchingArea, setIsSearchingArea] = useState(false);
   const matchedArea = getMatchingHomeArea(location.query);
   const mapCenter = location.coordinates ?? matchedArea?.coordinates ?? getDefaultMapCenter();
+
+  useEffect(() => {
+    if (location.mode !== "needs_venue") {
+      return;
+    }
+
+    const query = location.query.trim();
+    let isActive = true;
+    const debounceId = window.setTimeout(async () => {
+      if (query.length < 3) {
+        setAreaSuggestions([]);
+        setIsSearchingArea(false);
+        return;
+      }
+
+      setIsSearchingArea(true);
+      const suggestions = await searchAddressSuggestions(query);
+
+      if (isActive) {
+        setAreaSuggestions(suggestions);
+        setIsSearchingArea(false);
+      }
+    }, query.length < 3 ? 0 : 260);
+
+    return () => {
+      isActive = false;
+      window.clearTimeout(debounceId);
+    };
+  }, [location.mode, location.query]);
 
   function useCurrentLocation() {
     setLocationMessage("");
@@ -843,13 +894,14 @@ function LocationStep({
         onUpdate({
           context: "venue_needed",
           coordinates,
+          currentLocationUsed: true,
           query: nearestArea ? `Current location near ${nearestArea.name}` : "Current location",
           selectedAddress: "",
           selectedLabel: "Current location",
           selectedVenueId: undefined,
           zones: location.zones.length
             ? normalizePlannerZones(location.zones)
-            : getDefaultPlannerZones(),
+            : getDefaultPlannerZones(coordinates),
         });
         setLocationMessage("Current location is now the anchor for venue matching.");
       },
@@ -866,19 +918,41 @@ function LocationStep({
     onUpdate({
       context: "venue_needed",
       coordinates: matchedArea?.coordinates,
+      currentLocationUsed: false,
+      mapboxPlaceId: undefined,
       query: value,
       selectedAddress: "",
       selectedLabel: matchedArea ? matchedArea.name : "",
       selectedVenueId: undefined,
       zones:
         matchedArea && !location.zones.length
-          ? getDefaultPlannerZones()
+          ? getDefaultPlannerZones(matchedArea.coordinates)
           : normalizePlannerZones(location.zones),
     });
 
     if (matchedArea) {
       setLocationMessage(`${matchedArea.name} is now the anchor for venue matching.`);
     }
+  }
+
+  function selectAreaSuggestion(suggestion: GeocodingSuggestion) {
+    onUpdate({
+      context: "venue_needed",
+      coordinates: suggestion.coordinates,
+      currentLocationUsed: false,
+      mapboxPlaceId: suggestion.id,
+      query: suggestion.label,
+      selectedAddress: "",
+      selectedLabel: suggestion.label,
+      selectedVenueId: undefined,
+      zones: getDefaultPlannerZones(suggestion.coordinates),
+    });
+    setAreaSuggestions([]);
+    setLocationMessage(
+      suggestion.isFallback
+        ? "Demo area match is now the anchor for venue matching."
+        : "Map search area is now the anchor for venue matching.",
+    );
   }
 
   return (
@@ -915,9 +989,13 @@ function LocationStep({
             label="Venue or address"
             value={location.query}
             selectedAddress={location.selectedAddress}
+            selectedCoordinates={location.coordinates}
             onChange={(value) =>
               onUpdate({
                 context: "",
+                coordinates: undefined,
+                currentLocationUsed: false,
+                mapboxPlaceId: undefined,
                 query: value,
                 selectedAddress: "",
                 selectedLabel: "",
@@ -936,9 +1014,9 @@ function LocationStep({
 
       {location.mode === "needs_venue" ? (
         <div className="overflow-hidden rounded-[34px] border border-neutral-200 bg-white shadow-[0_24px_80px_rgba(13,19,33,0.1)]">
-          <div className="border-b border-neutral-200 bg-white/90 p-5 backdrop-blur">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-              <div className="max-w-xl">
+          <div className="grid min-h-[720px] xl:grid-cols-[360px_minmax(0,1fr)]">
+            <div className="border-b border-neutral-200 bg-white/92 p-6 backdrop-blur xl:border-b-0 xl:border-r">
+              <div>
                 <p className="text-sm font-semibold text-neutral-950">
                   Venue area for {eventLabel}
                 </p>
@@ -947,7 +1025,7 @@ function LocationStep({
                   area where you want Arivvio to look for venues.
                 </p>
               </div>
-              <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] xl:min-w-[520px]">
+              <div className="mt-6 grid min-w-0 gap-3">
                 <label className="min-w-0 text-sm font-semibold text-neutral-800">
                   Search city or area
                   <input
@@ -957,6 +1035,25 @@ function LocationStep({
                     className="mt-2 h-12 w-full rounded-2xl border border-neutral-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-[#0D1321]"
                   />
                 </label>
+                {isSearchingArea || areaSuggestions.length ? (
+                  <div className="overflow-hidden rounded-2xl border border-[#D4AF37]/16 bg-white shadow-[0_18px_44px_rgba(13,19,33,0.08)]">
+                    {isSearchingArea ? (
+                      <p className="px-4 py-3 text-xs font-semibold text-neutral-500">
+                        Searching map areas...
+                      </p>
+                    ) : null}
+                    {areaSuggestions.map((suggestion) => (
+                      <button
+                        key={suggestion.id}
+                        type="button"
+                        onClick={() => selectAreaSuggestion(suggestion)}
+                        className="block w-full border-t border-neutral-100 px-4 py-3 text-left text-sm font-semibold text-neutral-800 transition hover:bg-[#FFF8E1]"
+                      >
+                        {suggestion.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
                 <button
                   type="button"
                   onClick={useCurrentLocation}
@@ -965,20 +1062,25 @@ function LocationStep({
                   Use my current location
                 </button>
               </div>
-            </div>
               {locationMessage ? (
                 <p className="mt-3 rounded-2xl bg-[#FFFCF7] px-4 py-3 text-xs font-semibold text-neutral-600">
                   {locationMessage}
                 </p>
               ) : null}
+              <div className="mt-5 rounded-3xl bg-[#F6F3EA] p-4 text-xs font-semibold leading-5 text-neutral-600 ring-1 ring-[#D4AF37]/10">
+                One confirmed area is saved for venue discovery. Switching between
+                Circle and Freeform replaces the current area instead of stacking
+                zones.
+              </div>
+            </div>
+            <VenueDiscoveryMap
+              center={mapCenter}
+              zones={location.zones}
+              onZonesChange={(zones) =>
+                onUpdate({ zones: normalizePlannerZones(zones) })
+              }
+            />
           </div>
-          <VenueDiscoveryMap
-            center={mapCenter}
-            zones={location.zones}
-            onZonesChange={(zones) =>
-              onUpdate({ zones: normalizePlannerZones(zones) })
-            }
-          />
         </div>
       ) : null}
     </div>
@@ -1067,7 +1169,7 @@ function VenueDiscoveryMap({
   return (
     <ZoneMapEditor
       defaultLabel="Venue search area"
-      heightClassName="h-[64vh] min-h-[600px] max-h-[820px]"
+      heightClassName="h-[72vh] min-h-[720px]"
       mapCenter={center}
       mapZoom={10.5}
       onZonesChange={onZonesChange}
@@ -1321,15 +1423,100 @@ function mergeServices(
   return Array.from(new Set([...current, ...incoming]));
 }
 
-function getDefaultPlannerZones(): MapZone[] {
+function getInitialLocationFromSession(): EventLocation {
+  const profile = loadLocationProfile();
+
+  if (!profile) {
+    return getEmptyLocation();
+  }
+
+  return locationFromProfile(profile);
+}
+
+function getEmptyLocation(): EventLocation {
+  return {
+    context: "",
+    id: 1,
+    kind: "Venue needed",
+    mode: "",
+    query: "",
+    selectedAddress: "",
+    selectedLabel: "",
+    zones: [],
+  };
+}
+
+function locationFromProfile(profile: LocationProfile): EventLocation {
+  const mode =
+    profile.locationMode === "needs_venue"
+      ? "needs_venue"
+      : profile.locationMode
+        ? "has_venue"
+        : "";
+
+  return {
+    context:
+      profile.locationMode === "needs_venue"
+        ? "venue_needed"
+        : profile.inferredLocationType === "home_private"
+          ? "likely_home"
+          : profile.inferredLocationType === "venue"
+            ? "likely_venue"
+            : "",
+    coordinates: profile.coordinates,
+    currentLocationUsed: profile.currentLocationUsed,
+    id: 1,
+    kind: mode === "has_venue" ? "Already have venue" : "Venue needed",
+    mapboxPlaceId: profile.mapboxPlaceId,
+    mode,
+    query: profile.label ?? profile.formattedAddress ?? "",
+    selectedAddress: profile.formattedAddress ?? "",
+    selectedLabel: profile.label ?? "",
+    selectedVenueId: profile.selectedVenueId,
+    zones: profile.zone ? [{ ...profile.zone, label: "Venue search area" }] : [],
+  };
+}
+
+function buildLocationProfile(location?: EventLocation): LocationProfile {
+  if (!location) {
+    return {};
+  }
+  const zone = location.zones[0];
+
+  return {
+    coordinates: location.coordinates ?? (zone ? getZoneCenter(zone) : undefined),
+    currentLocationUsed: Boolean(location.currentLocationUsed),
+    formattedAddress: location.selectedAddress || location.query || undefined,
+    inferredLocationType:
+      location.context === "likely_home"
+        ? "home_private"
+        : location.context
+          ? "venue"
+          : undefined,
+    label: location.selectedLabel || location.query || undefined,
+    locationMode:
+      location.mode === "needs_venue"
+        ? "needs_venue"
+        : location.context === "likely_home"
+          ? "home_private"
+          : location.mode === "has_venue"
+            ? "has_venue"
+            : undefined,
+    mapboxPlaceId: location.mapboxPlaceId,
+    searchAreaLabel: zone?.label,
+    selectedVenueId: location.selectedVenueId,
+    zone,
+  };
+}
+
+function getDefaultPlannerZones(center = getDefaultMapCenter()): MapZone[] {
   return [
-    {
-      center: { x: 50, y: 50 },
+    createRadiusZone({
+      center,
       id: `search-zone-${Date.now()}`,
       label: "Venue search area",
-      radiusPct: 26,
-      type: "radius",
-    },
+      radiusMeters: 12000,
+    }),
   ];
 }
 

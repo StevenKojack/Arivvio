@@ -1,26 +1,34 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import mapboxgl, { type Map as MapboxMap } from "mapbox-gl";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MutableRefObject,
+  type ReactNode,
+} from "react";
+import mapboxgl, {
+  type LngLatBoundsLike,
+  type Map as MapboxMap,
+} from "mapbox-gl";
 import type { Coordinates } from "@/app/data/marketplace";
 import { MAPBOX_ACCESS_TOKEN, MAPBOX_STYLE_ID, hasMapboxConfig } from "@/lib/maps/config";
+import {
+  createPolygonZone,
+  createRadiusZone,
+  formatZoneSummary,
+  getCirclePolygon,
+  getZoneBounds,
+  getZoneCenter,
+  metersToMiles,
+  milesToMeters,
+  type PlanningZone,
+  validatePlanningZone,
+} from "@/lib/maps/zones";
 
-export type MapPoint = {
-  lat?: number;
-  lng?: number;
-  x: number;
-  y: number;
-};
-
-export type MapZone = {
-  center?: MapPoint;
-  id: string;
-  label: string;
-  points?: MapPoint[];
-  radiusPct?: number;
-  saved?: boolean;
-  type: "polygon" | "radius";
-};
+export type MapZone = PlanningZone;
 
 type ZoneMapEditorProps = {
   children?: ReactNode;
@@ -36,10 +44,13 @@ type ZoneMapEditorProps = {
   zones: MapZone[];
 };
 
-type DragState = {
-  pointIndex?: number;
-  zoneId: string;
-};
+type DrawMode = "idle" | "radius" | "polygon";
+type MapState = "fallback" | "loading" | "ready" | "error";
+type GeoJsonData = Parameters<mapboxgl.GeoJSONSource["setData"]>[0];
+
+const zoneSourceId = "arivvio-zone-source";
+const zoneFillLayerId = "arivvio-zone-fill";
+const zoneLineLayerId = "arivvio-zone-line";
 
 export function ZoneMapEditor({
   children,
@@ -54,292 +65,360 @@ export function ZoneMapEditor({
   title,
   zones,
 }: ZoneMapEditorProps) {
-  const surfaceRef = useRef<HTMLDivElement | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  const mapboxRef = useRef<MapboxMap | null>(null);
-  const drawingPointerIdRef = useRef<number | null>(null);
-  const drawingPointsRef = useRef<MapPoint[]>([]);
+  const mapRef = useRef<MapboxMap | null>(null);
+  const centerMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const vertexMarkersRef = useRef<mapboxgl.Marker[]>([]);
+  const mapLoadedRef = useRef(false);
+  const clickHandlerRef = useRef<((event: mapboxgl.MapMouseEvent) => void) | null>(null);
   const [activeTool, setActiveTool] = useState<MapZone["type"]>(zones[0]?.type ?? "radius");
   const [selectedZoneId, setSelectedZoneId] = useState(zones[0]?.id ?? "");
-  const [dragState, setDragState] = useState<DragState | null>(null);
-  const [isDrawingPolygon, setIsDrawingPolygon] = useState(false);
+  const [drawMode, setDrawMode] = useState<DrawMode>("idle");
+  const [mapState, setMapState] = useState<MapState>(hasMapboxConfig() ? "loading" : "fallback");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [draftPoints, setDraftPoints] = useState<Coordinates[]>([]);
+  const anchor = mapCenter ?? (zones[0] ? getZoneCenter(zones[0]) : getDefaultCenter());
+  const hasInteractiveMap = hasMapboxConfig();
   const visibleZones = useMemo(
     () => (singleZone ? zones.slice(0, 1) : zones),
     [singleZone, zones],
   );
   const selectedZone =
-    visibleZones.find((zone) => zone.id === selectedZoneId) ?? visibleZones[0];
-  const hasInteractiveMap = hasMapboxConfig();
-  const mapAnchor = mapCenter ?? { lat: 34.0522, lng: -118.2437 };
-  const initialMapAnchorRef = useRef(mapAnchor);
-  const initialMapZoomRef = useRef(mapZoom);
-  const polygonPoints = useMemo(
-    () =>
-      visibleZones.flatMap((zone) =>
-        zone.type === "polygon"
-          ? (zone.points ?? []).map((point, index) => ({ index, point, zone }))
-          : [],
-      ),
-    [visibleZones],
+    visibleZones.find((zone) => zone.id === selectedZoneId) ?? visibleZones[0] ?? null;
+  const effectiveTool = selectedZone?.type ?? activeTool;
+  const validatedMessage = validatePlanningZone(selectedZone);
+
+  const updateZones = useCallback(
+    (nextZones: MapZone[]) => {
+      onZonesChange(singleZone ? nextZones.slice(0, 1) : nextZones);
+    },
+    [onZonesChange, singleZone],
+  );
+
+  const updateSelectedZone = useCallback(
+    (updater: (zone: MapZone) => MapZone) => {
+      if (!selectedZone) {
+        return;
+      }
+
+      updateZones(
+        visibleZones.map((zone) => (zone.id === selectedZone.id ? updater(zone) : zone)),
+      );
+    },
+    [selectedZone, updateZones, visibleZones],
   );
 
   useEffect(() => {
-    if (!singleZone) {
+    if (!hasInteractiveMap || !mapContainerRef.current || mapRef.current) {
       return;
     }
 
-    const firstZone = zones[0];
-
-    if (!firstZone) {
-      const nextZone = createZone(activeTool, defaultLabel, 1, true);
-      onZonesChange([nextZone]);
-      return;
-    }
-
-    if (zones.length > 1 || firstZone.label !== defaultLabel) {
-      const normalizedZone = {
-        ...firstZone,
-        label: defaultLabel,
-      };
-
-      onZonesChange([normalizedZone]);
-    }
-  }, [activeTool, defaultLabel, onZonesChange, singleZone, zones]);
-
-  useEffect(() => {
-    if (!hasInteractiveMap || !mapContainerRef.current || mapboxRef.current) {
-      return;
-    }
-
+    setMapState("loading");
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+
     const map = new mapboxgl.Map({
       attributionControl: false,
-      center: [
-        initialMapAnchorRef.current.lng,
-        initialMapAnchorRef.current.lat,
-      ],
+      center: [anchor.lng, anchor.lat],
       container: mapContainerRef.current,
       cooperativeGestures: false,
       dragRotate: false,
       pitchWithRotate: false,
       scrollZoom: true,
       style: getMapboxStyleUrl(),
-      zoom: initialMapZoomRef.current,
+      zoom: mapZoom,
     });
-    const handleMapLoad = () => resizeMapSafely(map);
-    const resizeTimeoutId = window.setTimeout(() => resizeMapSafely(map), 0);
 
-    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left");
+    const handleLoad = () => {
+      mapLoadedRef.current = true;
+      ensureZoneLayers(map);
+      updateZoneSource(map, selectedZone);
+      resizeMapSafely(map);
+      setMapState("ready");
+      setStatusMessage(selectedZone?.saved ? "Saved area restored." : "");
+    };
+
+    const handleError = () => {
+      setMapState("error");
+      setStatusMessage("The map could not finish loading. You can retry or use the fallback area.");
+    };
+
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
-    map.on("load", handleMapLoad);
-    mapboxRef.current = map;
+    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left");
+    map.on("load", handleLoad);
+    map.on("error", handleError);
+    mapRef.current = map;
+
+    const resizeTimeoutId = window.setTimeout(() => resizeMapSafely(map), 0);
 
     return () => {
       window.clearTimeout(resizeTimeoutId);
-      map.off("load", handleMapLoad);
+      map.off("load", handleLoad);
+      map.off("error", handleError);
+      clearMarker(centerMarkerRef);
+      clearVertexMarkers(vertexMarkersRef);
       map.remove();
-
-      if (mapboxRef.current === map) {
-        mapboxRef.current = null;
+      mapLoadedRef.current = false;
+      if (mapRef.current === map) {
+        mapRef.current = null;
       }
     };
+    // The map instance should stay stable after initial mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasInteractiveMap]);
 
   useEffect(() => {
-    if (!mapboxRef.current || !hasInteractiveMap) {
+    if (!mapRef.current || !hasInteractiveMap || !mapLoadedRef.current) {
       return;
     }
 
-    mapboxRef.current.easeTo({
-      center: [mapAnchor.lng, mapAnchor.lat],
-      duration: 360,
+    updateZoneSource(mapRef.current, selectedZone);
+    updateZoneMarkers({
+      map: mapRef.current,
+      selectedZone,
+      centerMarkerRef,
+      vertexMarkersRef,
+      onCenterChange: (center) => {
+        updateSelectedZone((zone) =>
+          zone.type === "radius" ? { ...zone, center, saved: false } : zone,
+        );
+        setStatusMessage("Area moved. Confirm when it looks right.");
+      },
+      onVertexChange: (index, point) => {
+        updateSelectedZone((zone) =>
+          zone.type === "polygon"
+            ? {
+                ...zone,
+                center: getZoneCenter({ ...zone, points: replaceAt(zone.points, index, point) }),
+                points: replaceAt(zone.points, index, point),
+                saved: false,
+              }
+            : zone,
+        );
+        setStatusMessage("Freeform point moved. Confirm when it looks right.");
+      },
+    });
+  }, [hasInteractiveMap, selectedZone, updateSelectedZone]);
+
+  useEffect(() => {
+    if (!mapRef.current || !hasInteractiveMap || !mapLoadedRef.current || selectedZone) {
+      return;
+    }
+
+    mapRef.current.easeTo({
+      center: [anchor.lng, anchor.lat],
+      duration: 260,
       zoom: mapZoom,
     });
-  }, [hasInteractiveMap, mapAnchor.lat, mapAnchor.lng, mapZoom]);
+  }, [anchor.lat, anchor.lng, hasInteractiveMap, mapZoom, selectedZone]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+
+    if (!map || !hasInteractiveMap || !mapLoadedRef.current) {
+      return;
+    }
+
+    if (clickHandlerRef.current) {
+      map.off("click", clickHandlerRef.current);
+      clickHandlerRef.current = null;
+    }
+
+    if (drawMode === "idle") {
+      return;
+    }
+
+    const handler = (event: mapboxgl.MapMouseEvent) => {
+      const point = { lat: event.lngLat.lat, lng: event.lngLat.lng };
+
+      if (drawMode === "radius") {
+        const nextZone = createRadiusZone({
+          center: point,
+          id: selectedZone?.type === "radius" ? selectedZone.id : undefined,
+          label: defaultLabel,
+          radiusMeters: selectedZone?.type === "radius" ? selectedZone.radiusMeters : milesToMeters(7.5),
+        });
+
+        updateZones(singleZone ? [nextZone] : upsertZone(visibleZones, nextZone));
+        setSelectedZoneId(nextZone.id);
+        setDrawMode("idle");
+        setStatusMessage("Circle placed. Adjust the radius or drag the center point.");
+        return;
+      }
+
+      const nextPoints = [...draftPoints, point];
+      const nextZone = createPolygonZone({
+        id: selectedZone?.type === "polygon" ? selectedZone.id : undefined,
+        label: defaultLabel,
+        points: nextPoints,
+      });
+
+      setDraftPoints(nextPoints);
+      updateZones(singleZone ? [nextZone] : upsertZone(visibleZones, nextZone));
+      setSelectedZoneId(nextZone.id);
+      setStatusMessage(
+        nextPoints.length < 3
+          ? "Add at least three points, then confirm the area."
+          : "Freeform area preview ready. Add more points or confirm.",
+      );
+    };
+
+    clickHandlerRef.current = handler;
+    map.on("click", handler);
+
+    return () => {
+      map.off("click", handler);
+      if (clickHandlerRef.current === handler) {
+        clickHandlerRef.current = null;
+      }
+    };
+  }, [
+    defaultLabel,
+    draftPoints,
+    drawMode,
+    hasInteractiveMap,
+    selectedZone,
+    singleZone,
+    updateZones,
+    visibleZones,
+  ]);
 
   function selectTool(tool: MapZone["type"]) {
     setActiveTool(tool);
+    setDrawMode("idle");
+    setDraftPoints([]);
 
-    if (!singleZone) {
-      return;
-    }
-
-    const currentZone = visibleZones[0];
-
-    if (currentZone?.type === tool) {
-      setSelectedZoneId(currentZone.id);
+    if (selectedZone?.type === tool) {
       return;
     }
 
     const nextZone =
-      tool === "polygon"
-        ? createEmptyPolygonZone(defaultLabel)
-        : createZone(tool, defaultLabel, 1, true);
-    onZonesChange([nextZone]);
+      tool === "radius"
+        ? createRadiusZone({ center: anchor, label: defaultLabel })
+        : createPolygonZone({ label: defaultLabel });
+
+    updateZones(singleZone ? [nextZone] : [nextZone, ...visibleZones]);
     setSelectedZoneId(nextZone.id);
+    setStatusMessage(
+      tool === "radius"
+        ? "Circle mode ready. Press Draw area, then click the map."
+        : "Freeform mode ready. Press Draw area, then click map points.",
+    );
   }
 
   function addZone(type = activeTool) {
-    const nextZone = createZone(type, defaultLabel, zones.length + 1, singleZone);
+    const nextZone =
+      type === "radius"
+        ? createRadiusZone({
+            center: anchor,
+            label: `${defaultLabel} ${visibleZones.length + 1}`,
+          })
+        : createPolygonZone({
+            label: `${defaultLabel} ${visibleZones.length + 1}`,
+          });
 
-    onZonesChange(singleZone ? [nextZone] : [...zones, nextZone]);
+    updateZones([...visibleZones, nextZone]);
     setSelectedZoneId(nextZone.id);
+    setStatusMessage("New zone ready.");
   }
 
-  function saveSelectedZone() {
+  function startDrawing() {
+    if (!hasInteractiveMap) {
+      const nextZone = createRadiusZone({
+        center: anchor,
+        id: selectedZone?.type === "radius" ? selectedZone.id : undefined,
+        label: defaultLabel,
+        radiusMeters: selectedZone?.type === "radius" ? selectedZone.radiusMeters : milesToMeters(7.5),
+      });
+
+      updateZones(singleZone ? [nextZone] : upsertZone(visibleZones, nextZone));
+      setSelectedZoneId(nextZone.id);
+      setStatusMessage("Fallback area created from the selected location.");
+      return;
+    }
+
+    const drawingTool = effectiveTool;
+
+    if (drawingTool === "polygon") {
+      setDraftPoints([]);
+      const nextZone = createPolygonZone({
+        id: selectedZone?.type === "polygon" ? selectedZone.id : undefined,
+        label: defaultLabel,
+      });
+
+      updateZones(singleZone ? [nextZone] : upsertZone(visibleZones, nextZone));
+      setSelectedZoneId(nextZone.id);
+    }
+
+    setDrawMode(drawingTool);
+    setStatusMessage(
+      drawingTool === "radius"
+        ? "Click the map to place one circle."
+        : "Click points on the map. Pan and zoom still work normally.",
+    );
+  }
+
+  function confirmSelectedZone() {
+    if (!selectedZone) {
+      setStatusMessage("Draw an area first.");
+      return;
+    }
+
+    const validation = validatePlanningZone(selectedZone);
+
+    if (validation) {
+      setStatusMessage(validation);
+      return;
+    }
+
+    const confirmedZone = { ...selectedZone, saved: true } as MapZone;
+
+    updateZones(
+      visibleZones.map((zone) => (zone.id === confirmedZone.id ? confirmedZone : zone)),
+    );
+    setDrawMode("idle");
+    setDraftPoints([]);
+    setStatusMessage("Search area saved.");
+    fitZone(mapRef.current, confirmedZone);
+  }
+
+  function clearSelectedZone() {
     if (!selectedZone) {
       return;
     }
 
-    onZonesChange(
-      visibleZones.map((zone) =>
-        zone.id === selectedZone.id ? { ...zone, saved: true } : zone,
-      ),
+    const nextZones = visibleZones.filter((zone) => zone.id !== selectedZone.id);
+
+    updateZones(nextZones);
+    setSelectedZoneId(nextZones[0]?.id ?? "");
+    setDraftPoints([]);
+    setDrawMode("idle");
+    setStatusMessage("Area cleared. Draw a new one when ready.");
+  }
+
+  function updateRadius(value: string) {
+    const radiusMeters = milesToMeters(Number(value));
+
+    updateSelectedZone((zone) =>
+      zone.type === "radius" ? { ...zone, radiusMeters, saved: false } : zone,
     );
-  }
-
-  function updateZone(zoneId: string, updater: (zone: MapZone) => MapZone) {
-    const nextZones = visibleZones.map((zone) =>
-      zone.id === zoneId ? updater(zone) : zone,
-    );
-
-    onZonesChange(singleZone ? nextZones.slice(0, 1) : nextZones);
-  }
-
-  function getPointFromEvent(event: React.PointerEvent<HTMLDivElement>) {
-    const rect = surfaceRef.current?.getBoundingClientRect();
-
-    if (!rect) {
-      return { x: 50, y: 50 };
-    }
-
-    const point: MapPoint = {
-      x: clamp(((event.clientX - rect.left) / rect.width) * 100),
-      y: clamp(((event.clientY - rect.top) / rect.height) * 100),
-    };
-
-    if (mapboxRef.current) {
-      const lngLat = mapboxRef.current.unproject([
-        event.clientX - rect.left,
-        event.clientY - rect.top,
-      ]);
-
-      point.lat = lngLat.lat;
-      point.lng = lngLat.lng;
-    }
-
-    return point;
-  }
-
-  function handlePointerMove(event: React.PointerEvent<HTMLDivElement>) {
-    if (!dragState) {
-      return;
-    }
-
-    const point = getPointFromEvent(event);
-
-    updateZone(dragState.zoneId, (zone) => {
-      if (zone.type === "polygon" && dragState.pointIndex !== undefined) {
-        const points = [...(zone.points ?? [])];
-        points[dragState.pointIndex] = point;
-        return { ...zone, points, saved: false };
-      }
-
-      return { ...zone, center: point, saved: false };
-    });
-  }
-
-  function startFreeformDrawing() {
-    const currentZone = visibleZones[0];
-    const nextZone =
-      currentZone?.type === "polygon"
-        ? { ...currentZone, points: [], saved: false }
-        : createEmptyPolygonZone(defaultLabel);
-
-    drawingPointsRef.current = [];
-    drawingPointerIdRef.current = null;
-    setActiveTool("polygon");
-    setSelectedZoneId(nextZone.id);
-    setIsDrawingPolygon(true);
-    onZonesChange(singleZone ? [nextZone] : [nextZone, ...visibleZones.slice(1)]);
-  }
-
-  function handleDrawingPointerDown(event: React.PointerEvent<HTMLDivElement>) {
-    if (!isDrawingPolygon || selectedZone?.type !== "polygon") {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    drawingPointerIdRef.current = event.pointerId;
-    const firstPoint = getPointFromEvent(event);
-    drawingPointsRef.current = [firstPoint];
-    updatePolygonZone([firstPoint]);
-  }
-
-  function handleDrawingPointerMove(event: React.PointerEvent<HTMLDivElement>) {
-    if (
-      !isDrawingPolygon ||
-      drawingPointerIdRef.current !== event.pointerId ||
-      selectedZone?.type !== "polygon"
-    ) {
-      return;
-    }
-
-    event.preventDefault();
-    const nextPoint = getPointFromEvent(event);
-    const lastPoint = drawingPointsRef.current[drawingPointsRef.current.length - 1];
-
-    if (lastPoint && getPointDistance(lastPoint, nextPoint) < 1.2) {
-      return;
-    }
-
-    const nextPoints = [...drawingPointsRef.current, nextPoint];
-    drawingPointsRef.current = nextPoints;
-    updatePolygonZone(nextPoints);
-  }
-
-  function finishFreeformDrawing() {
-    if (!isDrawingPolygon) {
-      return;
-    }
-
-    const points = drawingPointsRef.current;
-
-    if (points.length > 0 && points.length < 3 && selectedZone?.type === "polygon") {
-      updatePolygonZone([]);
-    }
-
-    drawingPointerIdRef.current = null;
-    drawingPointsRef.current = [];
-    setIsDrawingPolygon(false);
-  }
-
-  function updatePolygonZone(points: MapPoint[]) {
-    if (!selectedZone || selectedZone.type !== "polygon") {
-      return;
-    }
-
-    updateZone(selectedZone.id, (zone) => ({
-      ...zone,
-      points,
-      saved: false,
-    }));
+    setStatusMessage("Radius changed. Confirm when it looks right.");
   }
 
   return (
-    <div className="overflow-hidden rounded-[30px] border border-neutral-200 bg-white shadow-[0_22px_70px_rgba(13,19,33,0.08)]">
-      <div className="flex flex-col gap-3 border-b border-neutral-200 bg-white/90 px-4 py-3 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+    <div className="overflow-hidden rounded-[30px] border border-[#D4AF37]/16 bg-white shadow-[0_22px_70px_rgba(13,19,33,0.08)]">
+      <div className="flex flex-col gap-4 border-b border-[#D4AF37]/14 bg-white/92 px-5 py-4 backdrop-blur lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
             {title}
           </p>
           {subtitle ? (
-            <p className="mt-1 truncate text-sm font-semibold text-neutral-700">
+            <p className="mt-1 text-sm font-semibold text-neutral-700">
               {subtitle}
             </p>
           ) : null}
+          <p className="mt-2 text-xs font-semibold text-[#8A6A16]">
+            {formatZoneSummary(selectedZone)}
+          </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
           {(["radius", "polygon"] as const).map((tool) => (
@@ -347,10 +426,11 @@ export function ZoneMapEditor({
               key={tool}
               type="button"
               onClick={() => selectTool(tool)}
-              className={`rounded-full px-3 py-2 text-xs font-semibold transition hover:-translate-y-0.5 ${
-                activeTool === tool
+              aria-pressed={effectiveTool === tool}
+              className={`rounded-full px-4 py-2 text-xs font-semibold transition hover:-translate-y-0.5 ${
+                effectiveTool === tool
                   ? "bg-[#0D1321] text-white"
-                  : "border border-neutral-200 bg-white text-neutral-700 hover:border-[#0D1321]"
+                  : "border border-[#D4AF37]/18 bg-white text-neutral-700 hover:border-[#D4AF37]/60"
               }`}
             >
               {tool === "radius" ? "Circle" : "Freeform"}
@@ -360,34 +440,33 @@ export function ZoneMapEditor({
             <button
               type="button"
               onClick={() => addZone()}
-              className="rounded-full border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-[#0D1321]"
+              className="rounded-full border border-[#D4AF37]/18 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-[#D4AF37]/60"
             >
               Add zone
             </button>
           ) : null}
           <button
             type="button"
-            onClick={saveSelectedZone}
-            disabled={!selectedZone}
-            className="rounded-full bg-[#0D1321] px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+          onClick={startDrawing}
+            className="rounded-full border border-[#0D1321]/10 bg-[#FFFCF7] px-4 py-2 text-xs font-semibold text-[#0D1321] transition hover:-translate-y-0.5 hover:border-[#0D1321]/40"
           >
-            {singleZone ? "Save area" : "Save zone"}
+            Draw area
+          </button>
+          <button
+            type="button"
+            onClick={confirmSelectedZone}
+            disabled={!selectedZone || Boolean(validatedMessage)}
+            className="rounded-full bg-[#0D1321] px-4 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+          >
+            Confirm area
           </button>
         </div>
       </div>
 
       <div
-        ref={surfaceRef}
-        className={`relative overflow-hidden bg-[linear-gradient(135deg,#e6ece6,#f4efe8)] ${
-          heightClassName ?? (compact ? "h-72" : "min-h-[430px]")
+        className={`relative overflow-hidden bg-[#F6F3EA] ${
+          heightClassName ?? (compact ? "h-80" : "min-h-[520px]")
         }`}
-        onPointerLeave={() => setDragState(null)}
-        onPointerMove={handlePointerMove}
-        onPointerUp={() => setDragState(null)}
-        onPointerCancel={() => {
-          setDragState(null);
-          finishFreeformDrawing();
-        }}
       >
         {hasInteractiveMap ? (
           <div className="absolute inset-0">
@@ -396,178 +475,99 @@ export function ZoneMapEditor({
         ) : (
           <FallbackMapSurface />
         )}
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.28),transparent_24%,transparent_74%,rgba(255,255,255,0.22))]" />
-        <svg
-          className="pointer-events-none absolute inset-0 h-full w-full"
-          preserveAspectRatio="none"
-          viewBox="0 0 100 100"
-        >
-          {visibleZones.map((zone) =>
-            zone.type === "radius" && zone.center ? (
-              <circle
-                key={zone.id}
-                cx={zone.center.x}
-                cy={zone.center.y}
-                r={zone.radiusPct ?? 24}
-                className={`fill-emerald-500/12 stroke-emerald-700/55 transition ${
-                  zone.saved ? "stroke-emerald-800" : ""
-                }`}
-                strokeWidth="2"
-              />
-            ) : zone.type === "polygon" && zone.points?.length ? (
-              <polygon
-                key={zone.id}
-                points={zone.points
-                  .map((point) => `${point.x},${point.y}`)
-                  .join(" ")}
-                className={`fill-sky-500/12 stroke-sky-700/60 transition ${
-                  zone.saved ? "stroke-sky-900" : ""
-                }`}
-                strokeWidth="2"
-                vectorEffect="non-scaling-stroke"
-              />
-            ) : null,
-          )}
-        </svg>
-
-        {visibleZones.map((zone) =>
-          zone.type === "radius" && zone.center ? (
-            <button
-              key={`${zone.id}-center`}
-              type="button"
-              data-zone-control
-              onClick={() => setSelectedZoneId(zone.id)}
-              onPointerDown={(event) => {
-                event.stopPropagation();
-                event.currentTarget.setPointerCapture(event.pointerId);
-                setSelectedZoneId(zone.id);
-                setDragState({ zoneId: zone.id });
-              }}
-              className={`absolute z-20 h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#D4AF37] shadow-[0_16px_40px_rgba(13,19,33,0.18)] transition hover:scale-110 ${
-                selectedZone?.id === zone.id ? "ring-4 ring-[#D4AF37]/28" : ""
-              }`}
-              style={{
-                left: `${zone.center.x}%`,
-                top: `${zone.center.y}%`,
-              }}
-              aria-label={`Move ${zone.label}`}
-            />
-          ) : null,
-        )}
-
-        {polygonPoints.map(({ index, point, zone }) => (
-          <button
-            key={`${zone.id}-${index}`}
-            type="button"
-            data-zone-control
-            onClick={() => setSelectedZoneId(zone.id)}
-            onPointerDown={(event) => {
-              event.stopPropagation();
-              event.currentTarget.setPointerCapture(event.pointerId);
-              setSelectedZoneId(zone.id);
-              setDragState({ pointIndex: index, zoneId: zone.id });
-            }}
-            className={`absolute z-20 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#16233B] shadow-[0_14px_34px_rgba(13,19,33,0.18)] transition hover:scale-110 ${
-              selectedZone?.id === zone.id ? "ring-4 ring-[#D4AF37]/24" : ""
-            }`}
-            style={{
-              left: `${point.x}%`,
-              top: `${point.y}%`,
-            }}
-            aria-label={`Move ${zone.label} point ${index + 1}`}
-          />
-        ))}
 
         {children}
 
-        {isDrawingPolygon ? (
-          <div
-            className="absolute inset-0 z-[25] cursor-crosshair bg-sky-950/5"
-            onPointerDown={handleDrawingPointerDown}
-            onPointerMove={handleDrawingPointerMove}
-            onPointerUp={finishFreeformDrawing}
-            onPointerCancel={finishFreeformDrawing}
-          >
-            <div className="pointer-events-none absolute left-1/2 top-5 -translate-x-1/2 rounded-full bg-white/94 px-4 py-2 text-xs font-semibold text-neutral-800 shadow-[0_14px_34px_rgba(13,19,33,0.14)] backdrop-blur">
-              Drag to draw the venue area. Release to finish.
-            </div>
+        {mapState !== "ready" ? (
+          <MapStateBanner
+            state={mapState}
+            message={
+              mapState === "fallback"
+                ? "Mapbox is not configured, so Arivvio is showing a fallback area from the selected location."
+                : statusMessage
+            }
+            onRetry={() => window.location.reload()}
+          />
+        ) : null}
+
+        {drawMode !== "idle" ? (
+          <div className="pointer-events-none absolute left-1/2 top-5 z-20 -translate-x-1/2 rounded-full bg-white/94 px-4 py-2 text-xs font-semibold text-neutral-800 shadow-[0_14px_34px_rgba(13,19,33,0.14)] backdrop-blur">
+            {drawMode === "radius"
+              ? "Click once to place the circle."
+              : "Click map points. Drag markers afterward to edit."}
           </div>
         ) : null}
 
-        <div
-          data-zone-control
-          className="absolute bottom-4 left-4 right-4 z-30 rounded-3xl bg-white/92 p-4 text-xs font-semibold text-neutral-700 shadow-[0_18px_50px_rgba(13,19,33,0.12)] backdrop-blur"
-        >
-          {selectedZone?.type === "radius" ? (
-            <div className="grid gap-2">
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <span>Search radius</span>
-                <span className="text-neutral-500">
-                  Drag the map to move around. Drag the gold point to move the circle.
-                </span>
-              </div>
-              <input
-                type="range"
-                min="10"
-                max="42"
-                value={selectedZone.radiusPct ?? 24}
-                onChange={(event) =>
-                  updateZone(selectedZone.id, (zone) => ({
-                    ...zone,
-                    radiusPct: Number(event.target.value),
-                    saved: false,
-                  }))
-                }
-                className="w-full accent-[#D4AF37]"
-              />
-            </div>
-          ) : selectedZone?.type === "polygon" ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p>
-                Pan or zoom the map first, then draw one continuous boundary.
+        <div className="absolute bottom-4 left-4 right-4 z-20 rounded-[28px] border border-[#D4AF37]/14 bg-white/94 p-4 shadow-[0_18px_50px_rgba(13,19,33,0.12)] backdrop-blur">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-neutral-950">
+                {selectedZone?.type === "polygon"
+                  ? "Freeform search area"
+                  : "Circle search area"}
               </p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={startFreeformDrawing}
-                  className="h-10 rounded-full bg-[#0D1321] px-4 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
-                >
-                  {selectedZone.points?.length ? "Redraw area" : "Draw area"}
-                </button>
-                {selectedZone.points?.length ? (
+              <p className="mt-1 text-xs font-semibold text-neutral-500">
+                {statusMessage || (selectedZone?.saved ? "Saved area restored." : "Pan, zoom, draw, then confirm one area.")}
+              </p>
+            </div>
+
+            {selectedZone?.type === "radius" ? (
+              <label className="min-w-[240px] text-xs font-semibold text-neutral-700">
+                Radius: {metersToMiles(selectedZone.radiusMeters).toFixed(1)} mi
+                <input
+                  type="range"
+                  min="1"
+                  max="35"
+                  step="0.5"
+                  value={metersToMiles(selectedZone.radiusMeters)}
+                  onChange={(event) => updateRadius(event.target.value)}
+                  className="mt-2 w-full accent-[#D4AF37]"
+                />
+              </label>
+            ) : (
+              <div className="flex flex-wrap gap-2 text-xs font-semibold text-neutral-600">
+                <span className="rounded-full bg-[#F6F3EA] px-3 py-2">
+                  {selectedZone?.type === "polygon" ? selectedZone.points.length : 0} points
+                </span>
+                {drawMode === "polygon" ? (
                   <button
                     type="button"
-                    onClick={() =>
-                      updateZone(selectedZone.id, (zone) => ({
-                        ...zone,
-                        points: [],
-                        saved: false,
-                      }))
-                    }
-                    className="h-10 rounded-full border border-neutral-200 bg-white px-4 text-xs font-semibold text-neutral-800 transition hover:-translate-y-0.5 hover:border-[#0D1321]"
+                    onClick={() => setDrawMode("idle")}
+                    className="rounded-full border border-[#D4AF37]/18 bg-white px-3 py-2 text-neutral-800 transition hover:-translate-y-0.5"
                   >
-                    Clear
+                    Stop adding points
                   </button>
                 ) : null}
               </div>
-            </div>
-          ) : (
-            <p>Select a shape to define the search area.</p>
-          )}
+            )}
+
+            {selectedZone ? (
+              <button
+                type="button"
+                onClick={clearSelectedZone}
+                className="rounded-full border border-[#D4AF37]/18 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-[#D4AF37]/60"
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
 
-      <div className="flex min-w-0 gap-2 overflow-x-auto border-t border-neutral-200 bg-[#FFFCF7] p-3 [scrollbar-width:none]">
+      <div className="flex min-w-0 gap-2 overflow-x-auto border-t border-[#D4AF37]/14 bg-[#FFFCF7] p-3 [scrollbar-width:none]">
         {visibleZones.length ? (
           visibleZones.map((zone) => (
             <button
               key={zone.id}
               type="button"
-              onClick={() => setSelectedZoneId(zone.id)}
+              onClick={() => {
+                setSelectedZoneId(zone.id);
+                fitZone(mapRef.current, zone);
+              }}
               className={`min-w-fit rounded-full border px-3 py-2 text-xs font-semibold transition hover:-translate-y-0.5 ${
                 selectedZone?.id === zone.id
                   ? "border-[#0D1321] bg-[#0D1321] text-white"
-                  : "border-neutral-200 bg-white text-neutral-700"
+                  : "border-[#D4AF37]/18 bg-white text-neutral-700"
               }`}
             >
               {zone.label}
@@ -577,10 +577,10 @@ export function ZoneMapEditor({
         ) : (
           <button
             type="button"
-            onClick={() => addZone("radius")}
+            onClick={startDrawing}
             className="rounded-full bg-[#0D1321] px-4 py-2 text-xs font-semibold text-white"
           >
-            Create first zone
+            Draw first area
           </button>
         )}
       </div>
@@ -590,60 +590,250 @@ export function ZoneMapEditor({
 
 export function summarizeMapZones(zones: MapZone[]) {
   if (!zones.length) {
-    return "No zones saved";
+    return "No area saved";
   }
 
-  return zones
-    .map((zone) =>
-      zone.type === "radius"
-        ? `${zone.label}: circle radius ${Math.round(zone.radiusPct ?? 0)}`
-        : `${zone.label}: polygon with ${zone.points?.length ?? 0} points`,
-    )
-    .join("; ");
+  return zones.map((zone) => formatZoneSummary(zone)).join("; ");
 }
 
-function createZone(
-  type: MapZone["type"],
-  defaultLabel: string,
-  index: number,
-  singleZone: boolean,
-): MapZone {
-  const label = singleZone ? defaultLabel : `${defaultLabel} ${index}`;
-
-  if (type === "radius") {
-    return {
-      center: { x: 50, y: 50 },
-      id: `zone-radius-${Date.now()}`,
-      label,
-      radiusPct: 26,
-      type,
-    };
+function ensureZoneLayers(map: MapboxMap) {
+  if (!map.getSource(zoneSourceId)) {
+    map.addSource(zoneSourceId, {
+      data: emptyFeatureCollection(),
+      type: "geojson",
+    });
   }
 
+  if (!map.getLayer(zoneFillLayerId)) {
+    map.addLayer({
+      id: zoneFillLayerId,
+      paint: {
+        "fill-color": "#0E8F72",
+        "fill-opacity": 0.18,
+      },
+      source: zoneSourceId,
+      type: "fill",
+    });
+  }
+
+  if (!map.getLayer(zoneLineLayerId)) {
+    map.addLayer({
+      id: zoneLineLayerId,
+      paint: {
+        "line-color": "#0E8F72",
+        "line-opacity": 0.82,
+        "line-width": 4,
+      },
+      source: zoneSourceId,
+      type: "line",
+    });
+  }
+}
+
+function updateZoneSource(map: MapboxMap, zone: MapZone | null) {
+  if (!map.getSource(zoneSourceId)) {
+    ensureZoneLayers(map);
+  }
+
+  const source = map.getSource(zoneSourceId) as mapboxgl.GeoJSONSource | undefined;
+
+  source?.setData(zoneToFeatureCollection(zone));
+}
+
+function updateZoneMarkers({
+  centerMarkerRef,
+  map,
+  onCenterChange,
+  onVertexChange,
+  selectedZone,
+  vertexMarkersRef,
+}: {
+  centerMarkerRef: MutableRefObject<mapboxgl.Marker | null>;
+  map: MapboxMap;
+  onCenterChange: (center: Coordinates) => void;
+  onVertexChange: (index: number, point: Coordinates) => void;
+  selectedZone: MapZone | null;
+  vertexMarkersRef: MutableRefObject<mapboxgl.Marker[]>;
+}) {
+  clearMarker(centerMarkerRef);
+  clearVertexMarkers(vertexMarkersRef);
+
+  if (!selectedZone) {
+    return;
+  }
+
+  if (selectedZone.type === "radius") {
+    const marker = new mapboxgl.Marker({
+      draggable: true,
+      element: createCenterMarkerElement(),
+    })
+      .setLngLat([selectedZone.center.lng, selectedZone.center.lat])
+      .addTo(map);
+
+    marker.on("dragend", () => {
+      const lngLat = marker.getLngLat();
+      onCenterChange({ lat: lngLat.lat, lng: lngLat.lng });
+    });
+    centerMarkerRef.current = marker;
+    return;
+  }
+
+  selectedZone.points.forEach((point, index) => {
+    const marker = new mapboxgl.Marker({
+      draggable: true,
+      element: createVertexMarkerElement(index),
+    })
+      .setLngLat([point.lng, point.lat])
+      .addTo(map);
+
+    marker.on("dragend", () => {
+      const lngLat = marker.getLngLat();
+      onVertexChange(index, { lat: lngLat.lat, lng: lngLat.lng });
+    });
+    vertexMarkersRef.current.push(marker);
+  });
+}
+
+function zoneToFeatureCollection(zone: MapZone | null): GeoJsonData {
+  if (!zone) {
+    return emptyFeatureCollection();
+  }
+
+  if (zone.type === "radius") {
+    const circle = getCirclePolygon(zone.center, zone.radiusMeters);
+
+    return polygonFeatureCollection(circle);
+  }
+
+  if (zone.points.length < 3) {
+    return emptyFeatureCollection();
+  }
+
+  return polygonFeatureCollection(zone.points);
+}
+
+function polygonFeatureCollection(points: Coordinates[]): GeoJsonData {
+  const ring = [...points, points[0]].map((point) => [point.lng, point.lat]);
+
   return {
-    id: `zone-freeform-${Date.now()}`,
-    label,
-    points: [
-      { x: 34, y: 36 },
-      { x: 66, y: 41 },
-      { x: 58, y: 68 },
-      { x: 30, y: 61 },
+    features: [
+      {
+        geometry: {
+          coordinates: [ring],
+          type: "Polygon",
+        },
+        properties: {},
+        type: "Feature",
+      },
     ],
-    type,
-  };
+    type: "FeatureCollection",
+  } as GeoJsonData;
 }
 
-function createEmptyPolygonZone(defaultLabel: string): MapZone {
+function emptyFeatureCollection(): GeoJsonData {
   return {
-    id: `zone-freeform-${Date.now()}`,
-    label: defaultLabel,
-    points: [],
-    type: "polygon",
-  };
+    features: [],
+    type: "FeatureCollection",
+  } as GeoJsonData;
 }
 
-function getPointDistance(start: MapPoint, end: MapPoint) {
-  return Math.hypot(end.x - start.x, end.y - start.y);
+function fitZone(map: MapboxMap | null, zone: MapZone | null) {
+  if (!map || !zone) {
+    return;
+  }
+
+  const bounds = getZoneBounds(zone);
+  const mapBounds: LngLatBoundsLike = [
+    [bounds.minLng, bounds.minLat],
+    [bounds.maxLng, bounds.maxLat],
+  ];
+
+  map.fitBounds(mapBounds, {
+    duration: 360,
+    maxZoom: zone.type === "radius" ? 12.5 : 13,
+    padding: { bottom: 140, left: 80, right: 80, top: 80 },
+  });
+}
+
+function upsertZone(zones: MapZone[], zone: MapZone) {
+  if (!zones.some((item) => item.id === zone.id)) {
+    return [zone, ...zones];
+  }
+
+  return zones.map((item) => (item.id === zone.id ? zone : item));
+}
+
+function replaceAt<T>(items: T[], index: number, value: T) {
+  return items.map((item, itemIndex) => (itemIndex === index ? value : item));
+}
+
+function createCenterMarkerElement() {
+  const element = document.createElement("button");
+  element.type = "button";
+  element.className =
+    "h-9 w-9 rounded-full border-[3px] border-white bg-[#0E8F72] shadow-[0_18px_44px_rgba(13,19,33,0.26)] ring-4 ring-[#0E8F72]/22 transition hover:scale-110";
+  element.setAttribute("aria-label", "Drag to move circle center");
+
+  return element;
+}
+
+function createVertexMarkerElement(index: number) {
+  const element = document.createElement("button");
+  element.type = "button";
+  element.textContent = String(index + 1);
+  element.className =
+    "flex h-8 w-8 items-center justify-center rounded-full border-[3px] border-white bg-[#0D1321] text-[11px] font-semibold text-[#D4AF37] shadow-[0_16px_38px_rgba(13,19,33,0.24)] transition hover:scale-110";
+  element.setAttribute("aria-label", `Drag freeform point ${index + 1}`);
+
+  return element;
+}
+
+function clearMarker(ref: MutableRefObject<mapboxgl.Marker | null>) {
+  ref.current?.remove();
+  ref.current = null;
+}
+
+function clearVertexMarkers(ref: MutableRefObject<mapboxgl.Marker[]>) {
+  ref.current.forEach((marker) => marker.remove());
+  ref.current = [];
+}
+
+function MapStateBanner({
+  message,
+  onRetry,
+  state,
+}: {
+  message?: string;
+  onRetry: () => void;
+  state: MapState;
+}) {
+  if (state === "ready") {
+    return null;
+  }
+
+  return (
+    <div className="absolute left-4 top-4 z-20 max-w-sm rounded-[24px] border border-[#D4AF37]/18 bg-white/94 p-4 text-sm shadow-[0_18px_48px_rgba(13,19,33,0.12)] backdrop-blur">
+      <p className="font-semibold text-neutral-950">
+        {state === "loading"
+          ? "Loading map..."
+          : state === "error"
+            ? "Map needs attention"
+            : "Map fallback active"}
+      </p>
+      <p className="mt-1 leading-6 text-neutral-600">
+        {message || "Arivvio is preparing the map area."}
+      </p>
+      {state === "error" ? (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-3 rounded-full bg-[#0D1321] px-4 py-2 text-xs font-semibold text-white"
+        >
+          Retry
+        </button>
+      ) : null}
+    </div>
+  );
 }
 
 function FallbackMapSurface() {
@@ -658,6 +848,10 @@ function FallbackMapSurface() {
       <div className="absolute bottom-[14%] left-[36%] h-24 w-44 rounded-full bg-white/42 blur-sm" />
     </div>
   );
+}
+
+function getDefaultCenter() {
+  return { lat: 34.0522, lng: -118.2437 };
 }
 
 function getMapboxStyleUrl() {
@@ -678,8 +872,4 @@ function resizeMapSafely(map: MapboxMap | null) {
   } catch {
     // Mapbox can throw if React changes the container during a resize tick.
   }
-}
-
-function clamp(value: number) {
-  return Math.min(96, Math.max(4, value));
 }

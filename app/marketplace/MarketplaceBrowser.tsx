@@ -47,7 +47,17 @@ import {
   searchAddressSuggestions,
   type AddressSuggestion,
 } from "@/lib/maps/geocoding";
+import {
+  formatZoneSummary,
+  getZoneCenter,
+  loadLocationProfile,
+  saveLocationProfile,
+  type LocationProfile,
+  type PlanningZone,
+  zoneContainsPoint,
+} from "@/lib/maps/zones";
 import { formatTime } from "@/lib/utils/format";
+import { ZoneMapEditor } from "@/app/components/maps/ZoneMapEditor";
 import { FilterDrawer } from "./components/FilterDrawer";
 import { MarketplaceMap, type MarketplaceMapPin } from "./components/MarketplaceMap";
 import { MemoizedMarketplaceRow as MarketplaceRow } from "./components/MarketplaceRow";
@@ -69,6 +79,8 @@ type CartLine = {
   serviceTitle: string;
 };
 
+type MarketplaceEntryMode = "browse" | "category" | "event" | "service";
+
 function demoItems() {
   return marketplaceItems.map((item) => ({
     ...item,
@@ -82,6 +94,14 @@ function isEventType(value: string | null): value is EventType {
 
 function isServiceName(value: string): value is ServiceName {
   return marketplaceTypes.includes(value as MarketplaceFilter) && value !== "All";
+}
+
+function getEntryMode(value: string | null): MarketplaceEntryMode {
+  if (value === "service" || value === "browse" || value === "category") {
+    return value;
+  }
+
+  return "event";
 }
 
 function getInitialCoordinates(searchParams: ReturnType<typeof useSearchParams>) {
@@ -104,6 +124,7 @@ export function MarketplaceBrowser() {
     .get("services")
     ?.split(",")
     .filter(isServiceName);
+  const entryMode = getEntryMode(searchParams.get("entryMode"));
   const initialEventType = isEventType(initialEvent) ? initialEvent : "All";
   const initialGuests = Number(searchParams.get("guests") ?? 40);
   const initialBudget = searchParams.get("budget");
@@ -146,6 +167,9 @@ export function MarketplaceBrowser() {
   const [liveCoordinates, setLiveCoordinates] = useState<Coordinates | null>(null);
   const [selectedAddressCoordinates, setSelectedAddressCoordinates] =
     useState<Coordinates | null>(initialCoordinates);
+  const [locationProfile, setLocationProfile] = useState<LocationProfile | null>(null);
+  const [searchZone, setSearchZone] = useState<PlanningZone | null>(null);
+  const [isZoneEditorOpen, setIsZoneEditorOpen] = useState(false);
   const [locationStatus, setLocationStatus] = useState("");
   const [cart, setCart] = useState<CartLine[]>([]);
   const [cartMessage, setCartMessage] = useState("");
@@ -175,11 +199,14 @@ export function MarketplaceBrowser() {
     () =>
       useHomeVenue
         ? homeCoordinates
-        : savedEvent?.latitude && savedEvent.longitude
+        : locationProfile?.coordinates
+          ? locationProfile.coordinates
+          : savedEvent?.latitude && savedEvent.longitude
             ? { lat: savedEvent.latitude, lng: savedEvent.longitude }
             : undefined,
     [
       homeCoordinates,
+      locationProfile?.coordinates,
       savedEvent?.latitude,
       savedEvent?.longitude,
       useHomeVenue,
@@ -225,10 +252,17 @@ export function MarketplaceBrowser() {
     .join(" - ");
   const eventLocationLabel = useHomeVenue
     ? homeAddress || homeAreaName
-    : initialLocation || savedEvent?.city || "Not selected";
+    : locationProfile?.label ||
+      locationProfile?.formattedAddress ||
+      initialLocation ||
+      savedEvent?.city ||
+      "Not selected";
   const serviceSummary = selectedServices.length
     ? selectedServices.slice(0, 4).join(", ")
     : "Open to suggestions";
+  const searchAreaSummary = searchZone
+    ? formatZoneSummary(searchZone)
+    : locationProfile?.searchAreaLabel || "No search area saved";
   const normalizedQuery = query.trim().toLowerCase();
   const planningContext = useMemo(
     () =>
@@ -280,12 +314,17 @@ export function MarketplaceBrowser() {
         item.type === "Venue" ||
         !item.serviceRadiusMiles ||
         miles <= item.serviceRadiusMiles;
-      const withinPlannerSearchRegion =
-        !eventCoordinates ||
+      const withinSavedSearchZone =
+        !searchZone ||
         item.type !== "Venue" ||
-        !Number.isFinite(initialSearchRadiusMiles) ||
-        initialSearchRadiusMiles <= 0 ||
-        miles <= initialSearchRadiusMiles;
+        zoneContainsPoint(searchZone, item.coordinates);
+      const withinPlannerSearchRegion =
+        withinSavedSearchZone &&
+        (!eventCoordinates ||
+          item.type !== "Venue" ||
+          !Number.isFinite(initialSearchRadiusMiles) ||
+          initialSearchRadiusMiles <= 0 ||
+          miles <= initialSearchRadiusMiles);
       const isNearEnough =
         !eventCoordinates || item.type === "Venue" || driveMinutes <= 60;
       const matchesAvailability = isAvailableAt(
@@ -337,6 +376,7 @@ export function MarketplaceBrowser() {
     initialSearchRadiusMiles,
     planningContext,
     savedEvent?.city,
+    searchZone,
     selectedEvent,
     excludedServices,
     selectedServices,
@@ -362,8 +402,8 @@ export function MarketplaceBrowser() {
     return counts;
   }, [cart]);
   const marketplaceRows = useMemo(
-    () => buildMarketplaceRows(filteredItems),
-    [filteredItems],
+    () => buildMarketplaceRows(filteredItems, entryMode === "service" ? selectedServices : []),
+    [entryMode, filteredItems, selectedServices],
   );
   const activeRow = useMemo(
     () => marketplaceRows.find((row) => row.id === activeRowId) ?? marketplaceRows[0],
@@ -431,6 +471,14 @@ export function MarketplaceBrowser() {
   }, []);
 
   useEffect(() => {
+    const profile = loadLocationProfile();
+
+    if (profile) {
+      applyLocationProfile(profile, "Planning location restored.");
+    }
+  }, []);
+
+  useEffect(() => {
     async function loadMarketplace() {
       if (!hasSupabaseConfig()) {
         setIsAuthLoading(false);
@@ -457,6 +505,11 @@ export function MarketplaceBrowser() {
         if (eventId) {
           const eventRow = await getEventById(supabase, eventId);
           setSavedEvent(eventRow);
+          const savedLocationProfile = getLocationProfileFromEvent(eventRow);
+
+          if (savedLocationProfile) {
+            applyLocationProfile(savedLocationProfile, "Saved event location restored.");
+          }
           setEventDate(eventRow.date ?? eventDate);
           setStartTime(eventRow.start_time?.slice(0, 5) ?? startTime);
           setEndTime(eventRow.end_time?.slice(0, 5) ?? endTime);
@@ -498,6 +551,35 @@ export function MarketplaceBrowser() {
     // The initial URL params should seed the browser once when the route loads.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
+
+  function applyLocationProfile(profile: LocationProfile, message?: string) {
+    setLocationProfile(profile);
+    setSearchZone(profile.zone ?? null);
+
+    if (profile.coordinates) {
+      setSelectedAddressCoordinates(profile.coordinates);
+      setLiveCoordinates(null);
+      const nearestArea = homeAreas
+        .map((area) => ({
+          area,
+          distance: getDistanceMiles(profile.coordinates as Coordinates, area.coordinates),
+        }))
+        .sort((a, b) => a.distance - b.distance)[0]?.area;
+
+      if (nearestArea) {
+        setHomeAreaName(nearestArea.name);
+      }
+
+      if (profile.locationMode !== "needs_venue") {
+        setUseHomeVenue(true);
+        setHomeAddress(profile.formattedAddress || profile.label || "Selected event address");
+      }
+    }
+
+    if (message) {
+      setLocationStatus(message);
+    }
+  }
 
   useEffect(() => {
     if (!hasSupabaseConfig()) {
@@ -667,6 +749,17 @@ export function MarketplaceBrowser() {
         setSelectedAddressCoordinates(nextCoordinates);
         setUseHomeVenue(true);
         setHomeAddress("Current live location");
+        const nextProfile: LocationProfile = {
+          ...(locationProfile ?? {}),
+          coordinates: nextCoordinates,
+          currentLocationUsed: true,
+          formattedAddress: "Current live location",
+          label: "Current live location",
+          locationMode: "home_private",
+        };
+
+        setLocationProfile(nextProfile);
+        saveLocationProfile(nextProfile);
         if (nearestArea) {
           setHomeAreaName(nearestArea.name);
         }
@@ -702,6 +795,19 @@ export function MarketplaceBrowser() {
     setSelectedAddressCoordinates(suggestion.coordinates);
     setLiveCoordinates(null);
     setUseHomeVenue(true);
+    const nextProfile: LocationProfile = {
+      ...(locationProfile ?? {}),
+      coordinates: suggestion.coordinates,
+      currentLocationUsed: false,
+      formattedAddress: suggestion.label,
+      inferredLocationType: suggestion.placeType === "venue" ? "venue" : suggestion.placeType,
+      label: suggestion.label,
+      locationMode: suggestion.placeType === "venue" ? "has_venue" : "home_private",
+      mapboxPlaceId: suggestion.id,
+    };
+
+    setLocationProfile(nextProfile);
+    saveLocationProfile(nextProfile);
     if (nearestArea) {
       setHomeAreaName(nearestArea.name);
     }
@@ -956,6 +1062,7 @@ export function MarketplaceBrowser() {
     <>
       <div className="relative min-h-[calc(100vh-5rem)] w-full overflow-x-clip">
         <EventContextPanel
+          entryMode={entryMode}
           eventDate={eventDate}
           eventLocationLabel={eventLocationLabel}
           guestCount={guestCount}
@@ -971,12 +1078,42 @@ export function MarketplaceBrowser() {
           isSearchingAddress={isSearchingAddress}
           locationStatus={locationStatus}
           providerCount={providerEstimates.length}
+          searchAreaSummary={searchAreaSummary}
           onHomeAddressChange={updateHomeAddress}
+          onEditArea={() => setIsZoneEditorOpen((current) => !current)}
           onOpenFilters={() => setIsFilterDrawerOpen(true)}
           onSelectAddressSuggestion={selectAddressSuggestion}
           onToggleHomeVenue={() => setUseHomeVenue((current) => !current)}
           onUseCurrentLocation={useCurrentLocation}
         />
+
+        {isZoneEditorOpen ? (
+          <div className="mt-3 rounded-[30px] border border-[#D4AF37]/16 bg-white p-3 shadow-[0_18px_56px_rgba(13,19,33,0.055)]">
+            <ZoneMapEditor
+              defaultLabel="Marketplace search area"
+              heightClassName="h-[52vh] min-h-[480px]"
+              mapCenter={searchZone ? getZoneCenter(searchZone) : eventCoordinates}
+              mapZoom={10.5}
+              onZonesChange={(zones) => {
+                const zone = zones[0] ?? null;
+                const nextProfile: LocationProfile = {
+                  ...(locationProfile ?? {}),
+                  coordinates: zone ? getZoneCenter(zone) : eventCoordinates,
+                  searchAreaLabel: zone?.label,
+                  zone: zone ?? undefined,
+                };
+
+                setSearchZone(zone);
+                setLocationProfile(nextProfile);
+                saveLocationProfile(nextProfile);
+              }}
+              singleZone
+              subtitle="Adjust the one area Arivvio should use for venue discovery."
+              title="Marketplace search area"
+              zones={searchZone ? [searchZone] : []}
+            />
+          </div>
+        ) : null}
 
         <div className="mt-3 grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(430px,44vw)_minmax(280px,320px)] 2xl:grid-cols-[minmax(0,1fr)_minmax(560px,46vw)_320px]">
           <section
@@ -1040,6 +1177,7 @@ export function MarketplaceBrowser() {
               hoveredItemId={hoveredItemId}
               layout="sticky"
               pins={mapPins}
+              searchZone={searchZone}
               selectedItemId={selectedMapItemId}
               onAddItem={addToCart}
               onHoverItem={setMapHoverItem}
@@ -1085,6 +1223,7 @@ export function MarketplaceBrowser() {
               hoveredItemId={hoveredItemId}
               layout="sheet"
               pins={mapPins}
+              searchZone={searchZone}
               selectedItemId={selectedMapItemId}
               onAddItem={addToCart}
               onHoverItem={setMapHoverItem}
@@ -1314,6 +1453,7 @@ function getServiceOptionQuote(
 
 function EventContextPanel({
   endTime,
+  entryMode,
   eventDate,
   eventLocationLabel,
   guestCount,
@@ -1325,9 +1465,11 @@ function EventContextPanel({
   marketplaceMessage,
   planSummary,
   providerCount,
+  searchAreaSummary,
   serviceSummary,
   startTime,
   useHomeVenue,
+  onEditArea,
   onHomeAddressChange,
   onOpenFilters,
   onSelectAddressSuggestion,
@@ -1336,6 +1478,7 @@ function EventContextPanel({
 }: {
   addressSuggestions: AddressSuggestion[];
   endTime: string;
+  entryMode: MarketplaceEntryMode;
   eventDate: string;
   eventLocationLabel: string;
   guestCount: number;
@@ -1346,9 +1489,11 @@ function EventContextPanel({
   marketplaceMessage: string;
   planSummary: string;
   providerCount: number;
+  searchAreaSummary: string;
   serviceSummary: string;
   startTime: string;
   useHomeVenue: boolean;
+  onEditArea: () => void;
   onHomeAddressChange: (value: string) => void;
   onOpenFilters: () => void;
   onSelectAddressSuggestion: (suggestion: AddressSuggestion) => void;
@@ -1360,10 +1505,12 @@ function EventContextPanel({
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
-            Marketplace
+            {getEntryModeLabel(entryMode)}
           </p>
           <h2 className="mt-1 truncate text-xl font-semibold tracking-tight text-neutral-950">
-            {planSummary || "Vendor marketplace"}
+            {entryMode === "service"
+              ? serviceSummary
+              : planSummary || "Vendor marketplace"}
           </h2>
           <p className="mt-1 line-clamp-1 text-sm text-neutral-600">
             {marketplaceMessage}
@@ -1375,6 +1522,7 @@ function EventContextPanel({
             <SummaryPill label="Time" value={`${formatTime(startTime)} - ${formatTime(endTime)}`} />
             <SummaryPill label="Guests" value={guestCount.toLocaleString()} />
             <SummaryPill label="Location" value={eventLocationLabel} />
+            <SummaryPill label="Area" value={searchAreaSummary} />
             <SummaryPill label="Services" value={serviceSummary} />
             <SummaryPill label="Nearby" value={`${providerCount} close`} />
           </div>
@@ -1388,6 +1536,13 @@ function EventContextPanel({
             }`}
           >
             {useHomeVenue ? "Using address" : "Use address"}
+          </button>
+          <button
+            type="button"
+            onClick={onEditArea}
+            className="shrink-0 rounded-full border border-[#D4AF37]/20 bg-white px-4 py-2 text-sm font-semibold text-neutral-950 transition hover:-translate-y-0.5 hover:border-[#D4AF37]/60"
+          >
+            Edit area
           </button>
           <button
             type="button"
@@ -1485,7 +1640,10 @@ function SummaryPill({ label, value }: { label: string; value: string }) {
   );
 }
 
-function buildMarketplaceRows(items: MarketplaceItem[]): MarketplaceRowGroup[] {
+function buildMarketplaceRows(
+  items: MarketplaceItem[],
+  priorityServices: ServiceName[] = [],
+): MarketplaceRowGroup[] {
   const bestMatchItems = items.slice(0, 10);
   const rowDefinitions: Array<{
     description: string;
@@ -1573,7 +1731,20 @@ function buildMarketplaceRows(items: MarketplaceItem[]): MarketplaceRowGroup[] {
     },
   ];
 
-  return rowDefinitions.filter((row) => row.items.length > 0);
+  const nonEmptyRows = rowDefinitions.filter((row) => row.items.length > 0);
+
+  if (!priorityServices.length) {
+    return nonEmptyRows;
+  }
+
+  const priorityRows = nonEmptyRows.filter((row) =>
+    row.serviceNames.some((service) => priorityServices.includes(service)),
+  );
+  const remainingRows = nonEmptyRows.filter(
+    (row) => !priorityRows.some((priorityRow) => priorityRow.id === row.id),
+  );
+
+  return [...priorityRows, ...remainingRows];
 }
 
 function byServices(items: MarketplaceItem[], services: ServiceName[]) {
@@ -1619,4 +1790,41 @@ function getCartAuthMessage(
   }
 
   return "This quote cart is ready to save.";
+}
+
+function getEntryModeLabel(entryMode: MarketplaceEntryMode) {
+  if (entryMode === "service") {
+    return "Vendor search";
+  }
+
+  if (entryMode === "browse") {
+    return "Browse vendors";
+  }
+
+  if (entryMode === "category") {
+    return "Vendor category";
+  }
+
+  return "Event marketplace";
+}
+
+function getLocationProfileFromEvent(event: EventRow): LocationProfile | null {
+  const profile = event.event_profile;
+
+  if (!isRecord(profile)) {
+    return null;
+  }
+
+  const possibleProfile =
+    profile.locationProfile ?? profile.location_profile ?? profile.location;
+
+  if (!isRecord(possibleProfile)) {
+    return null;
+  }
+
+  return possibleProfile as LocationProfile;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }

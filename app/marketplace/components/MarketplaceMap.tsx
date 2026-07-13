@@ -8,6 +8,11 @@ import mapboxgl, {
 import type { Coordinates, MarketplaceItem, ServiceName } from "@/app/data/marketplace";
 import { getVendorImage } from "@/lib/marketplace/vendorImages";
 import { MAPBOX_ACCESS_TOKEN, MAPBOX_STYLE_ID, hasMapboxConfig } from "@/lib/maps/config";
+import {
+  getCirclePolygon,
+  getZoneBounds,
+  type PlanningZone,
+} from "@/lib/maps/zones";
 
 export type MarketplaceMapPin = {
   isActiveRowMatch: boolean;
@@ -23,6 +28,7 @@ type MarketplaceMapProps = {
   hoveredItemId: number | null;
   layout?: "panel" | "sheet" | "sticky";
   pins: MarketplaceMapPin[];
+  searchZone?: PlanningZone | null;
   selectedItemId: number | null;
   onAddItem: (item: MarketplaceItem) => void;
   onHoverItem: (itemId: number | null) => void;
@@ -71,6 +77,7 @@ type MarkerEntry = {
   marker: mapboxgl.Marker;
   signature: string;
 };
+type GeoJsonData = Parameters<mapboxgl.GeoJSONSource["setData"]>[0];
 
 export function MarketplaceMap({
   activeCategory,
@@ -79,6 +86,7 @@ export function MarketplaceMap({
   hoveredItemId,
   layout = "sticky",
   pins,
+  searchZone,
   selectedItemId,
   onAddItem,
   onHoverItem,
@@ -90,6 +98,7 @@ export function MarketplaceMap({
   const eventMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
   const pinsRef = useRef<MarketplaceMapPin[]>(pins);
+  const searchZoneRef = useRef<PlanningZone | null | undefined>(searchZone);
   const viewportSignatureRef = useRef("");
   const isSheet = layout === "sheet";
   const isSticky = layout === "sticky";
@@ -102,7 +111,10 @@ export function MarketplaceMap({
     const points = pinsWithCoordinates.map((pin) => pin.item.coordinates);
     return eventPoint ? [eventPoint, ...points] : points;
   }, [eventPoint, pinsWithCoordinates]);
-  const bounds = useMemo(() => getBounds(visiblePoints), [visiblePoints]);
+  const bounds = useMemo(
+    () => getBounds(visiblePoints, searchZone),
+    [searchZone, visiblePoints],
+  );
   const center = eventPoint ?? getCenter(visiblePoints);
   const initialCenterRef = useRef(center);
   const initialZoomRef = useRef(eventPoint ? 10 : 9);
@@ -111,6 +123,10 @@ export function MarketplaceMap({
   useEffect(() => {
     pinsRef.current = pinsWithCoordinates;
   }, [pinsWithCoordinates]);
+
+  useEffect(() => {
+    searchZoneRef.current = searchZone;
+  }, [searchZone]);
 
   useEffect(() => {
     if (!hasInteractiveMap || !mapContainerRef.current || mapRef.current) {
@@ -133,14 +149,20 @@ export function MarketplaceMap({
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
     map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left");
     const handleMapLoad = () => resizeMapSafely(map);
+    const handleStyleLoad = () => {
+      ensureZoneLayers(map);
+      updateZoneSource(map, searchZoneRef.current);
+    };
     const resizeTimeoutId = window.setTimeout(() => resizeMapSafely(map), 0);
     map.on("load", handleMapLoad);
+    map.on("style.load", handleStyleLoad);
     mapRef.current = map;
     const markerStore = markerRefs.current;
 
     return () => {
       window.clearTimeout(resizeTimeoutId);
       map.off("load", handleMapLoad);
+      map.off("style.load", handleStyleLoad);
       markerStore.forEach(({ marker }) => marker.remove());
       markerStore.clear();
       eventMarkerRef.current?.remove();
@@ -153,6 +175,15 @@ export function MarketplaceMap({
       }
     };
   }, [hasInteractiveMap]);
+
+  useEffect(() => {
+    if (!mapRef.current || !hasInteractiveMap) {
+      return;
+    }
+
+    ensureZoneLayers(mapRef.current);
+    updateZoneSource(mapRef.current, searchZone);
+  }, [hasInteractiveMap, searchZone]);
 
   useEffect(() => {
     if (!mapRef.current || !hasInteractiveMap) {
@@ -336,8 +367,13 @@ export function MarketplaceMap({
     }
 
     const map = mapRef.current;
+    ensureZoneLayers(map);
+    updateZoneSource(map, searchZone);
     const nextBounds = toLngLatBounds(bounds);
-    const viewportSignature = `${bounds.minLat.toFixed(4)}:${bounds.maxLat.toFixed(4)}:${bounds.minLng.toFixed(4)}:${bounds.maxLng.toFixed(4)}:${visiblePoints.length}`;
+    const zoneSignature = searchZone
+      ? `${searchZone.id}:${searchZone.type}:${searchZone.type === "radius" ? searchZone.radiusMeters : searchZone.points.length}`
+      : "none";
+    const viewportSignature = `${bounds.minLat.toFixed(4)}:${bounds.maxLat.toFixed(4)}:${bounds.minLng.toFixed(4)}:${bounds.maxLng.toFixed(4)}:${visiblePoints.length}:${zoneSignature}`;
 
     if (viewportSignatureRef.current === viewportSignature) {
       return;
@@ -361,7 +397,7 @@ export function MarketplaceMap({
         ? { bottom: 86, left: 36, right: 36, top: 82 }
         : { bottom: 96, left: 56, right: 56, top: 92 },
     });
-  }, [bounds, center.lat, center.lng, eventPoint, hasInteractiveMap, isSheet, visiblePoints.length]);
+  }, [bounds, center.lat, center.lng, eventPoint, hasInteractiveMap, isSheet, searchZone, visiblePoints.length]);
 
   return (
     <section
@@ -400,6 +436,7 @@ export function MarketplaceMap({
             eventCoordinates={eventPoint}
             hoveredItemId={hoveredItemId}
             pins={pinsWithCoordinates}
+            searchZone={searchZone}
             selectedItemId={selectedItemId}
             onHoverItem={onHoverItem}
             onSelectItem={onSelectItem}
@@ -433,6 +470,7 @@ function FallbackMap({
   eventCoordinates,
   hoveredItemId,
   pins,
+  searchZone,
   selectedItemId,
   onHoverItem,
   onSelectItem,
@@ -442,15 +480,38 @@ function FallbackMap({
   eventCoordinates?: Coordinates;
   hoveredItemId: number | null;
   pins: MarketplaceMapPin[];
+  searchZone?: PlanningZone | null;
   selectedItemId: number | null;
   onHoverItem: (itemId: number | null) => void;
   onSelectItem: (item: MarketplaceItem) => void;
 }) {
+  const zonePoints = searchZone
+    ? searchZone.type === "radius"
+      ? getCirclePolygon(searchZone.center, searchZone.radiusMeters, 56)
+      : searchZone.points
+    : [];
+
   return (
     <div className="absolute inset-0 bg-[linear-gradient(135deg,#eef2ec,#F7F4EC)]">
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px)] bg-[size:40px_40px]" />
       <div className="absolute left-[12%] top-[24%] h-24 w-[70%] -rotate-6 rounded-full border border-white/70" />
       <div className="absolute left-[18%] top-[54%] h-28 w-[64%] rotate-12 rounded-full border border-white/70" />
+
+      {zonePoints.length >= 3 ? (
+        <svg className="pointer-events-none absolute inset-0 z-10 h-full w-full">
+          <polygon
+            points={zonePoints
+              .map((point) => {
+                const position = toPosition(point, bounds);
+                return `${position.x},${position.y}`;
+              })
+              .join(" ")}
+            vectorEffect="non-scaling-stroke"
+            className="fill-emerald-500/15 stroke-emerald-700/70"
+            strokeWidth="3"
+          />
+        </svg>
+      ) : null}
 
       {eventCoordinates ? (
         <MapMarker label="Event" position={toPosition(eventCoordinates, bounds)} />
@@ -680,13 +741,21 @@ function getMapboxStyleUrl() {
   return `mapbox://styles/${MAPBOX_STYLE_ID}`;
 }
 
-function getBounds(points: Coordinates[]) {
-  if (!points.length) {
+function getBounds(points: Coordinates[], searchZone?: PlanningZone | null) {
+  const zoneBounds = searchZone ? getZoneBounds(searchZone) : null;
+
+  if (!points.length && !zoneBounds) {
     return fallbackBounds;
   }
 
-  const lats = points.map((point) => point.lat);
-  const lngs = points.map((point) => point.lng);
+  const lats = [
+    ...points.map((point) => point.lat),
+    ...(zoneBounds ? [zoneBounds.minLat, zoneBounds.maxLat] : []),
+  ];
+  const lngs = [
+    ...points.map((point) => point.lng),
+    ...(zoneBounds ? [zoneBounds.minLng, zoneBounds.maxLng] : []),
+  ];
   const minLat = Math.min(...lats);
   const maxLat = Math.max(...lats);
   const minLng = Math.min(...lngs);
@@ -731,6 +800,92 @@ function resizeMapSafely(map: MapboxMap | null) {
   } catch {
     // Mapbox can throw if a resize races with React unmounting or rerendering the container.
   }
+}
+
+function ensureZoneLayers(map: MapboxMap) {
+  if (!map.getSource("arivvio-marketplace-zone")) {
+    map.addSource("arivvio-marketplace-zone", {
+      data: emptyFeatureCollection(),
+      type: "geojson",
+    });
+  }
+
+  if (!map.getLayer("arivvio-marketplace-zone-fill")) {
+    map.addLayer({
+      id: "arivvio-marketplace-zone-fill",
+      paint: {
+        "fill-color": "#0E8F72",
+        "fill-opacity": 0.14,
+      },
+      source: "arivvio-marketplace-zone",
+      type: "fill",
+    });
+  }
+
+  if (!map.getLayer("arivvio-marketplace-zone-line")) {
+    map.addLayer({
+      id: "arivvio-marketplace-zone-line",
+      paint: {
+        "line-color": "#0E8F72",
+        "line-opacity": 0.78,
+        "line-width": 3,
+      },
+      source: "arivvio-marketplace-zone",
+      type: "line",
+    });
+  }
+}
+
+function updateZoneSource(map: MapboxMap, zone?: PlanningZone | null) {
+  if (!map.isStyleLoaded()) {
+    return;
+  }
+
+  ensureZoneLayers(map);
+  const source = map.getSource("arivvio-marketplace-zone") as
+    | mapboxgl.GeoJSONSource
+    | undefined;
+
+  source?.setData(zoneToFeatureCollection(zone));
+}
+
+function zoneToFeatureCollection(zone?: PlanningZone | null): GeoJsonData {
+  if (!zone) {
+    return emptyFeatureCollection();
+  }
+
+  if (zone.type === "radius") {
+    return polygonFeatureCollection(getCirclePolygon(zone.center, zone.radiusMeters));
+  }
+
+  if (zone.points.length < 3) {
+    return emptyFeatureCollection();
+  }
+
+  return polygonFeatureCollection(zone.points);
+}
+
+function polygonFeatureCollection(points: Coordinates[]): GeoJsonData {
+  return {
+    features: [
+      {
+        geometry: {
+          coordinates: [[...points, points[0]].map((point) => [point.lng, point.lat])],
+          type: "Polygon",
+        },
+        properties: {},
+        type: "Feature",
+      },
+    ],
+    type: "FeatureCollection",
+  } as GeoJsonData;
+}
+
+function emptyFeatureCollection(): GeoJsonData {
+  return {
+    features: [],
+    type: "FeatureCollection",
+  } as GeoJsonData;
 }
 
 function toLngLatBounds(bounds: ReturnType<typeof getBounds>): LngLatBoundsLike {

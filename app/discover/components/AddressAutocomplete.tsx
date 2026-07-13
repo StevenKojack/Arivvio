@@ -5,6 +5,8 @@ import {
   searchAddressSuggestions,
   type AddressSuggestion as GeocodingSuggestion,
 } from "@/lib/maps/geocoding";
+import type { Coordinates } from "@/app/data/marketplace";
+import { LocationPreviewMap } from "@/app/components/maps/LocationPreviewMap";
 
 export type AddressSuggestion = GeocodingSuggestion & {
   address: string;
@@ -24,6 +26,7 @@ type AddressAutocompleteProps = {
   onChange: (value: string) => void;
   onSelect: (suggestion: AddressSuggestion) => void;
   selectedAddress?: string;
+  selectedCoordinates?: Coordinates;
 };
 
 export function AddressAutocomplete({
@@ -31,6 +34,7 @@ export function AddressAutocomplete({
   onChange,
   onSelect,
   selectedAddress,
+  selectedCoordinates,
   value,
 }: AddressAutocompleteProps) {
   const [isFocused, setIsFocused] = useState(false);
@@ -121,16 +125,20 @@ export function AddressAutocomplete({
           <p className="mt-1 text-xs font-semibold text-neutral-500">
             This location is now the event anchor for nearby matching.
           </p>
-          <div className="relative mt-3 h-36 overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#e9eee8,#f7f3ed)]">
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.45)_1px,transparent_1px),linear-gradient(rgba(255,255,255,0.45)_1px,transparent_1px)] bg-[size:30px_30px]" />
-            <div className="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full bg-[#0D1321] text-sm font-semibold text-[#D4AF37] shadow-[0_18px_42px_rgba(13,19,33,0.28)]">
-              A
-            </div>
+          <div className="relative mt-3 h-48 overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#e9eee8,#f7f3ed)]">
+            <LocationPreviewMap
+              coordinates={selectedCoordinates}
+              label={suggestionLabelForSelected(selectedAddress)}
+            />
           </div>
         </div>
       ) : null}
     </div>
   );
+}
+
+function suggestionLabelForSelected(value: string) {
+  return value.split(",")[0] ?? "Selected location";
 }
 
 function normalizeSuggestion(suggestion: GeocodingSuggestion): AddressSuggestion {
