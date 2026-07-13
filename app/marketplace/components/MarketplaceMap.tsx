@@ -181,7 +181,6 @@ export function MarketplaceMap({
       return;
     }
 
-    ensureZoneLayers(mapRef.current);
     updateZoneSource(mapRef.current, searchZone);
   }, [hasInteractiveMap, searchZone]);
 
@@ -803,6 +802,10 @@ function resizeMapSafely(map: MapboxMap | null) {
 }
 
 function ensureZoneLayers(map: MapboxMap) {
+  if (!map.isStyleLoaded()) {
+    return false;
+  }
+
   if (!map.getSource("arivvio-marketplace-zone")) {
     map.addSource("arivvio-marketplace-zone", {
       data: emptyFeatureCollection(),
@@ -834,14 +837,15 @@ function ensureZoneLayers(map: MapboxMap) {
       type: "line",
     });
   }
+
+  return true;
 }
 
 function updateZoneSource(map: MapboxMap, zone?: PlanningZone | null) {
-  if (!map.isStyleLoaded()) {
+  if (!ensureZoneLayers(map)) {
     return;
   }
 
-  ensureZoneLayers(map);
   const source = map.getSource("arivvio-marketplace-zone") as
     | mapboxgl.GeoJSONSource
     | undefined;

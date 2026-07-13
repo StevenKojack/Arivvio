@@ -597,6 +597,10 @@ export function summarizeMapZones(zones: MapZone[]) {
 }
 
 function ensureZoneLayers(map: MapboxMap) {
+  if (!map.isStyleLoaded()) {
+    return false;
+  }
+
   if (!map.getSource(zoneSourceId)) {
     map.addSource(zoneSourceId, {
       data: emptyFeatureCollection(),
@@ -628,11 +632,13 @@ function ensureZoneLayers(map: MapboxMap) {
       type: "line",
     });
   }
+
+  return true;
 }
 
 function updateZoneSource(map: MapboxMap, zone: MapZone | null) {
-  if (!map.getSource(zoneSourceId)) {
-    ensureZoneLayers(map);
+  if (!ensureZoneLayers(map)) {
+    return;
   }
 
   const source = map.getSource(zoneSourceId) as mapboxgl.GeoJSONSource | undefined;
