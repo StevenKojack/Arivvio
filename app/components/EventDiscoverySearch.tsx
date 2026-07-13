@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { eventExamples } from "@/lib/event-intelligence/taxonomy";
 import { searchEventIntents } from "@/lib/event-intelligence/search";
+import { SearchLogoMark } from "./SearchLogoMark";
 
 const loopExamples = [...eventExamples.slice(0, 18), ...eventExamples.slice(0, 18)];
 
@@ -32,15 +32,7 @@ export function EventDiscoverySearch() {
         className="relative"
       >
         <div className="flex min-h-[72px] items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-white/94 px-4 py-3 shadow-[0_24px_80px_rgba(13,19,33,0.13)] transition focus-within:border-[#D4AF37]/55 focus-within:shadow-[0_28px_90px_rgba(13,19,33,0.17)] sm:px-5">
-          <div className="hidden h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#0D1321] shadow-[0_12px_28px_rgba(13,19,33,0.2)] sm:flex">
-            <Image
-              src="/logo-assets/web/arivvio-mark-dark.png"
-              alt=""
-              width={575}
-              height={570}
-              className="h-9 w-9 object-cover"
-            />
-          </div>
+          <SearchLogoMark />
           <input
             value={query}
             onBlur={() => window.setTimeout(() => setFocused(false), 120)}

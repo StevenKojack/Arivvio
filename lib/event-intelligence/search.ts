@@ -12,7 +12,7 @@ const synonymFamilies = [
   ["convention", "expo", "trade show", "tradeshow"],
   ["memorial", "funeral", "celebration of life", "wake", "repass"],
   ["sweet 16", "sweet sixteen"],
-  ["quinceanera", "quince"],
+  ["quinceanera", "quince", "sweet fifteen"],
   ["bar mitzvah", "bat mitzvah", "mitzvah"],
   ["corporate", "company", "business"],
 ];
@@ -140,7 +140,7 @@ function detectForcedProfileId(query: string) {
     return "bachelor-party";
   }
 
-  if (query.includes("quince")) {
+  if (query.includes("quince") || query.includes("sweet fifteen")) {
     return "quinceanera";
   }
 
@@ -198,6 +198,10 @@ function inferSubtype(query: string, profile: EventTaxonomyProfile) {
 
   const normalized = normalizeSearchText(trimmed);
 
+  if (profile.id === "quinceanera" && (normalized.includes("quince") || normalized.includes("sweet fifteen"))) {
+    return "Quinceañera";
+  }
+
   if (normalized === normalizeSearchText(profile.primaryType)) {
     return profile.subtype;
   }
@@ -230,6 +234,10 @@ function getCompleteSuggestionLabel(
   profile: EventTaxonomyProfile,
   normalizedQuery: string,
 ) {
+  if (profile.id === "quinceanera") {
+    return "Quinceañera";
+  }
+
   const bestAlias =
     profile.aliases.find((alias) => normalizeSearchText(alias).includes(normalizedQuery)) ??
     profile.aliases[0];

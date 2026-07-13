@@ -3,7 +3,7 @@ import type { EventTaxonomyProfile } from "./types";
 
 export const eventExamples = [
   "Birthday party",
-  "Quinceanera",
+  "Quinceañera",
   "Pool party",
   "Bar mitzvah",
   "Wedding",
@@ -190,7 +190,16 @@ export const eventTaxonomyProfiles: EventTaxonomyProfile[] = [
     venueStyle: "ballroom, estate, hotel, garden, or banquet hall",
   },
   {
-    aliases: ["quinceanera", "quince", "quinceanera party", "quinceanera celebration"],
+    aliases: [
+      "quinceañera",
+      "quinceanera",
+      "quince",
+      "quinceañera party",
+      "quinceanera party",
+      "quinceañera celebration",
+      "quinceanera celebration",
+      "sweet fifteen",
+    ],
     budgetTier: "premium",
     culture: "Latine",
     description: "A milestone cultural celebration with formal entrance, family program, and dancing.",
@@ -220,7 +229,7 @@ export const eventTaxonomyProfiles: EventTaxonomyProfile[] = [
     recommendedVendors: ["DJ", "Photography", "Florals", "Rentals"],
     requiredVendors: ["Venue", "Catering"],
     season: "year-round",
-    subtype: "Quinceanera",
+    subtype: "Quinceañera",
     timeOfDay: "evening",
     venueStyle: "banquet hall, ballroom, or event venue",
   },

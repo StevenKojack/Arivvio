@@ -17,7 +17,7 @@ export const eventInferenceFixtures: EventInferenceFixture[] = [
   },
   {
     expectedFamily: "birthday",
-    expectedSubtype: "Quinceanera",
+    expectedSubtype: "Quinceañera",
     query: "quince",
     recommendedIncludes: ["DJ", "Catering", "Photography", "Florals"],
   },
