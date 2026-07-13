@@ -14,11 +14,11 @@ export default function SetupPage() {
   const hasAnonKey = Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
   return (
-    <main className="min-h-screen bg-[#f7f7f5] text-neutral-950">
+    <main className="min-h-screen bg-[#F6F3EA] text-neutral-950">
       <Navigation />
       <section className="px-6 py-16 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-5xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#e24b44]">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">
             Setup
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
@@ -46,14 +46,14 @@ export default function SetupPage() {
               <ol className="mt-5 space-y-3">
                 {steps.map((step, index) => (
                   <li key={step} className="flex gap-3 text-sm leading-6 text-neutral-700">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-950 text-xs font-semibold text-white">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0D1321] text-xs font-semibold text-white">
                       {index + 1}
                     </span>
                     {step}
                   </li>
                 ))}
               </ol>
-              <pre className="mt-6 overflow-x-auto rounded-lg bg-neutral-950 p-4 text-xs text-white">
+              <pre className="mt-6 overflow-x-auto rounded-lg bg-[#0D1321] p-4 text-xs text-white">
                 {`NEXT_PUBLIC_SUPABASE_URL=your_project_url\nNEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key`}
               </pre>
             </section>

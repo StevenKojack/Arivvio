@@ -30,9 +30,13 @@ export function EventDiscoverySearch() {
         }}
         className="relative"
       >
-        <div className="flex min-h-[72px] items-center gap-3 rounded-full border border-neutral-200 bg-white px-4 py-3 shadow-[0_24px_80px_rgba(20,20,20,0.12)] transition focus-within:border-neutral-950 focus-within:shadow-[0_28px_90px_rgba(20,20,20,0.16)] sm:px-5">
-          <div className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#fff1f1] text-lg font-semibold text-[#e24b44] sm:flex">
-            A
+        <div className="flex min-h-[72px] items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-white/94 px-4 py-3 shadow-[0_24px_80px_rgba(13,19,33,0.13)] transition focus-within:border-[#D4AF37]/55 focus-within:shadow-[0_28px_90px_rgba(13,19,33,0.17)] sm:px-5">
+          <div className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#0D1321] text-[#D4AF37] shadow-[0_12px_28px_rgba(13,19,33,0.2)] sm:flex">
+            <svg aria-hidden="true" className="h-7 w-7" viewBox="0 0 48 48" fill="none">
+              <path d="M8 35 21 10c1.4-2.7 4.6-2.7 6 0l13 25" stroke="currentColor" strokeWidth="5.2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M10 35 17.5 29M38 35 30.5 29" stroke="currentColor" strokeWidth="5.2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="m18 21 6 8 6-8M19 30l5 6.4 5-6.4" stroke="currentColor" strokeWidth="4.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
           <input
             value={query}
@@ -44,21 +48,21 @@ export function EventDiscoverySearch() {
           />
           <button
             type="submit"
-            className="h-12 rounded-full bg-neutral-950 px-5 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(20,20,20,0.18)] transition hover:-translate-y-0.5 hover:bg-neutral-800 sm:px-7"
+            className="h-12 rounded-full bg-[#0D1321] px-5 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(13,19,33,0.2)] transition hover:-translate-y-0.5 hover:bg-[#111A2E] sm:px-7"
           >
             Plan my event
           </button>
         </div>
 
         {focused ? (
-          <div className="absolute left-0 right-0 top-[84px] z-20 overflow-hidden rounded-[28px] border border-neutral-200 bg-white p-2 shadow-[0_28px_90px_rgba(20,20,20,0.16)]">
+          <div className="absolute left-0 right-0 top-[84px] z-20 overflow-hidden rounded-[28px] border border-[#D4AF37]/18 bg-white p-2 shadow-[0_28px_90px_rgba(13,19,33,0.16)]">
             {suggestions.map((suggestion) => (
               <button
                 key={`${suggestion.label}-${suggestion.recognition.profile.id}`}
                 type="button"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => submitSearch(suggestion.label)}
-                className="flex w-full items-center justify-between gap-4 rounded-[22px] px-4 py-3 text-left transition hover:bg-neutral-50"
+                className="flex w-full items-center justify-between gap-4 rounded-[22px] px-4 py-3 text-left transition hover:bg-[#FFF8E1]"
               >
                 <span>
                   <span className="block text-sm font-semibold text-neutral-950">
@@ -68,7 +72,7 @@ export function EventDiscoverySearch() {
                     {suggestion.recognition.profile.venueStyle}
                   </span>
                 </span>
-                <span className="shrink-0 rounded-full bg-[#fff5f5] px-3 py-1 text-xs font-semibold text-[#c33d38]">
+                <span className="shrink-0 rounded-full bg-[#FFF8E1] px-3 py-1 text-xs font-semibold text-[#8A6A16]">
                   {suggestion.recognition.profile.primaryType}
                 </span>
               </button>
@@ -84,7 +88,7 @@ export function EventDiscoverySearch() {
               key={`${example}-${index}`}
               type="button"
               onClick={() => submitSearch(example)}
-              className="rounded-full border border-neutral-200 bg-white/70 px-4 py-2 text-sm font-semibold text-neutral-700 backdrop-blur transition hover:border-neutral-950 hover:text-neutral-950"
+              className="rounded-full border border-[#D4AF37]/16 bg-white/72 px-4 py-2 text-sm font-semibold text-neutral-700 backdrop-blur transition hover:-translate-y-0.5 hover:border-[#D4AF37]/50 hover:text-[#0D1321]"
             >
               {example}
             </button>

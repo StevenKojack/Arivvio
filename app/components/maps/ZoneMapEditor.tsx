@@ -329,7 +329,7 @@ export function ZoneMapEditor({
   }
 
   return (
-    <div className="overflow-hidden rounded-[30px] border border-neutral-200 bg-white shadow-[0_22px_70px_rgba(20,20,20,0.08)]">
+    <div className="overflow-hidden rounded-[30px] border border-neutral-200 bg-white shadow-[0_22px_70px_rgba(13,19,33,0.08)]">
       <div className="flex flex-col gap-3 border-b border-neutral-200 bg-white/90 px-4 py-3 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
@@ -349,8 +349,8 @@ export function ZoneMapEditor({
               onClick={() => selectTool(tool)}
               className={`rounded-full px-3 py-2 text-xs font-semibold transition hover:-translate-y-0.5 ${
                 activeTool === tool
-                  ? "bg-neutral-950 text-white"
-                  : "border border-neutral-200 bg-white text-neutral-700 hover:border-neutral-950"
+                  ? "bg-[#0D1321] text-white"
+                  : "border border-neutral-200 bg-white text-neutral-700 hover:border-[#0D1321]"
               }`}
             >
               {tool === "radius" ? "Circle" : "Freeform"}
@@ -360,7 +360,7 @@ export function ZoneMapEditor({
             <button
               type="button"
               onClick={() => addZone()}
-              className="rounded-full border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-neutral-950"
+              className="rounded-full border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-[#0D1321]"
             >
               Add zone
             </button>
@@ -369,7 +369,7 @@ export function ZoneMapEditor({
             type="button"
             onClick={saveSelectedZone}
             disabled={!selectedZone}
-            className="rounded-full bg-neutral-950 px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+            className="rounded-full bg-[#0D1321] px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
           >
             {singleZone ? "Save area" : "Save zone"}
           </button>
@@ -443,8 +443,8 @@ export function ZoneMapEditor({
                 setSelectedZoneId(zone.id);
                 setDragState({ zoneId: zone.id });
               }}
-              className={`absolute z-20 h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-emerald-700 shadow-[0_16px_40px_rgba(20,20,20,0.18)] transition hover:scale-110 ${
-                selectedZone?.id === zone.id ? "ring-4 ring-emerald-700/20" : ""
+              className={`absolute z-20 h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#D4AF37] shadow-[0_16px_40px_rgba(13,19,33,0.18)] transition hover:scale-110 ${
+                selectedZone?.id === zone.id ? "ring-4 ring-[#D4AF37]/28" : ""
               }`}
               style={{
                 left: `${zone.center.x}%`,
@@ -467,8 +467,8 @@ export function ZoneMapEditor({
               setSelectedZoneId(zone.id);
               setDragState({ pointIndex: index, zoneId: zone.id });
             }}
-            className={`absolute z-20 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-sky-700 shadow-[0_14px_34px_rgba(20,20,20,0.18)] transition hover:scale-110 ${
-              selectedZone?.id === zone.id ? "ring-4 ring-sky-700/20" : ""
+            className={`absolute z-20 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#16233B] shadow-[0_14px_34px_rgba(13,19,33,0.18)] transition hover:scale-110 ${
+              selectedZone?.id === zone.id ? "ring-4 ring-[#D4AF37]/24" : ""
             }`}
             style={{
               left: `${point.x}%`,
@@ -488,7 +488,7 @@ export function ZoneMapEditor({
             onPointerUp={finishFreeformDrawing}
             onPointerCancel={finishFreeformDrawing}
           >
-            <div className="pointer-events-none absolute left-1/2 top-5 -translate-x-1/2 rounded-full bg-white/94 px-4 py-2 text-xs font-semibold text-neutral-800 shadow-[0_14px_34px_rgba(20,20,20,0.14)] backdrop-blur">
+            <div className="pointer-events-none absolute left-1/2 top-5 -translate-x-1/2 rounded-full bg-white/94 px-4 py-2 text-xs font-semibold text-neutral-800 shadow-[0_14px_34px_rgba(13,19,33,0.14)] backdrop-blur">
               Drag to draw the venue area. Release to finish.
             </div>
           </div>
@@ -496,14 +496,14 @@ export function ZoneMapEditor({
 
         <div
           data-zone-control
-          className="absolute bottom-4 left-4 right-4 z-30 rounded-3xl bg-white/92 p-4 text-xs font-semibold text-neutral-700 shadow-[0_18px_50px_rgba(20,20,20,0.12)] backdrop-blur"
+          className="absolute bottom-4 left-4 right-4 z-30 rounded-3xl bg-white/92 p-4 text-xs font-semibold text-neutral-700 shadow-[0_18px_50px_rgba(13,19,33,0.12)] backdrop-blur"
         >
           {selectedZone?.type === "radius" ? (
             <div className="grid gap-2">
               <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <span>Search radius</span>
                 <span className="text-neutral-500">
-                  Drag the map to move around. Drag the green dot to move the circle.
+                  Drag the map to move around. Drag the gold point to move the circle.
                 </span>
               </div>
               <input
@@ -518,7 +518,7 @@ export function ZoneMapEditor({
                     saved: false,
                   }))
                 }
-                className="w-full accent-neutral-950"
+                className="w-full accent-[#D4AF37]"
               />
             </div>
           ) : selectedZone?.type === "polygon" ? (
@@ -530,7 +530,7 @@ export function ZoneMapEditor({
                 <button
                   type="button"
                   onClick={startFreeformDrawing}
-                  className="h-10 rounded-full bg-neutral-950 px-4 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-neutral-800"
+                  className="h-10 rounded-full bg-[#0D1321] px-4 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
                 >
                   {selectedZone.points?.length ? "Redraw area" : "Draw area"}
                 </button>
@@ -544,7 +544,7 @@ export function ZoneMapEditor({
                         saved: false,
                       }))
                     }
-                    className="h-10 rounded-full border border-neutral-200 bg-white px-4 text-xs font-semibold text-neutral-800 transition hover:-translate-y-0.5 hover:border-neutral-950"
+                    className="h-10 rounded-full border border-neutral-200 bg-white px-4 text-xs font-semibold text-neutral-800 transition hover:-translate-y-0.5 hover:border-[#0D1321]"
                   >
                     Clear
                   </button>
@@ -557,7 +557,7 @@ export function ZoneMapEditor({
         </div>
       </div>
 
-      <div className="flex min-w-0 gap-2 overflow-x-auto border-t border-neutral-200 bg-[#fbfbfa] p-3 [scrollbar-width:none]">
+      <div className="flex min-w-0 gap-2 overflow-x-auto border-t border-neutral-200 bg-[#FFFCF7] p-3 [scrollbar-width:none]">
         {visibleZones.length ? (
           visibleZones.map((zone) => (
             <button
@@ -566,7 +566,7 @@ export function ZoneMapEditor({
               onClick={() => setSelectedZoneId(zone.id)}
               className={`min-w-fit rounded-full border px-3 py-2 text-xs font-semibold transition hover:-translate-y-0.5 ${
                 selectedZone?.id === zone.id
-                  ? "border-neutral-950 bg-neutral-950 text-white"
+                  ? "border-[#0D1321] bg-[#0D1321] text-white"
                   : "border-neutral-200 bg-white text-neutral-700"
               }`}
             >
@@ -578,7 +578,7 @@ export function ZoneMapEditor({
           <button
             type="button"
             onClick={() => addZone("radius")}
-            className="rounded-full bg-neutral-950 px-4 py-2 text-xs font-semibold text-white"
+            className="rounded-full bg-[#0D1321] px-4 py-2 text-xs font-semibold text-white"
           >
             Create first zone
           </button>

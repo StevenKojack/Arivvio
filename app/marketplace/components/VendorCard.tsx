@@ -52,12 +52,12 @@ function VendorCardComponent({
       onMouseLeave={() => onHover?.(null)}
       role="button"
       tabIndex={0}
-      className={`w-full overflow-hidden rounded-[28px] border bg-white shadow-[0_14px_38px_rgba(20,20,20,0.055)] transition duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(20,20,20,0.11)] ${
+      className={`w-full overflow-hidden rounded-[28px] border bg-white shadow-[0_14px_38px_rgba(13,19,33,0.055)] transition duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(13,19,33,0.11)] ${
         isSelected
-          ? "border-emerald-300 ring-4 ring-emerald-100"
+          ? "border-[#D4AF37] ring-4 ring-[#D4AF37]/18"
           : isHighlighted
-            ? "border-neutral-950 ring-4 ring-neutral-950/10"
-            : "border-neutral-200"
+            ? "border-[#0D1321] ring-4 ring-[#0D1321]/10"
+            : "border-[#D4AF37]/14"
       }`}
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-[#f2f0ec]">
@@ -70,7 +70,7 @@ function VendorCardComponent({
           unoptimized
           className="object-cover transition duration-500 hover:scale-105"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_38%,rgba(0,0,0,0.55))]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_38%,rgba(13,19,33,0.62))]" />
         <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
           <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-neutral-900 backdrop-blur">
             {item.type}
@@ -78,8 +78,8 @@ function VendorCardComponent({
           <span
             className={`rounded-full px-3 py-1 text-xs font-semibold backdrop-blur ${
               isSelected
-                ? "bg-emerald-600 text-white"
-                : "bg-neutral-950/80 text-white"
+                ? "bg-[#D4AF37] text-[#0D1321]"
+                : "bg-[#0D1321]/80 text-white"
             }`}
           >
             {matchLabel}
@@ -96,7 +96,7 @@ function VendorCardComponent({
               {item.name}
             </h3>
           </div>
-          <span className="shrink-0 rounded-full bg-[#f7f7f5] px-2.5 py-1 text-xs font-semibold text-neutral-700">
+          <span className="shrink-0 rounded-full bg-[#F6F3EA] px-2.5 py-1 text-xs font-semibold text-[#0D1321]">
             {item.rating.toFixed(1)}
           </span>
         </div>
@@ -107,7 +107,7 @@ function VendorCardComponent({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full bg-[#f7f7f5] px-2.5 py-1 text-xs font-semibold text-neutral-600"
+              className="rounded-full bg-[#F6F3EA] px-2.5 py-1 text-xs font-semibold text-neutral-600 ring-1 ring-[#D4AF37]/10"
             >
               {tag}
             </span>
@@ -129,8 +129,8 @@ function VendorCardComponent({
             }}
             className={`h-10 rounded-full px-4 text-sm font-semibold transition hover:-translate-y-0.5 disabled:cursor-default disabled:hover:translate-y-0 ${
               isSelected
-                ? "bg-emerald-50 text-emerald-800"
-                : "bg-neutral-950 text-white hover:bg-neutral-800"
+                ? "bg-[#FFF8E1] text-[#8A6A16]"
+                : "bg-[#0D1321] text-white shadow-[0_12px_26px_rgba(13,19,33,0.18)] hover:bg-[#111A2E]"
             }`}
           >
             {buttonLabel}

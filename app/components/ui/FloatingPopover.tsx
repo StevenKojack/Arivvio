@@ -123,7 +123,7 @@ export function FloatingPopover({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[1000] bg-neutral-950/0 sm:bg-transparent"
+      className="fixed inset-0 z-[1000] bg-[#0D1321]/0 sm:bg-transparent"
       onMouseDown={onClose}
     >
       <div
@@ -133,7 +133,7 @@ export function FloatingPopover({
         role="dialog"
         style={desktopStyle}
         onMouseDown={(event) => event.stopPropagation()}
-        className={`fixed inset-x-3 bottom-3 max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-[28px] border border-neutral-200 bg-white p-5 shadow-[0_34px_120px_rgba(20,20,20,0.24)] outline-none animate-[sheetIn_180ms_ease-out] sm:inset-auto sm:animate-[popoverIn_160ms_ease-out] ${className}`}
+        className={`fixed inset-x-3 bottom-3 max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-[28px] border border-neutral-200 bg-white p-5 shadow-[0_34px_120px_rgba(13,19,33,0.24)] outline-none animate-[sheetIn_180ms_ease-out] sm:inset-auto sm:animate-[popoverIn_160ms_ease-out] ${className}`}
       >
         {children}
       </div>

@@ -3,7 +3,13 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0D1321;
+  --arivvio-navy: #0D1321;
+  --arivvio-navy-soft: #16233B;
+  --arivvio-gold: #D4AF37;
+  --arivvio-gold-deep: #B88A1D;
+  --arivvio-cream: #F7F4EC;
+  --arivvio-paper: #FFFCF7;
 }
 
 @theme inline {
@@ -36,11 +42,16 @@ textarea {
   transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+::selection {
+  background: rgba(212, 175, 55, 0.28);
+  color: var(--arivvio-navy);
+}
+
 .arivvio-map-popup .mapboxgl-popup-content {
   overflow: hidden;
   padding: 0;
   border-radius: 22px;
-  box-shadow: 0 28px 80px rgba(20, 20, 20, 0.22);
+  box-shadow: 0 28px 80px rgba(13, 19, 33, 0.22);
 }
 
 .arivvio-map-popup .mapboxgl-popup-close-button {
@@ -50,10 +61,10 @@ textarea {
   height: 30px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.92);
-  color: #111;
+  color: var(--arivvio-navy);
   font-size: 20px;
   line-height: 28px;
-  box-shadow: 0 8px 24px rgba(20, 20, 20, 0.16);
+  box-shadow: 0 8px 24px rgba(13, 19, 33, 0.16);
 }
 
 .arivvio-map-popup .mapboxgl-popup-tip {
@@ -63,7 +74,7 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  box-shadow: 0 0 0 4px rgba(23, 23, 23, 0.08);
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.22);
 }
 
 @keyframes fadeUp {

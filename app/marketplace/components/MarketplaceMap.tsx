@@ -30,34 +30,34 @@ type MarketplaceMapProps = {
 };
 
 const categoryColors: Partial<Record<ServiceName, string>> = {
-  Venue: "#111111",
-  Catering: "#7a4f2b",
-  "Cake & Desserts": "#be123c",
-  DJ: "#4f46e5",
-  "Live Music": "#4f46e5",
-  Balloons: "#be185d",
-  "Bounce Houses": "#db2777",
-  Rentals: "#0f766e",
-  Photography: "#7c3aed",
-  "Photo Booth": "#7c3aed",
-  Florals: "#be185d",
-  Magic: "#6d28d9",
-  "Character Performers": "#db2777",
-  Security: "#b45309",
-  Staffing: "#b45309",
-  Bartending: "#7a4f2b",
-  Transportation: "#0369a1",
-  "Party Bus": "#0369a1",
-  Valet: "#0369a1",
+  Venue: "#0D1321",
+  Catering: "#8A6A16",
+  "Cake & Desserts": "#B88A1D",
+  DJ: "#16233B",
+  "Live Music": "#16233B",
+  Balloons: "#B88A1D",
+  "Bounce Houses": "#B88A1D",
+  Rentals: "#23453D",
+  Photography: "#2A3654",
+  "Photo Booth": "#2A3654",
+  Florals: "#8A6A16",
+  Magic: "#16233B",
+  "Character Performers": "#B88A1D",
+  Security: "#0D1321",
+  Staffing: "#0D1321",
+  Bartending: "#8A6A16",
+  Transportation: "#2A3654",
+  "Party Bus": "#2A3654",
+  Valet: "#2A3654",
   Cleaning: "#475569",
   "Portable Restrooms": "#475569",
-  "AV Production": "#334155",
-  "Booth Rentals": "#0f766e",
-  Registration: "#334155",
-  Invitations: "#be185d",
+  "AV Production": "#16233B",
+  "Booth Rentals": "#23453D",
+  Registration: "#16233B",
+  Invitations: "#8A6A16",
   "Printed Materials": "#475569",
   "Printed Programs": "#475569",
-  "Live Streaming": "#334155",
+  "Live Streaming": "#16233B",
 };
 
 const fallbackBounds = {
@@ -228,7 +228,7 @@ export function MarketplaceMap({
 
       existingEntry?.marker.remove();
       const markerElement = createProviderMarker({
-        color: categoryColors[pin.item.type] ?? "#111111",
+        color: categoryColors[pin.item.type] ?? "#0D1321",
         isActive: pin.isActiveRowMatch,
         isCarted,
         isCompleted: Boolean(pin.isCompletedCategory),
@@ -279,8 +279,8 @@ export function MarketplaceMap({
 
       element.classList.toggle("scale-110", isFocused);
       element.classList.toggle("ring-4", isFocused);
-      element.classList.toggle("ring-neutral-950/10", isFocused);
-      element.classList.toggle("shadow-[0_24px_56px_rgba(20,20,20,0.28)]", isFocused);
+      element.classList.toggle("ring-[#0D1321]/10", isFocused);
+      element.classList.toggle("shadow-[0_24px_56px_rgba(13,19,33,0.28)]", isFocused);
     });
   }, [hasInteractiveMap, hoveredItemId, selectedItemId]);
 
@@ -365,11 +365,11 @@ export function MarketplaceMap({
 
   return (
     <section
-      className={`overflow-hidden rounded-[34px] border border-neutral-200 bg-[#e9eee8] shadow-[0_28px_90px_rgba(20,20,20,0.14)] ${
+      className={`overflow-hidden rounded-[34px] border border-[#D4AF37]/16 bg-[#F6F3EA] shadow-[0_28px_90px_rgba(13,19,33,0.14)] ${
         isSticky ? "" : "relative"
       }`}
     >
-      <div className="flex items-center justify-between gap-3 border-b border-white/70 bg-white/85 px-5 py-4 backdrop-blur">
+      <div className="flex items-center justify-between gap-3 border-b border-[#D4AF37]/14 bg-white/88 px-5 py-4 backdrop-blur">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
             Interactive marketplace map
@@ -378,7 +378,7 @@ export function MarketplaceMap({
             {activeCategory}
           </h2>
         </div>
-        <span className="rounded-full bg-neutral-950 px-3 py-1 text-xs font-semibold text-white">
+        <span className="rounded-full bg-[#0D1321] px-3 py-1 text-xs font-semibold text-[#D4AF37]">
           {pinsWithCoordinates.length} pins
         </span>
       </div>
@@ -408,7 +408,7 @@ export function MarketplaceMap({
 
         <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0.38),transparent)]" />
 
-        <div className="absolute bottom-5 left-5 right-5 rounded-3xl bg-white/90 p-4 shadow-[0_18px_50px_rgba(20,20,20,0.12)] backdrop-blur">
+        <div className="absolute bottom-5 left-5 right-5 rounded-3xl border border-[#D4AF37]/14 bg-white/90 p-4 shadow-[0_18px_50px_rgba(13,19,33,0.12)] backdrop-blur">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm font-semibold text-neutral-950">
               {hasInteractiveMap
@@ -416,9 +416,9 @@ export function MarketplaceMap({
                 : "Map preview with provider locations"}
             </p>
             <div className="flex flex-wrap gap-2 text-xs font-semibold">
-              <LegendDot color="#111111" label="active row" />
-              <LegendDot color="#256f4a" label="selected" />
-              <LegendDot color="#2563eb" label="event" />
+              <LegendDot color="#0D1321" label="active row" />
+              <LegendDot color="#D4AF37" label="selected" />
+              <LegendDot color="#16233B" label="event" />
             </div>
           </div>
         </div>
@@ -447,7 +447,7 @@ function FallbackMap({
   onSelectItem: (item: MarketplaceItem) => void;
 }) {
   return (
-    <div className="absolute inset-0 bg-[linear-gradient(135deg,#e6ece6,#f4efe8)]">
+    <div className="absolute inset-0 bg-[linear-gradient(135deg,#eef2ec,#F7F4EC)]">
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px)] bg-[size:40px_40px]" />
       <div className="absolute left-[12%] top-[24%] h-24 w-[70%] -rotate-6 rounded-full border border-white/70" />
       <div className="absolute left-[18%] top-[54%] h-28 w-[64%] rotate-12 rounded-full border border-white/70" />
@@ -461,7 +461,7 @@ function FallbackMap({
         const isSelected = selectedItemId === pin.item.id;
         const isCarted = cartedIds.includes(pin.item.id) || pin.isCarted;
         const isCompleted = Boolean(pin.isCompletedCategory);
-        const color = categoryColors[pin.item.type] ?? "#111111";
+        const color = categoryColors[pin.item.type] ?? "#0D1321";
 
         return (
           <button
@@ -470,11 +470,11 @@ function FallbackMap({
             onClick={() => onSelectItem(pin.item)}
             onMouseEnter={() => onHoverItem(pin.item.id)}
             onMouseLeave={() => onHoverItem(null)}
-            className={`absolute z-20 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white text-white shadow-[0_18px_44px_rgba(20,20,20,0.25)] transition duration-200 hover:-translate-y-[58%] ${
+            className={`absolute z-20 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white shadow-[0_18px_44px_rgba(13,19,33,0.25)] transition duration-200 hover:-translate-y-[58%] ${
               isSelected || isHovered
-                ? "scale-110 ring-4 ring-neutral-950/10"
+                ? "scale-110 ring-4 ring-[#D4AF37]/28"
                 : isCarted
-                  ? "ring-4 ring-emerald-600/25"
+                  ? "ring-4 ring-[#D4AF37]/32"
                   : isCompleted
                     ? "opacity-45 grayscale"
                   : pin.isActiveRowMatch
@@ -482,7 +482,8 @@ function FallbackMap({
                     : "opacity-80"
             }`}
             style={{
-              backgroundColor: isCarted ? "#256f4a" : color,
+              backgroundColor: isCarted ? "#D4AF37" : color,
+              color: isCarted ? "#0D1321" : "#FFFFFF",
               left: `${toPosition(pin.item.coordinates, bounds).x}%`,
               top: `${toPosition(pin.item.coordinates, bounds).y}%`,
             }}
@@ -514,10 +515,11 @@ function createProviderMarker({
   marker.dataset.arivvioCarted = String(isCarted);
   marker.innerHTML = `
     <span class="relative z-10">${getServiceIcon(item.type, 18)}</span>
-    ${isCarted ? '<span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-emerald-600 text-white"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span>' : ""}
-    <span class="absolute -bottom-1.5 left-1/2 h-3.5 w-3.5 -translate-x-1/2 rotate-45 rounded-[3px] border-b-2 border-r-2 border-white" style="background:${isCarted ? "#256f4a" : color};"></span>
+    ${isCarted ? '<span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#0D1321] text-[#D4AF37]"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span>' : ""}
+    <span class="absolute -bottom-1.5 left-1/2 h-3.5 w-3.5 -translate-x-1/2 rotate-45 rounded-[3px] border-b-2 border-r-2 border-white" style="background:${isCarted ? "#D4AF37" : color};"></span>
   `;
-  marker.style.backgroundColor = isCarted ? "#256f4a" : color;
+  marker.style.backgroundColor = isCarted ? "#D4AF37" : color;
+  marker.style.color = isCarted ? "#0D1321" : "#FFFFFF";
   marker.className = [
     "relative",
     "flex",
@@ -528,16 +530,15 @@ function createProviderMarker({
     "rounded-full",
     "border-2",
     "border-white",
-    "text-white",
-    "shadow-[0_18px_44px_rgba(20,20,20,0.25)]",
+    "shadow-[0_18px_44px_rgba(13,19,33,0.25)]",
     "transition",
     "duration-200",
     "ease-out",
     "hover:scale-110",
     "hover:ring-4",
-    "hover:ring-neutral-950/10",
-    "hover:shadow-[0_24px_56px_rgba(20,20,20,0.28)]",
-    isCarted ? "ring-4 ring-emerald-600/30" : "",
+    "hover:ring-[#D4AF37]/28",
+    "hover:shadow-[0_24px_56px_rgba(13,19,33,0.28)]",
+    isCarted ? "ring-4 ring-[#D4AF37]/32" : "",
     isCompleted && !isCarted ? "opacity-45 grayscale" : "",
     isActive || isCarted || isCompleted ? "" : "opacity-80",
   ]
@@ -551,7 +552,7 @@ function createEventMarker() {
   const marker = document.createElement("div");
   marker.textContent = "Event";
   marker.className =
-    "rounded-full border-2 border-white bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-[0_18px_44px_rgba(20,20,20,0.25)]";
+    "rounded-full border-2 border-white bg-[#0D1321] px-3 py-2 text-xs font-semibold text-[#D4AF37] shadow-[0_18px_44px_rgba(13,19,33,0.25)]";
 
   return marker;
 }
@@ -559,20 +560,20 @@ function createEventMarker() {
 function getPopupHtml(item: MarketplaceItem) {
   return `
     <div style="font-family: Arial, Helvetica, sans-serif; width: 292px; overflow: hidden; border-radius: 22px; background: #fff;">
-      <div style="height: 156px; background-image: linear-gradient(180deg, transparent 45%, rgba(0,0,0,.48)), url('${escapeHtml(
+      <div style="height: 156px; background-image: linear-gradient(180deg, transparent 45%, rgba(13,19,33,.62)), url('${escapeHtml(
         getVendorImage(item),
       )}'); background-size: cover; background-position: center; position: relative;">
-        <div style="position: absolute; left: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; background: rgba(255,255,255,.92); padding: 6px 10px; color: #111; font-size: 12px; font-weight: 700;">
+        <div style="position: absolute; left: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; background: rgba(255,255,255,.92); padding: 6px 10px; color: #0D1321; font-size: 12px; font-weight: 700;">
           ${getServiceIcon(item.type, 14)}
           ${escapeHtml(item.type)}
         </div>
       </div>
       <div style="padding: 14px 14px 16px;">
         <div style="display: flex; align-items: start; justify-content: space-between; gap: 12px;">
-          <p style="margin: 0; font-size: 15px; line-height: 1.25; font-weight: 800; color: #111;">${escapeHtml(
+          <p style="margin: 0; font-size: 15px; line-height: 1.25; font-weight: 800; color: #0D1321;">${escapeHtml(
             item.name,
           )}</p>
-          <p style="margin: 1px 0 0; white-space: nowrap; font-size: 13px; font-weight: 700; color: #111;">${item.rating.toFixed(
+          <p style="margin: 1px 0 0; white-space: nowrap; font-size: 13px; font-weight: 700; color: #8A6A16;">${item.rating.toFixed(
             1,
           )}</p>
         </div>
@@ -580,12 +581,12 @@ function getPopupHtml(item: MarketplaceItem) {
           item.location,
         )}</p>
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px;">
-          <p style="margin: 0; font-size: 13px; font-weight: 800; color: #111;">${escapeHtml(
+          <p style="margin: 0; font-size: 13px; font-weight: 800; color: #0D1321;">${escapeHtml(
             item.price,
           )}</p>
           <div style="display: flex; align-items: center; gap: 6px;">
-            <a href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noreferrer" style="border-radius: 999px; border: 1px solid #e5e5e5; color: #333; padding: 8px 10px; font-size: 12px; font-weight: 800; text-decoration: none;">Details</a>
-            <button type="button" data-arivvio-add-quote="${item.id}" style="border: 0; border-radius: 999px; background: #111; color: #fff; cursor: pointer; padding: 8px 12px; font-size: 12px; font-weight: 800;">Add</button>
+            <a href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noreferrer" style="border-radius: 999px; border: 1px solid rgba(212,175,55,.34); color: #0D1321; padding: 8px 10px; font-size: 12px; font-weight: 800; text-decoration: none;">Details</a>
+            <button type="button" data-arivvio-add-quote="${item.id}" style="border: 0; border-radius: 999px; background: #0D1321; color: #fff; cursor: pointer; padding: 8px 12px; font-size: 12px; font-weight: 800;">Add</button>
           </div>
         </div>
       </div>
@@ -611,7 +612,7 @@ function MapMarker({
 }) {
   return (
     <div
-      className="absolute z-10 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-[0_18px_44px_rgba(20,20,20,0.25)]"
+      className="absolute z-10 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#0D1321] px-3 py-2 text-xs font-semibold text-[#D4AF37] shadow-[0_18px_44px_rgba(13,19,33,0.25)]"
       style={{ left: `${position.x}%`, top: `${position.y}%` }}
     >
       {label}
@@ -621,7 +622,7 @@ function MapMarker({
 
 function LegendDot({ color, label }: { color: string; label: string }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-neutral-600">
+    <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-neutral-600 ring-1 ring-[#D4AF37]/10">
       <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
       {label}
     </span>

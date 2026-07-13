@@ -19,7 +19,7 @@ export function CategorySection() {
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col justify-between gap-6 border-t border-neutral-200 pt-12 md:flex-row md:items-end">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#e24b44]">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">
               What Arivvio can plan
             </p>
             <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">

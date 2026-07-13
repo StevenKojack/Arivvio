@@ -342,7 +342,7 @@ export function VendorDashboard() {
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href="/auth/login"
-            className="rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white"
+            className="rounded-full bg-[#0D1321] px-5 py-3 text-sm font-semibold text-white"
           >
             Log in
           </Link>
@@ -361,7 +361,7 @@ export function VendorDashboard() {
     <div className="mx-auto max-w-7xl">
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#e24b44]">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">
             Vendor dashboard
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
@@ -374,7 +374,7 @@ export function VendorDashboard() {
         </div>
         <Link
           href="/vendor/onboarding"
-          className="rounded-full bg-[#ff5a5f] px-5 py-3 text-sm font-semibold text-white"
+          className="rounded-full bg-[#0D1321] px-5 py-3 text-sm font-semibold text-white"
         >
           Add business
         </Link>
@@ -395,7 +395,7 @@ export function VendorDashboard() {
               onClick={() => setActiveTab(tab)}
               className={`h-10 rounded-full px-4 text-sm font-semibold transition ${
                 activeTab === tab
-                  ? "bg-neutral-950 text-white"
+                  ? "bg-[#0D1321] text-white"
                   : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950"
               }`}
             >
@@ -468,7 +468,7 @@ function DashboardShell({
   message: string;
 }) {
   return (
-    <div className="mx-auto max-w-7xl rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(20,20,20,0.05)]">
+    <div className="mx-auto max-w-7xl rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(13,19,33,0.05)]">
       <p className="text-sm font-semibold text-neutral-700">{message}</p>
       {children}
     </div>

@@ -189,7 +189,7 @@ export function VendorOnboardingForm() {
   return (
     <form
       onSubmit={submitVendor}
-      className="mx-auto mt-10 grid max-w-4xl gap-5 rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_22px_60px_rgba(20,20,20,0.07)]"
+      className="mx-auto mt-10 grid max-w-4xl gap-5 rounded-[28px] border border-[#D4AF37]/16 bg-white p-6 shadow-[0_22px_60px_rgba(13,19,33,0.07)]"
     >
       <div className="grid gap-5 md:grid-cols-2">
         <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -198,12 +198,12 @@ export function VendorOnboardingForm() {
             required
             value={businessName}
             onChange={(event) => setBusinessName(event.target.value)}
-            className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+            className="h-12 rounded-2xl border border-[#D4AF37]/20 px-4 text-sm outline-none focus:border-[#D4AF37]"
           />
         </label>
         <label className="grid gap-2 text-sm font-semibold text-neutral-800">
           Primary categories
-          <span className="grid max-h-40 gap-2 overflow-y-auto rounded-lg border border-neutral-200 bg-[#fbfbfa] p-2">
+          <span className="grid max-h-40 gap-2 overflow-y-auto rounded-2xl border border-[#D4AF37]/14 bg-[#FFFCF7] p-2">
             {allServices.slice(0, 18).map((service) => (
               <button
                 key={service}
@@ -211,8 +211,8 @@ export function VendorOnboardingForm() {
                 onClick={() => toggleCategory(service)}
                 className={`rounded-full px-3 py-2 text-left text-xs font-semibold transition ${
                   selectedCategories.includes(service)
-                    ? "bg-neutral-950 text-white"
-                    : "border border-neutral-300 bg-white text-neutral-700"
+                    ? "bg-[#0D1321] text-white"
+                    : "border border-[#D4AF37]/18 bg-white text-neutral-700"
                 }`}
               >
                 {service}
@@ -225,7 +225,7 @@ export function VendorOnboardingForm() {
           <textarea
             value={description}
             onChange={(event) => setDescription(event.target.value)}
-            className="min-h-28 rounded-lg border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-neutral-950"
+            className="min-h-28 rounded-2xl border border-[#D4AF37]/20 px-4 py-3 text-sm outline-none focus:border-[#D4AF37]"
           />
         </label>
         <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -233,7 +233,7 @@ export function VendorOnboardingForm() {
           <input
             value={city}
             onChange={(event) => setCity(event.target.value)}
-            className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+            className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-[#0D1321]"
           />
         </label>
         <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -243,7 +243,7 @@ export function VendorOnboardingForm() {
             min="1"
             value={radius}
             onChange={(event) => setRadius(Number(event.target.value))}
-            className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+            className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-[#0D1321]"
           />
         </label>
         <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -252,7 +252,7 @@ export function VendorOnboardingForm() {
             value={websiteUrl}
             onChange={(event) => setWebsiteUrl(event.target.value)}
             placeholder="https://"
-            className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+            className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-[#0D1321]"
           />
         </label>
         <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -260,7 +260,7 @@ export function VendorOnboardingForm() {
           <input
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
-            className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+            className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-[#0D1321]"
           />
         </label>
       </div>
@@ -273,7 +273,7 @@ export function VendorOnboardingForm() {
         zones={territoryZones}
       />
 
-      <div className="rounded-lg bg-[#f7f7f5] p-5">
+      <div className="rounded-lg bg-[#F6F3EA] p-5">
         <h2 className="text-xl font-semibold tracking-tight">Starter service</h2>
         <div className="mt-5 grid gap-5 md:grid-cols-2">
           <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -281,7 +281,7 @@ export function VendorOnboardingForm() {
             <input
               value={serviceName}
               onChange={(event) => setServiceName(event.target.value)}
-              className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+              className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-[#0D1321]"
             />
           </label>
           <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -289,7 +289,7 @@ export function VendorOnboardingForm() {
             <select
               value={pricingType}
               onChange={(event) => setPricingType(event.target.value as PricingType)}
-              className="h-12 rounded-lg border border-neutral-300 bg-white px-4 text-sm outline-none focus:border-neutral-950"
+              className="h-12 rounded-lg border border-neutral-300 bg-white px-4 text-sm outline-none focus:border-[#0D1321]"
             >
               <option value="hourly">Hourly</option>
               <option value="flat">Flat</option>
@@ -305,7 +305,7 @@ export function VendorOnboardingForm() {
                   min="0"
                   value={hourlyRate}
                   onChange={(event) => setHourlyRate(Number(event.target.value))}
-                  className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+                  className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-[#0D1321]"
                 />
               </label>
               <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -315,7 +315,7 @@ export function VendorOnboardingForm() {
                   min="1"
                   value={minimumHours}
                   onChange={(event) => setMinimumHours(Number(event.target.value))}
-                  className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+                  className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-[#0D1321]"
                 />
               </label>
             </>
@@ -327,7 +327,7 @@ export function VendorOnboardingForm() {
                 min="0"
                 value={basePrice}
                 onChange={(event) => setBasePrice(Number(event.target.value))}
-                className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+                className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-[#0D1321]"
               />
             </label>
           )}
@@ -338,7 +338,7 @@ export function VendorOnboardingForm() {
               min="1"
               value={minimumGuests}
               onChange={(event) => setMinimumGuests(Number(event.target.value))}
-              className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+              className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-[#0D1321]"
             />
           </label>
           <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -348,7 +348,7 @@ export function VendorOnboardingForm() {
               min="1"
               value={maximumGuests}
               onChange={(event) => setMaximumGuests(Number(event.target.value))}
-              className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+              className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-[#0D1321]"
             />
           </label>
           <label className="grid gap-2 text-sm font-semibold text-neutral-800 md:col-span-2">
@@ -356,7 +356,7 @@ export function VendorOnboardingForm() {
             <select
               value={travelMode}
               onChange={(event) => setTravelMode(event.target.value)}
-              className="h-12 rounded-lg border border-neutral-300 bg-white px-4 text-sm outline-none focus:border-neutral-950"
+              className="h-12 rounded-lg border border-neutral-300 bg-white px-4 text-sm outline-none focus:border-[#0D1321]"
             >
               <option>Travels to the customer</option>
               <option>Customer comes to our location</option>
@@ -376,7 +376,7 @@ export function VendorOnboardingForm() {
                 onClick={() => toggleEventType(eventType)}
                 className={`rounded-full px-3 py-2 text-xs font-semibold transition ${
                   selectedEventTypes.includes(eventType)
-                    ? "bg-neutral-950 text-white"
+                    ? "bg-[#0D1321] text-white"
                     : "border border-neutral-300 bg-white text-neutral-700"
                 }`}
               >
@@ -397,7 +397,7 @@ export function VendorOnboardingForm() {
                 onClick={() => toggleLifeStage(lifeStage)}
                 className={`rounded-full px-3 py-2 text-xs font-semibold transition ${
                   selectedLifeStages.includes(lifeStage)
-                    ? "bg-neutral-950 text-white"
+                    ? "bg-[#0D1321] text-white"
                     : "border border-neutral-300 bg-white text-neutral-700"
                 }`}
               >
@@ -412,7 +412,7 @@ export function VendorOnboardingForm() {
             value={tagInput}
             onChange={(event) => setTagInput(event.target.value)}
             placeholder="teen, activity, backyard, armenian, taco-cart"
-            className="h-12 rounded-lg border border-neutral-300 bg-white px-4 text-sm outline-none focus:border-neutral-950"
+            className="h-12 rounded-lg border border-neutral-300 bg-white px-4 text-sm outline-none focus:border-[#0D1321]"
           />
           <span className="text-xs font-medium text-neutral-500">
             Use short comma-separated tags. Offensive tags are blocked.
@@ -426,11 +426,11 @@ export function VendorOnboardingForm() {
         </p>
       ) : null}
       {authNotice ? (
-        <div className="rounded-lg border border-neutral-200 bg-[#fbfbfa] px-4 py-3 text-sm font-semibold text-neutral-700">
+        <div className="rounded-lg border border-neutral-200 bg-[#FFFCF7] px-4 py-3 text-sm font-semibold text-neutral-700">
           <p>{authNotice}</p>
           <Link
             href="/auth/login?next=/vendor/onboarding"
-            className="mt-3 inline-flex rounded-full bg-neutral-950 px-4 py-2 text-sm text-white"
+            className="mt-3 inline-flex rounded-full bg-[#0D1321] px-4 py-2 text-sm text-white"
           >
             Log in to continue
           </Link>
@@ -438,7 +438,7 @@ export function VendorOnboardingForm() {
       ) : null}
       <button
         disabled={isSubmitting}
-        className="h-12 rounded-full bg-[#ff5a5f] px-6 text-sm font-semibold text-white transition hover:bg-[#e84f54] disabled:cursor-not-allowed disabled:opacity-60"
+        className="h-12 rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white transition hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? "Creating..." : "Create vendor listing"}
       </button>

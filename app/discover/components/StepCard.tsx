@@ -24,7 +24,7 @@ export function StepCard({
       <div className="min-w-0 animate-[fadeUp_220ms_ease-out] p-6 sm:p-8 lg:p-10">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#d94f48]">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">
               {eyebrow}
             </p>
             <h1 className="mt-4 text-3xl font-semibold tracking-tight text-neutral-950 sm:text-5xl">
@@ -43,7 +43,7 @@ export function StepCard({
     <div className="grid min-w-0 animate-[fadeUp_220ms_ease-out] gap-8 p-6 sm:p-8 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] lg:p-10">
       <div className="flex flex-col justify-between gap-8">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#d94f48]">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">
             {eyebrow}
           </p>
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-neutral-950 sm:text-5xl">

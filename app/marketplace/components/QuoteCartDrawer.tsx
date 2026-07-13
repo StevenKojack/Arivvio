@@ -58,7 +58,7 @@ export function QuoteCartDrawer({
 
   if (isBar) {
     return (
-      <aside className="min-w-0 rounded-[24px] border border-neutral-200 bg-white/95 p-3 shadow-[0_18px_56px_rgba(20,20,20,0.08)] backdrop-blur transition duration-200 ease-out">
+      <aside className="min-w-0 rounded-[24px] border border-[#D4AF37]/16 bg-white/95 p-3 shadow-[0_18px_56px_rgba(13,19,33,0.08)] backdrop-blur transition duration-200 ease-out">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
@@ -88,7 +88,7 @@ export function QuoteCartDrawer({
               type="button"
               onClick={onRequestQuotes}
               disabled={isRequestingQuotes}
-              className="h-10 rounded-full bg-neutral-950 px-4 text-sm font-semibold text-white transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+              className="h-10 rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(13,19,33,0.18)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
             >
               {isRequestingQuotes ? "Requesting..." : "Request quotes"}
             </button>
@@ -100,7 +100,7 @@ export function QuoteCartDrawer({
 
   return (
     <aside
-      className={`min-w-0 rounded-[28px] border border-neutral-200 bg-white/95 shadow-[0_22px_70px_rgba(20,20,20,0.08)] backdrop-blur transition duration-200 ease-out hover:shadow-[0_26px_82px_rgba(20,20,20,0.1)] ${
+      className={`min-w-0 rounded-[28px] border border-[#D4AF37]/16 bg-white/95 shadow-[0_22px_70px_rgba(13,19,33,0.08)] backdrop-blur transition duration-200 ease-out hover:shadow-[0_26px_82px_rgba(13,19,33,0.1)] ${
         isCompact
           ? "max-h-[52vh] overflow-y-auto p-4"
           : isWorkspace
@@ -117,12 +117,12 @@ export function QuoteCartDrawer({
             {cart.length} selected
           </h2>
         </div>
-        <span className="rounded-full bg-[#f7f7f5] px-3 py-1 text-sm font-semibold text-neutral-700">
+        <span className="rounded-full bg-[#FFF8E1] px-3 py-1 text-sm font-semibold text-[#8A6A16]">
           ${total.toLocaleString()}
         </span>
       </div>
 
-      <p className="mt-4 rounded-2xl bg-[#f7f7f5] px-4 py-3 text-sm text-neutral-600">
+      <p className="mt-4 rounded-2xl bg-[#F6F3EA] px-4 py-3 text-sm text-neutral-600 ring-1 ring-[#D4AF37]/10">
         {eventSummary}
       </p>
 
@@ -134,7 +134,7 @@ export function QuoteCartDrawer({
       ) : null}
 
       {cartMessage ? (
-        <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+        <p className="mt-4 rounded-2xl bg-[#FFF8E1] px-4 py-3 text-sm font-semibold text-[#8A6A16]">
           {cartMessage}
         </p>
       ) : null}
@@ -174,7 +174,7 @@ export function QuoteCartDrawer({
           type="button"
           onClick={onRequestQuotes}
           disabled={isRequestingQuotes}
-          className="mt-5 h-12 w-full rounded-full bg-neutral-950 text-sm font-semibold text-white transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+          className="mt-5 h-12 w-full rounded-full bg-[#0D1321] text-sm font-semibold text-white shadow-[0_14px_30px_rgba(13,19,33,0.18)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
         >
           {isRequestingQuotes ? "Requesting..." : "Request quotes"}
         </button>
@@ -212,8 +212,8 @@ function CartPrompt({
         href="/auth/login"
         className={
           compact
-            ? "hidden rounded-full border border-neutral-200 px-3 py-2 text-xs font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-neutral-950 sm:inline-flex"
-            : "mt-4 block rounded-2xl border border-neutral-200 px-4 py-3 text-sm font-semibold text-neutral-700 transition hover:border-neutral-950"
+            ? "hidden rounded-full border border-neutral-200 px-3 py-2 text-xs font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-[#0D1321] sm:inline-flex"
+            : "mt-4 block rounded-2xl border border-neutral-200 px-4 py-3 text-sm font-semibold text-neutral-700 transition hover:border-[#0D1321]"
         }
       >
         {compact ? "Log in to save" : "Log in to save your quote cart."}
@@ -259,7 +259,7 @@ function CartLineCard({
   );
 
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-[#fbfbfa] p-4">
+    <div className="rounded-2xl border border-[#D4AF37]/14 bg-[#FFFCF7] p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-semibold text-neutral-950">{line.item.name}</p>

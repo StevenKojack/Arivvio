@@ -299,7 +299,7 @@ export function ServicesTab({
               type="checkbox"
               checked={draft.active}
               onChange={(event) => setDraft({ ...draft, active: event.target.checked })}
-              className="h-4 w-4 accent-[#ff5a5f]"
+              className="h-4 w-4 accent-[#0D1321]"
             />
             Active in marketplace
           </label>
@@ -315,7 +315,7 @@ export function ServicesTab({
                   onClick={() => toggleEventType(eventType)}
                   className={`rounded-full px-3 py-2 text-xs font-semibold ${
                     draft.eventTypesSupported.includes(eventType)
-                      ? "bg-neutral-950 text-white"
+                      ? "bg-[#0D1321] text-white"
                       : "border border-neutral-300 text-neutral-700"
                   }`}
                 >
@@ -328,7 +328,7 @@ export function ServicesTab({
             type="button"
             onClick={saveService}
             disabled={!vendors.length}
-            className="h-11 rounded-full bg-neutral-950 px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-11 rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             {editingId ? "Save service" : "Create service"}
           </button>
@@ -369,7 +369,7 @@ export function ServicesTab({
                 <button
                   type="button"
                   onClick={() => loadService(service)}
-                  className="rounded-full bg-neutral-950 px-3 py-1 text-xs font-semibold text-white"
+                  className="rounded-full bg-[#0D1321] px-3 py-1 text-xs font-semibold text-white"
                 >
                   Edit
                 </button>
@@ -439,7 +439,7 @@ export function AvailabilityTab({
                   onClick={() => onToggleVacationMode(vendor)}
                   className={`rounded-full px-3 py-2 text-xs font-semibold ${
                     vendor.vacation_mode
-                      ? "bg-[#ff5a5f] text-white"
+                      ? "bg-[#0D1321] text-white"
                       : "border border-neutral-300 text-neutral-950"
                   }`}
                 >
@@ -452,7 +452,7 @@ export function AvailabilityTab({
             {weeklyDays.map((day) => (
               <span
                 key={day}
-                className="rounded-lg border border-neutral-200 bg-[#f7f7f5] px-2 py-3 text-center text-xs font-semibold"
+                className="rounded-lg border border-neutral-200 bg-[#F6F3EA] px-2 py-3 text-center text-xs font-semibold"
               >
                 {day}
               </span>
@@ -503,7 +503,7 @@ export function AvailabilityTab({
             type="button"
             onClick={() => onCreateAvailability(draft)}
             disabled={!draft.date || !draft.vendorId}
-            className="h-11 rounded-full bg-neutral-950 px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-11 rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             Save availability
           </button>
@@ -584,7 +584,7 @@ export function PhotosTab({
             ))}
           </select>
         </label>
-        <label className="flex h-12 cursor-pointer items-center justify-center rounded-full bg-neutral-950 px-4 text-sm font-semibold text-white">
+        <label className="flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white">
           Upload photo
           <input
             type="file"
@@ -716,7 +716,7 @@ export function BookingsTab({ bookings }: Pick<VendorTabProps, "bookings">) {
           <Link
             key={booking.id}
             href={`/bookings/${booking.id}`}
-            className="block rounded-lg border border-neutral-200 p-4 transition hover:border-neutral-950"
+            className="block rounded-lg border border-neutral-200 p-4 transition hover:border-[#0D1321]"
           >
             <p className="font-semibold text-neutral-950">
               {formatMoney(booking.final_price)}
@@ -808,7 +808,7 @@ export function BusinessSettingsTab({
       <button
         type="button"
         onClick={() => onUpdateBusiness(vendor.id, draft)}
-        className="mt-4 h-11 rounded-full bg-neutral-950 px-4 text-sm font-semibold text-white"
+        className="mt-4 h-11 rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white"
       >
         Save business
       </button>
@@ -865,7 +865,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function Panel({ children, title }: { children: React.ReactNode; title: string }) {
   return (
-    <section className="rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(20,20,20,0.05)]">
+    <section className="rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(13,19,33,0.05)]">
       <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
       <div className="mt-5 space-y-3">{children}</div>
     </section>
@@ -907,7 +907,7 @@ function Input({
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-11 rounded-lg border border-neutral-300 px-3 outline-none focus:border-neutral-950"
+        className="h-11 rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#0D1321]"
       />
     </label>
   );
@@ -928,7 +928,7 @@ function QuoteButton({
       onClick={onClick}
       className={`h-10 rounded-full px-4 text-sm font-semibold ${
         primary
-          ? "bg-[#ff5a5f] text-white"
+          ? "bg-[#0D1321] text-white"
           : "border border-neutral-300 text-neutral-950"
       }`}
     >

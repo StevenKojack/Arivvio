@@ -164,7 +164,7 @@ export function EventDetail({ eventId }: { eventId: string }) {
     <div className="mx-auto max-w-7xl">
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#e24b44]">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">
             Event dashboard
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
@@ -177,7 +177,7 @@ export function EventDetail({ eventId }: { eventId: string }) {
         </div>
         <Link
           href={buildMarketplaceHrefForEvent(event)}
-          className="rounded-full bg-[#ff5a5f] px-5 py-3 text-sm font-semibold text-white"
+          className="rounded-full bg-[#0D1321] px-5 py-3 text-sm font-semibold text-white"
         >
           Browse vendors
         </Link>
@@ -235,7 +235,7 @@ export function EventDetail({ eventId }: { eventId: string }) {
                     <button
                       type="button"
                       onClick={() => confirmQuote(quote)}
-                      className="mt-4 h-10 rounded-full bg-neutral-950 px-4 text-sm font-semibold text-white"
+                      className="mt-4 h-10 rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white"
                     >
                       Confirm vendor
                     </button>
@@ -253,7 +253,7 @@ export function EventDetail({ eventId }: { eventId: string }) {
               <Link
                 key={booking.id}
                 href={`/bookings/${booking.id}`}
-                className="block rounded-lg border border-neutral-200 p-4 text-sm transition hover:border-neutral-950"
+                className="block rounded-lg border border-neutral-200 p-4 text-sm transition hover:border-[#0D1321]"
               >
                 <p className="font-semibold text-neutral-950">
                   {formatMoney(booking.final_price)} - {booking.booking_status}
@@ -317,7 +317,7 @@ export function EventDetail({ eventId }: { eventId: string }) {
             <button
               type="button"
               onClick={saveGuest}
-              className="h-11 rounded-full bg-neutral-950 px-4 text-sm font-semibold text-white"
+              className="h-11 rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white"
             >
               {editingGuestId ? "Save guest" : "Add guest"}
             </button>
@@ -347,7 +347,7 @@ export function EventDetail({ eventId }: { eventId: string }) {
                     <button
                       type="button"
                       onClick={() => editGuest(guest)}
-                      className="rounded-full bg-neutral-950 px-3 py-1 text-xs font-semibold text-white"
+                      className="rounded-full bg-[#0D1321] px-3 py-1 text-xs font-semibold text-white"
                     >
                       Edit
                     </button>
@@ -424,7 +424,7 @@ function GuestInput({
         type={type}
         value={value}
         onChange={(inputEvent) => onChange(inputEvent.target.value)}
-        className="h-11 rounded-lg border border-neutral-300 px-3 outline-none focus:border-neutral-950"
+        className="h-11 rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#0D1321]"
       />
     </label>
   );

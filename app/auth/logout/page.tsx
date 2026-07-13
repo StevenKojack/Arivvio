@@ -21,7 +21,7 @@ export default function LogoutPage() {
   }, [router]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f7f7f5] px-6 text-neutral-950">
+    <main className="flex min-h-screen items-center justify-center bg-[#F6F3EA] px-6 text-neutral-950">
       <p className="text-sm font-semibold text-neutral-600">Signing out...</p>
     </main>
   );

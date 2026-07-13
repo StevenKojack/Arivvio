@@ -129,7 +129,7 @@ export function AccountDashboard() {
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href="/auth/login"
-            className="rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white"
+            className="rounded-full bg-[#0D1321] px-5 py-3 text-sm font-semibold text-white"
           >
             Log in
           </Link>
@@ -148,7 +148,7 @@ export function AccountDashboard() {
     <div className="mx-auto max-w-7xl">
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#e24b44]">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">
             Account
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
@@ -161,7 +161,7 @@ export function AccountDashboard() {
         <div className="flex flex-wrap gap-3">
           <Link
             href="/discover"
-            className="rounded-full bg-[#ff5a5f] px-5 py-3 text-sm font-semibold text-white"
+            className="rounded-full bg-[#0D1321] px-5 py-3 text-sm font-semibold text-white"
           >
             New event
           </Link>
@@ -210,7 +210,7 @@ export function AccountDashboard() {
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-        <section className="rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(20,20,20,0.05)]">
+        <section className="rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(13,19,33,0.05)]">
           <div className="flex items-center justify-between gap-4">
           <h2 className="text-2xl font-semibold tracking-tight">My events</h2>
             <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
@@ -223,7 +223,7 @@ export function AccountDashboard() {
                 <Link
                   key={event.id}
                   href={`/events/${event.id}`}
-                  className="block rounded-lg border border-neutral-200 p-4 transition hover:-translate-y-0.5 hover:border-neutral-950"
+                  className="block rounded-lg border border-neutral-200 p-4 transition hover:-translate-y-0.5 hover:border-[#0D1321]"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -249,9 +249,9 @@ export function AccountDashboard() {
           </div>
         </section>
 
-        <section className="rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(20,20,20,0.05)]">
+        <section className="rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(13,19,33,0.05)]">
           <h2 className="text-2xl font-semibold tracking-tight">Budget tracker</h2>
-          <div className="mt-5 rounded-lg bg-neutral-950 p-5 text-white">
+          <div className="mt-5 rounded-lg bg-[#0D1321] p-5 text-white">
             <p className="text-sm text-neutral-400">Confirmed spend</p>
             <p className="mt-2 text-4xl font-semibold">{formatMoney(confirmedSpend)}</p>
             <p className="mt-2 text-sm text-neutral-300">
@@ -275,7 +275,7 @@ export function AccountDashboard() {
         </section>
       </div>
 
-      <section className="mt-5 rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(20,20,20,0.05)]">
+      <section className="mt-5 rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(13,19,33,0.05)]">
         <h2 className="text-2xl font-semibold tracking-tight">Quote requests</h2>
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
           {quoteRequests.length ? (
@@ -307,7 +307,7 @@ export function AccountDashboard() {
                       <button
                         type="button"
                         onClick={() => confirmQuote(quote)}
-                        className="h-10 rounded-full bg-neutral-950 px-4 text-sm font-semibold text-white"
+                        className="h-10 rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white"
                       >
                         Confirm vendor
                       </button>
@@ -327,7 +327,7 @@ export function AccountDashboard() {
       </section>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
-        <section className="rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(20,20,20,0.05)]">
+        <section className="rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(13,19,33,0.05)]">
           <h2 className="text-2xl font-semibold tracking-tight">Bookings</h2>
           <div className="mt-5 space-y-3">
             {bookings.length ? (
@@ -335,7 +335,7 @@ export function AccountDashboard() {
                 <Link
                   key={booking.id}
                   href={`/bookings/${booking.id}`}
-                  className="block rounded-lg border border-neutral-200 p-4 transition hover:border-neutral-950"
+                  className="block rounded-lg border border-neutral-200 p-4 transition hover:border-[#0D1321]"
                 >
                   <p className="font-semibold text-neutral-950">
                     {formatMoney(booking.final_price)} - {booking.booking_status}
@@ -355,7 +355,7 @@ export function AccountDashboard() {
           </div>
         </section>
 
-        <section className="rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(20,20,20,0.05)]">
+        <section className="rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(13,19,33,0.05)]">
           <h2 className="text-2xl font-semibold tracking-tight">Guest lists</h2>
           <div className="mt-5 space-y-3">
             {events.length ? (
@@ -363,7 +363,7 @@ export function AccountDashboard() {
                 <Link
                   key={event.id}
                   href={`/events/${event.id}`}
-                  className="block rounded-lg border border-neutral-200 p-4 transition hover:border-neutral-950"
+                  className="block rounded-lg border border-neutral-200 p-4 transition hover:border-[#0D1321]"
                 >
                   <p className="font-semibold text-neutral-950">{event.title}</p>
                   <p className="mt-1 text-sm text-neutral-500">
@@ -398,7 +398,7 @@ export function AccountDashboard() {
           </div>
           <Link
             href={vendors.length ? "/vendor/dashboard" : "/vendor/onboarding"}
-            className="w-fit rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white"
+            className="w-fit rounded-full bg-[#0D1321] px-5 py-3 text-sm font-semibold text-white"
           >
             {vendors.length ? "Open vendor dashboard" : "Become a vendor"}
           </Link>
@@ -444,7 +444,7 @@ function QuickAction({
       className={`rounded-lg border p-5 text-sm font-semibold transition hover:-translate-y-0.5 ${
         muted
           ? "border-neutral-200 bg-white text-neutral-500"
-          : "border-neutral-950 bg-neutral-950 text-white"
+          : "border-[#0D1321] bg-[#0D1321] text-white"
       }`}
     >
       {title}
@@ -466,7 +466,7 @@ function EmptyState({
       <p>{message}</p>
       <Link
         href={actionHref}
-        className="mt-4 inline-flex rounded-full bg-neutral-950 px-4 py-2 text-sm font-semibold text-white"
+        className="mt-4 inline-flex rounded-full bg-[#0D1321] px-4 py-2 text-sm font-semibold text-white"
       >
         {actionLabel}
       </Link>
@@ -482,7 +482,7 @@ function DashboardShell({
   message: string;
 }) {
   return (
-    <div className="mx-auto max-w-7xl rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(20,20,20,0.05)]">
+    <div className="mx-auto max-w-7xl rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_18px_44px_rgba(13,19,33,0.05)]">
       <p className="text-sm font-semibold text-neutral-700">{message}</p>
       {children}
     </div>

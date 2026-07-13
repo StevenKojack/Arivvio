@@ -75,12 +75,12 @@ export function AddressAutocomplete({
           onChange={(event) => onChange(event.target.value)}
           onFocus={() => setIsFocused(true)}
           placeholder="Start typing a venue or address"
-          className="mt-2 h-14 w-full rounded-[22px] border border-neutral-200 bg-white px-4 text-sm font-semibold outline-none shadow-[0_12px_34px_rgba(20,20,20,0.05)] transition focus:border-neutral-950"
+          className="mt-2 h-14 w-full rounded-[22px] border border-neutral-200 bg-white px-4 text-sm font-semibold outline-none shadow-[0_12px_34px_rgba(13,19,33,0.05)] transition focus:border-[#0D1321]"
         />
       </label>
 
       {isFocused && (isSearching || suggestions.length) ? (
-        <div className="absolute left-0 right-0 top-[76px] z-30 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-2 shadow-[0_22px_70px_rgba(20,20,20,0.16)]">
+        <div className="absolute left-0 right-0 top-[76px] z-30 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-2 shadow-[0_22px_70px_rgba(13,19,33,0.16)]">
           {isSearching ? (
             <p className="px-3 py-3 text-xs font-semibold text-neutral-500">
               Finding address matches...
@@ -92,7 +92,7 @@ export function AddressAutocomplete({
               type="button"
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => onSelect(suggestion)}
-              className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left transition hover:-translate-y-0.5 hover:bg-[#f7f7f5]"
+              className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left transition hover:-translate-y-0.5 hover:bg-[#F6F3EA]"
             >
               <span>
                 <span className="block text-sm font-semibold text-neutral-950">
@@ -102,7 +102,7 @@ export function AddressAutocomplete({
                   {suggestion.address}
                 </span>
               </span>
-              <span className="shrink-0 rounded-full bg-neutral-950 px-3 py-1 text-xs font-semibold text-white">
+              <span className="shrink-0 rounded-full bg-[#0D1321] px-3 py-1 text-xs font-semibold text-white">
                 Use
               </span>
             </button>
@@ -111,7 +111,7 @@ export function AddressAutocomplete({
       ) : null}
 
       {selectedAddress ? (
-        <div className="mt-4 rounded-[24px] border border-neutral-200 bg-white p-4 shadow-[0_18px_48px_rgba(20,20,20,0.06)]">
+        <div className="mt-4 rounded-[24px] border border-neutral-200 bg-white p-4 shadow-[0_18px_48px_rgba(13,19,33,0.06)]">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-400">
             Selected address
           </p>
@@ -123,7 +123,7 @@ export function AddressAutocomplete({
           </p>
           <div className="relative mt-3 h-36 overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#e9eee8,#f7f3ed)]">
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.45)_1px,transparent_1px),linear-gradient(rgba(255,255,255,0.45)_1px,transparent_1px)] bg-[size:30px_30px]" />
-            <div className="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full bg-neutral-950 text-sm font-semibold text-white shadow-[0_18px_42px_rgba(20,20,20,0.28)]">
+            <div className="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full bg-[#0D1321] text-sm font-semibold text-[#D4AF37] shadow-[0_18px_42px_rgba(13,19,33,0.28)]">
               A
             </div>
           </div>

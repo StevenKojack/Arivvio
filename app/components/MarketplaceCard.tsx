@@ -20,19 +20,19 @@ export function MarketplaceCard({
   onAdd,
 }: MarketplaceCardProps) {
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-[0_18px_44px_rgba(20,20,20,0.06)] transition duration-300 hover:-translate-y-1 hover:border-neutral-300 hover:shadow-[0_24px_58px_rgba(20,20,20,0.1)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-[#D4AF37]/16 bg-white shadow-[0_18px_44px_rgba(13,19,33,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[#D4AF37]/38 hover:shadow-[0_24px_58px_rgba(13,19,33,0.1)]">
       {item.photoUrl ? (
         <div
           className="h-40 bg-cover bg-center"
           style={{ backgroundImage: `url(${item.photoUrl})` }}
         />
       ) : (
-        <div className="h-2 bg-[#ff5a5f]" />
+        <div className="h-2 bg-[#D4AF37]" />
       )}
       <div className="flex flex-1 flex-col p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#e24b44]">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#B88A1D]">
               {item.type}
             </p>
             <h3 className="mt-3 text-xl font-semibold tracking-tight text-neutral-950">
@@ -40,15 +40,15 @@ export function MarketplaceCard({
             </h3>
           </div>
           <div className="grid justify-items-end gap-2">
-            <span className="rounded-full bg-neutral-100 px-3 py-1 text-sm font-semibold text-neutral-800">
+            <span className="rounded-full bg-[#F6F3EA] px-3 py-1 text-sm font-semibold text-[#0D1321]">
               {item.rating.toFixed(2)}
             </span>
             {!item.databaseSource ? (
-              <span className="rounded-full bg-[#fff5f5] px-3 py-1 text-xs font-semibold text-[#c33d38]">
+              <span className="rounded-full bg-[#FFF8E1] px-3 py-1 text-xs font-semibold text-[#8A6A16]">
                 Demo provider
               </span>
             ) : (
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+              <span className="rounded-full bg-[#EAF6EE] px-3 py-1 text-xs font-semibold text-emerald-800">
                 Database provider
               </span>
             )}
@@ -64,7 +64,7 @@ export function MarketplaceCard({
           {item.events.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600"
+              className="rounded-full border border-[#D4AF37]/18 px-3 py-1 text-xs font-medium text-neutral-600"
             >
               {tag}
             </span>
@@ -74,14 +74,14 @@ export function MarketplaceCard({
           {item.services.slice(0, 3).map((service) => (
             <span
               key={service}
-              className="rounded-full bg-[#fff5f5] px-3 py-1 text-xs font-semibold text-[#c33d38]"
+              className="rounded-full bg-[#FFF8E1] px-3 py-1 text-xs font-semibold text-[#8A6A16]"
             >
               {service}
             </span>
           ))}
         </div>
 
-        <div className="mt-5 rounded-lg bg-[#f7f7f5] p-4">
+        <div className="mt-5 rounded-[22px] bg-[#F6F3EA] p-4 ring-1 ring-[#D4AF37]/10">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
@@ -115,7 +115,7 @@ export function MarketplaceCard({
               href={item.sourceUrl}
               target="_blank"
               rel="noreferrer"
-              className="mb-4 inline-flex text-xs font-semibold text-[#c33d38] transition hover:text-neutral-950"
+              className="mb-4 inline-flex text-xs font-semibold text-[#8A6A16] transition hover:text-neutral-950"
             >
               Verify: {item.sourceLabel}
             </a>
@@ -132,7 +132,7 @@ export function MarketplaceCard({
           <button
             type="button"
             onClick={() => onAdd(item)}
-            className="inline-flex h-10 items-center rounded-full bg-neutral-950 px-5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-neutral-800"
+          className="inline-flex h-10 items-center rounded-full bg-[#0D1321] px-5 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(13,19,33,0.18)] transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
           >
             {buttonLabel}
           </button>

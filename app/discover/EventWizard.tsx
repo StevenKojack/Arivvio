@@ -290,7 +290,7 @@ export function EventWizard() {
           currentStep={step}
           onStepChange={setStep}
         />
-        <div className="mt-8 overflow-visible rounded-[34px] border border-neutral-200 bg-white shadow-[0_28px_90px_rgba(20,20,20,0.08)]">
+        <div className="mt-8 overflow-visible rounded-[34px] border border-[#D4AF37]/16 bg-white shadow-[0_28px_90px_rgba(13,19,33,0.08)]">
           {step === 0 ? (
             <StepCard
               eyebrow="Step 1"
@@ -301,7 +301,7 @@ export function EventWizard() {
                   type="button"
                   onClick={() => continueFromSearch()}
                   disabled={!query.trim()}
-                  className="h-12 rounded-full bg-neutral-950 px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="h-12 rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Continue
                 </button>
@@ -365,19 +365,19 @@ export function EventWizard() {
               <button
                 type="button"
                 onClick={() => setShowAdvancedTiming((current) => !current)}
-                className="mt-5 rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-neutral-950"
+                className="mt-5 rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-[#0D1321]"
               >
                 {showAdvancedTiming ? "Hide advanced timing" : "Advanced timing"}
               </button>
               {showAdvancedTiming ? (
-                <div className="mt-4 grid gap-4 rounded-[24px] border border-neutral-200 bg-[#fbfbfa] p-4 md:grid-cols-2">
+                <div className="mt-4 grid gap-4 rounded-[24px] border border-neutral-200 bg-[#FFFCF7] p-4 md:grid-cols-2">
                   <label className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-neutral-800">
                     Multi-day event
                     <input
                       type="checkbox"
                       checked={isMultiDay}
                       onChange={(event) => setIsMultiDay(event.target.checked)}
-                      className="h-5 w-5 accent-neutral-950"
+                      className="h-5 w-5 accent-[#D4AF37]"
                     />
                   </label>
                   {isMultiDay ? (
@@ -489,8 +489,8 @@ export function EventWizard() {
                       onClick={() => setBudget(Number(value))}
                       className={`h-12 rounded-full border text-sm font-semibold transition hover:-translate-y-0.5 ${
                         budget === Number(value)
-                          ? "border-neutral-950 bg-neutral-950 text-white"
-                          : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-950"
+                          ? "border-[#0D1321] bg-[#0D1321] text-white"
+                          : "border-neutral-200 bg-white text-neutral-700 hover:border-[#0D1321]"
                       }`}
                     >
                       {label}
@@ -504,7 +504,7 @@ export function EventWizard() {
                   step="500"
                   value={budget}
                   onChange={(event) => setBudget(Number(event.target.value))}
-                  className="w-full accent-neutral-950"
+                  className="w-full accent-[#D4AF37]"
                 />
               </div>
             </StepCard>
@@ -520,7 +520,7 @@ export function EventWizard() {
                   {canOpenMarketplace ? (
                     <Link
                       href={marketplaceHref}
-                      className="inline-flex h-12 items-center justify-center rounded-full bg-neutral-950 px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-neutral-800"
+                      className="inline-flex h-12 items-center justify-center rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
                     >
                       Browse matches
                     </Link>
@@ -528,7 +528,7 @@ export function EventWizard() {
                     <button
                       type="button"
                       disabled
-                      className="h-12 rounded-full bg-neutral-950 px-6 text-sm font-semibold text-white opacity-40"
+                      className="h-12 rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white opacity-40"
                     >
                       Add date and location first
                     </button>
@@ -536,7 +536,7 @@ export function EventWizard() {
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="h-12 rounded-full border border-neutral-300 bg-white px-6 text-sm font-semibold text-neutral-950 transition hover:-translate-y-0.5 hover:border-neutral-950"
+                    className="h-12 rounded-full border border-neutral-300 bg-white px-6 text-sm font-semibold text-neutral-950 transition hover:-translate-y-0.5 hover:border-[#0D1321]"
                   >
                     Edit details
                   </button>
@@ -592,11 +592,11 @@ function StepRail({
             onClick={() => onStepChange(index)}
             className={`flex min-w-fit items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition ${
               currentStep === index
-                ? "border-neutral-950 bg-neutral-950 text-white shadow-[0_14px_34px_rgba(20,20,20,0.16)]"
+                ? "border-[#0D1321] bg-[#0D1321] text-white shadow-[0_14px_34px_rgba(13,19,33,0.16)]"
                 : currentStep > index
-                  ? "border-neutral-200 bg-white text-neutral-800 hover:-translate-y-0.5 hover:border-neutral-950"
+                  ? "border-[#D4AF37]/18 bg-white text-neutral-800 hover:-translate-y-0.5 hover:border-[#D4AF37]/60"
                   : isAvailable
-                    ? "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-400"
+                    ? "border-[#D4AF37]/18 bg-white text-neutral-500 hover:border-[#D4AF37]/45"
                     : "cursor-not-allowed border-neutral-200 bg-neutral-50 text-neutral-300"
             }`}
           >
@@ -626,9 +626,9 @@ function SearchBox({
         value={query}
         onChange={(event) => onChange(event.target.value)}
         placeholder="Pool party, funeral reception, corporate seminar..."
-        className="h-14 w-full rounded-full border border-neutral-300 px-5 text-lg font-semibold outline-none transition focus:border-neutral-950"
+        className="h-14 w-full rounded-full border border-neutral-300 px-5 text-lg font-semibold outline-none transition focus:border-[#0D1321]"
       />
-      <div className="mt-4 overflow-hidden rounded-[28px] border border-neutral-200 bg-[#fbfbfa] p-2">
+      <div className="mt-4 overflow-hidden rounded-[28px] border border-neutral-200 bg-[#FFFCF7] p-2">
         {suggestions.map((suggestion) => (
           <button
             key={suggestion.label}
@@ -695,7 +695,7 @@ function UnderstandingCard({
 
   return (
     <div className="space-y-5">
-      <div className="rounded-[30px] border border-neutral-200 bg-[linear-gradient(135deg,#fbfbfa,#ffffff)] p-5">
+      <div className="rounded-[30px] border border-neutral-200 bg-[linear-gradient(135deg,#FFFCF7,#ffffff)] p-5">
         <p className="text-sm font-semibold text-neutral-500">
           Looks like you are planning
         </p>
@@ -727,7 +727,7 @@ function UnderstandingCard({
           <button
             type="button"
             onClick={() => setIsEditing((current) => !current)}
-            className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-neutral-950"
+            className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-[#0D1321]"
           >
             {isEditing ? "Done" : "Edit details"}
           </button>
@@ -745,14 +745,14 @@ function UnderstandingCard({
       </div>
 
       {isEditing ? (
-        <div className="rounded-[30px] border border-neutral-200 bg-white p-5 shadow-[0_18px_50px_rgba(20,20,20,0.06)]">
+        <div className="rounded-[30px] border border-neutral-200 bg-white p-5 shadow-[0_18px_50px_rgba(13,19,33,0.06)]">
           <label className="block text-sm font-semibold text-neutral-800">
             Add a service
             <input
               value={serviceSearch}
               onChange={(event) => setServiceSearch(event.target.value)}
               placeholder="Search services"
-              className="mt-2 h-12 w-full rounded-2xl border border-neutral-300 px-4 text-sm font-semibold outline-none transition focus:border-neutral-950"
+              className="mt-2 h-12 w-full rounded-2xl border border-neutral-300 px-4 text-sm font-semibold outline-none transition focus:border-[#0D1321]"
             />
           </label>
           <div className="mt-3 grid max-h-56 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
@@ -768,7 +768,7 @@ function UnderstandingCard({
         </div>
       ) : null}
 
-      <div className="rounded-[30px] border border-neutral-200 bg-[#fbfbfa] p-5">
+      <div className="rounded-[30px] border border-neutral-200 bg-[#FFFCF7] p-5">
         <label className="block text-sm font-semibold text-neutral-800">
           Want to add anything?
           <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -776,13 +776,13 @@ function UnderstandingCard({
               value={customNote}
               onChange={(event) => onCustomNoteChange(event.target.value)}
               placeholder="Tell us anything that matters: age, culture, food style, activities, guests, vibe, traditions..."
-              className="h-12 flex-1 rounded-2xl border border-neutral-300 bg-white px-4 text-sm font-semibold outline-none transition focus:border-neutral-950"
+              className="h-12 flex-1 rounded-2xl border border-neutral-300 bg-white px-4 text-sm font-semibold outline-none transition focus:border-[#0D1321]"
             />
             <button
               type="button"
               onClick={onAddCustomNote}
               disabled={!customNote.trim()}
-              className="h-12 rounded-full bg-neutral-950 px-5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+              className="h-12 rounded-full bg-[#0D1321] px-5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-40"
             >
               Add to plan
             </button>
@@ -795,7 +795,7 @@ function UnderstandingCard({
                 key={addition.id}
                 type="button"
                 onClick={() => onRemoveAddition(addition)}
-                className="rounded-full border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-neutral-950"
+                className="rounded-full border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-[#0D1321]"
               >
                 {addition.kind}: {addition.label} x
               </button>
@@ -901,7 +901,7 @@ function LocationStep({
       </div>
 
       {location.mode === "has_venue" ? (
-        <div className="rounded-[32px] border border-neutral-200 bg-[linear-gradient(135deg,#ffffff,#fbfbfa)] p-5 shadow-[0_20px_60px_rgba(20,20,20,0.06)]">
+        <div className="rounded-[32px] border border-neutral-200 bg-[linear-gradient(135deg,#ffffff,#FFFCF7)] p-5 shadow-[0_20px_60px_rgba(13,19,33,0.06)]">
           <div className="mb-5">
             <p className="text-sm font-semibold text-neutral-950">
               Enter the venue or address
@@ -935,7 +935,7 @@ function LocationStep({
       ) : null}
 
       {location.mode === "needs_venue" ? (
-        <div className="overflow-hidden rounded-[34px] border border-neutral-200 bg-white shadow-[0_24px_80px_rgba(20,20,20,0.1)]">
+        <div className="overflow-hidden rounded-[34px] border border-neutral-200 bg-white shadow-[0_24px_80px_rgba(13,19,33,0.1)]">
           <div className="border-b border-neutral-200 bg-white/90 p-5 backdrop-blur">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
               <div className="max-w-xl">
@@ -954,20 +954,20 @@ function LocationStep({
                     value={location.query}
                     onChange={(event) => updateAreaQuery(event.target.value)}
                     placeholder="Los Angeles, Glendale, Pasadena..."
-                    className="mt-2 h-12 w-full rounded-2xl border border-neutral-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-neutral-950"
+                    className="mt-2 h-12 w-full rounded-2xl border border-neutral-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-[#0D1321]"
                   />
                 </label>
                 <button
                   type="button"
                   onClick={useCurrentLocation}
-                  className="mt-auto h-12 rounded-full bg-neutral-950 px-5 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(20,20,20,0.18)] transition hover:-translate-y-0.5 hover:bg-neutral-800"
+                  className="mt-auto h-12 rounded-full bg-[#0D1321] px-5 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(13,19,33,0.18)] transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
                 >
                   Use my current location
                 </button>
               </div>
             </div>
               {locationMessage ? (
-                <p className="mt-3 rounded-2xl bg-[#fbfbfa] px-4 py-3 text-xs font-semibold text-neutral-600">
+                <p className="mt-3 rounded-2xl bg-[#FFFCF7] px-4 py-3 text-xs font-semibold text-neutral-600">
                   {locationMessage}
                 </p>
               ) : null}
@@ -1004,8 +1004,8 @@ function LocationChoiceCard({
       onClick={onClick}
       className={`group min-h-44 rounded-[30px] border p-5 text-left transition duration-300 hover:-translate-y-1 ${
         isSelected
-          ? "border-neutral-950 bg-neutral-950 text-white shadow-[0_24px_70px_rgba(20,20,20,0.18)]"
-          : "border-neutral-200 bg-white text-neutral-950 shadow-[0_18px_44px_rgba(20,20,20,0.05)] hover:border-neutral-400 hover:shadow-[0_24px_70px_rgba(20,20,20,0.1)]"
+          ? "border-[#0D1321] bg-[#0D1321] text-white shadow-[0_24px_70px_rgba(13,19,33,0.18)]"
+          : "border-neutral-200 bg-white text-neutral-950 shadow-[0_18px_44px_rgba(13,19,33,0.05)] hover:border-neutral-400 hover:shadow-[0_24px_70px_rgba(13,19,33,0.1)]"
       }`}
     >
       <span
@@ -1039,7 +1039,7 @@ function LocationSignal({
   const isVenue = context !== "likely_home";
 
   return (
-    <div className="mt-4 rounded-2xl border border-neutral-200 bg-[#fbfbfa] px-4 py-3">
+    <div className="mt-4 rounded-2xl border border-neutral-200 bg-[#FFFCF7] px-4 py-3">
       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-400">
         Address recognition
       </p>
@@ -1107,7 +1107,7 @@ function FinalReview({
 
   return (
     <div className="space-y-5">
-      <div className="rounded-[30px] border border-neutral-200 bg-[linear-gradient(135deg,#fbfbfa,#ffffff)] p-5">
+      <div className="rounded-[30px] border border-neutral-200 bg-[linear-gradient(135deg,#FFFCF7,#ffffff)] p-5">
         <p className="text-sm font-semibold text-neutral-500">
           Arivvio will search for
         </p>
@@ -1128,7 +1128,7 @@ function FinalReview({
         <p className="text-sm font-semibold text-neutral-950">Locations</p>
         <div className="mt-3 space-y-2">
           {locations.map((location) => (
-            <p key={location.id} className="rounded-2xl bg-[#fbfbfa] px-4 py-3 text-sm font-semibold text-neutral-700">
+            <p key={location.id} className="rounded-2xl bg-[#FFFCF7] px-4 py-3 text-sm font-semibold text-neutral-700">
               {location.kind}:{" "}
               {location.selectedLabel ||
                 location.selectedAddress ||
@@ -1145,7 +1145,7 @@ function FinalReview({
             {additions.map((addition) => (
               <span
                 key={addition.id}
-                className="rounded-full bg-[#f7f7f5] px-3 py-2 text-xs font-semibold text-neutral-700"
+                className="rounded-full bg-[#F6F3EA] px-3 py-2 text-xs font-semibold text-neutral-700"
               >
                 {addition.label}
               </span>
@@ -1186,7 +1186,7 @@ function TimingField({
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 h-12 w-full rounded-2xl border border-neutral-300 px-4 text-sm font-semibold outline-none transition focus:border-neutral-950"
+        className="mt-2 h-12 w-full rounded-2xl border border-neutral-300 px-4 text-sm font-semibold outline-none transition focus:border-[#0D1321]"
       />
     </label>
   );
@@ -1203,7 +1203,7 @@ function PrimaryButton({
     <button
       type="button"
       onClick={onClick}
-      className="h-12 rounded-full bg-neutral-950 px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-neutral-800"
+      className="h-12 rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
     >
       {label}
     </button>

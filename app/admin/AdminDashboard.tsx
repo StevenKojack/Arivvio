@@ -88,7 +88,7 @@ export function AdminDashboard() {
   return (
     <div className="mx-auto max-w-7xl">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#e24b44]">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">
           Admin
         </p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
@@ -123,7 +123,7 @@ export function AdminDashboard() {
               onClick={() => setActiveSection(section)}
               className={`h-10 rounded-full px-4 text-sm font-semibold ${
                 activeSection === section
-                  ? "bg-neutral-950 text-white"
+                  ? "bg-[#0D1321] text-white"
                   : "text-neutral-600 hover:bg-neutral-100"
               }`}
             >
@@ -150,7 +150,7 @@ export function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => updateVendor(vendor, "approved")}
-                      className="rounded-full bg-neutral-950 px-3 py-2 text-xs font-semibold text-white"
+                      className="rounded-full bg-[#0D1321] px-3 py-2 text-xs font-semibold text-white"
                     >
                       Approve
                     </button>

@@ -36,7 +36,7 @@ export function MarketplaceRow({
   }
 
   return (
-    <section className="min-w-0 overflow-hidden rounded-[30px] border border-neutral-200 bg-white p-5 shadow-[0_18px_56px_rgba(20,20,20,0.055)] transition duration-300 ease-out">
+    <section className="min-w-0 overflow-hidden rounded-[30px] border border-[#D4AF37]/14 bg-white/96 p-5 shadow-[0_18px_56px_rgba(13,19,33,0.055)] transition duration-300 ease-out">
       <div className="flex items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-neutral-950">
@@ -46,7 +46,7 @@ export function MarketplaceRow({
             <p className="mt-1 text-sm leading-6 text-neutral-600">{description}</p>
           ) : null}
         </div>
-        <span className="rounded-full bg-[#f7f7f5] px-3 py-1 text-xs font-semibold text-neutral-600">
+        <span className="rounded-full bg-[#FFF8E1] px-3 py-1 text-xs font-semibold text-[#8A6A16]">
           {items.length}
         </span>
       </div>

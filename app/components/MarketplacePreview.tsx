@@ -6,12 +6,12 @@ import { MarketplaceCard } from "./MarketplaceCard";
 
 export function MarketplacePreview() {
   return (
-    <section className="relative overflow-hidden bg-[#111111] px-6 py-24 text-white sm:px-8 lg:px-12">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(255,90,95,0.18),transparent_32%),linear-gradient(135deg,#171717,#24211d)]" />
+    <section className="relative overflow-hidden bg-[#0D1321] px-6 py-24 text-white sm:px-8 lg:px-12">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(212,175,55,0.2),transparent_30%),radial-gradient(circle_at_88%_22%,rgba(255,255,255,0.08),transparent_24%),linear-gradient(135deg,#0D1321,#132038)]" />
       <div className="mx-auto max-w-7xl">
         <div className="relative flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ff8a82]">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#D4AF37]">
               Vendor categories
             </p>
             <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -24,7 +24,7 @@ export function MarketplacePreview() {
           </div>
           <Link
             href="/marketplace"
-            className="inline-flex h-12 w-fit items-center rounded-full bg-white px-5 text-sm font-semibold text-neutral-950 shadow-[0_18px_44px_rgba(0,0,0,0.24)] transition hover:-translate-y-0.5"
+            className="inline-flex h-12 w-fit items-center rounded-full bg-white px-5 text-sm font-semibold text-[#0D1321] shadow-[0_18px_44px_rgba(13,19,33,0.24)] transition hover:-translate-y-0.5 hover:bg-[#FFF8E1]"
           >
             Browse marketplace
           </Link>

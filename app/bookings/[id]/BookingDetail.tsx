@@ -82,7 +82,7 @@ export function BookingDetail({ bookingId }: { bookingId: string }) {
   return (
     <div className="mx-auto max-w-7xl">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#e24b44]">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">
           Booking detail
         </p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
@@ -127,7 +127,7 @@ export function BookingDetail({ bookingId }: { bookingId: string }) {
           <button
             type="button"
             onClick={saveNotes}
-            className="mt-5 h-11 rounded-full bg-neutral-950 px-5 text-sm font-semibold text-white"
+            className="mt-5 h-11 rounded-full bg-[#0D1321] px-5 text-sm font-semibold text-white"
           >
             Save notes
           </button>

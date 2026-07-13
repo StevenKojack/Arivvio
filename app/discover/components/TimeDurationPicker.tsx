@@ -47,12 +47,12 @@ export function TimeDurationPicker({
         aria-haspopup="dialog"
         type="button"
         onClick={() => setIsOpen((current) => !current)}
-        className="mt-2 flex h-14 w-full items-center justify-between rounded-2xl border border-neutral-300 bg-white px-4 text-left text-sm font-semibold text-neutral-950 shadow-[0_10px_30px_rgba(20,20,20,0.04)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-neutral-500 hover:shadow-[0_16px_40px_rgba(20,20,20,0.08)] focus:border-neutral-950 focus:outline-none focus:ring-4 focus:ring-neutral-950/10"
+        className="mt-2 flex h-14 w-full items-center justify-between rounded-2xl border border-neutral-300 bg-white px-4 text-left text-sm font-semibold text-neutral-950 shadow-[0_10px_30px_rgba(13,19,33,0.04)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-neutral-500 hover:shadow-[0_16px_40px_rgba(13,19,33,0.08)] focus:border-[#0D1321] focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/25"
       >
         <span>
           {formatTime(startTime)} - {formatTime(endTime)}
         </span>
-        <span className="rounded-full bg-[#f7f7f5] px-3 py-1 text-xs text-neutral-600">
+        <span className="rounded-full bg-[#F6F3EA] px-3 py-1 text-xs text-neutral-600">
           {durationHours} hr
         </span>
       </button>
@@ -77,7 +77,7 @@ export function TimeDurationPicker({
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold transition duration-200 ease-out hover:-translate-y-0.5 hover:border-neutral-950"
+              className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#0D1321]"
             >
               Done
             </button>
@@ -92,7 +92,7 @@ export function TimeDurationPicker({
                   onStartTimeChange(event.target.value);
                   onEndTimeChange(getEndTime(event.target.value, durationHours));
                 }}
-                className="mt-2 h-12 w-full rounded-2xl border border-neutral-300 bg-white px-4 text-sm font-semibold outline-none transition duration-200 ease-out focus:border-neutral-950 focus:ring-4 focus:ring-neutral-950/10"
+                className="mt-2 h-12 w-full rounded-2xl border border-neutral-300 bg-white px-4 text-sm font-semibold outline-none transition duration-200 ease-out focus:border-[#0D1321] focus:ring-4 focus:ring-[#D4AF37]/25"
               >
                 {timeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -106,7 +106,7 @@ export function TimeDurationPicker({
               <select
                 value={endTime}
                 onChange={(event) => onEndTimeChange(event.target.value)}
-                className="mt-2 h-12 w-full rounded-2xl border border-neutral-300 bg-white px-4 text-sm font-semibold outline-none transition duration-200 ease-out focus:border-neutral-950 focus:ring-4 focus:ring-neutral-950/10"
+                className="mt-2 h-12 w-full rounded-2xl border border-neutral-300 bg-white px-4 text-sm font-semibold outline-none transition duration-200 ease-out focus:border-[#0D1321] focus:ring-4 focus:ring-[#D4AF37]/25"
               >
                 {timeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -125,8 +125,8 @@ export function TimeDurationPicker({
                 onClick={() => updateDuration(preset.hours)}
                 className={`rounded-full px-4 py-2 text-sm font-semibold transition duration-200 ease-out hover:-translate-y-0.5 ${
                   Math.round(durationHours) === preset.hours
-                    ? "bg-neutral-950 text-white"
-                    : "border border-neutral-200 bg-white text-neutral-700 hover:border-neutral-950"
+                    ? "bg-[#0D1321] text-white"
+                    : "border border-neutral-200 bg-white text-neutral-700 hover:border-[#0D1321]"
                 }`}
               >
                 {preset.label}
@@ -143,7 +143,7 @@ export function TimeDurationPicker({
               step="0.5"
               value={Math.min(Math.max(durationHours, 1), 12)}
               onChange={(event) => updateDuration(Number(event.target.value))}
-              className="mt-3 w-full accent-neutral-950"
+              className="mt-3 w-full accent-[#D4AF37]"
             />
           </label>
       </FloatingPopover>

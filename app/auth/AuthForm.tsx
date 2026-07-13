@@ -94,7 +94,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   return (
     <form
       onSubmit={submitAuth}
-      className="mx-auto mt-10 grid max-w-xl gap-4 rounded-lg border border-neutral-200 bg-white p-6 shadow-[0_22px_60px_rgba(20,20,20,0.07)]"
+      className="mx-auto mt-10 grid max-w-xl gap-4 rounded-[28px] border border-[#D4AF37]/16 bg-white p-6 shadow-[0_22px_60px_rgba(13,19,33,0.07)]"
     >
       {isSignup ? (
         <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -102,7 +102,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           <input
             value={fullName}
             onChange={(event) => setFullName(event.target.value)}
-            className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+            className="h-12 rounded-2xl border border-[#D4AF37]/20 px-4 text-sm outline-none focus:border-[#D4AF37]"
             placeholder="Your name"
           />
         </label>
@@ -114,7 +114,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+          className="h-12 rounded-2xl border border-[#D4AF37]/20 px-4 text-sm outline-none focus:border-[#D4AF37]"
           placeholder="you@example.com"
         />
       </label>
@@ -126,7 +126,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="h-12 rounded-lg border border-neutral-300 px-4 text-sm outline-none focus:border-neutral-950"
+          className="h-12 rounded-2xl border border-[#D4AF37]/20 px-4 text-sm outline-none focus:border-[#D4AF37]"
           placeholder="At least 6 characters"
         />
       </label>
@@ -142,7 +142,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       ) : null}
       <button
         disabled={isSubmitting}
-        className="h-12 rounded-full bg-[#ff5a5f] px-6 text-sm font-semibold text-white transition hover:bg-[#e84f54] disabled:cursor-not-allowed disabled:opacity-60"
+        className="h-12 rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(13,19,33,0.18)] transition hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? "Working..." : isSignup ? "Create account" : "Log in"}
       </button>
@@ -157,7 +157,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <p className="text-center text-sm text-neutral-500">
         {isSignup ? "Already have an account?" : "New to Arivvio?"}{" "}
         <Link
-          className="font-semibold text-neutral-950"
+          className="font-semibold text-[#8A6A16]"
           href={isSignup ? "/auth/login" : "/auth/signup"}
         >
           {isSignup ? "Log in" : "Create an account"}

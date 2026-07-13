@@ -987,7 +987,7 @@ export function MarketplaceBrowser() {
             <button
               type="button"
               onClick={() => setIsMobileMapOpen(true)}
-              className="fixed bottom-5 right-5 z-40 rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_48px_rgba(20,20,20,0.28)] transition duration-200 hover:-translate-y-0.5 hover:bg-neutral-800"
+              className="fixed bottom-5 right-5 z-40 rounded-full bg-[#0D1321] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_48px_rgba(13,19,33,0.28)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#111A2E]"
             >
               Map
             </button>
@@ -1059,7 +1059,7 @@ export function MarketplaceBrowser() {
 
       {isMobileMapOpen ? (
         <div
-          className="fixed inset-0 z-50 flex items-end bg-neutral-950/35 px-3 py-4 backdrop-blur-sm xl:hidden"
+          className="fixed inset-0 z-50 flex items-end bg-[#0D1321]/35 px-3 py-4 backdrop-blur-sm xl:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Marketplace map"
@@ -1073,7 +1073,7 @@ export function MarketplaceBrowser() {
               <button
                 type="button"
                 onClick={() => setIsMobileMapOpen(false)}
-                className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-neutral-950 shadow-[0_16px_40px_rgba(20,20,20,0.18)] transition hover:-translate-y-0.5"
+                className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-neutral-950 shadow-[0_16px_40px_rgba(13,19,33,0.18)] transition hover:-translate-y-0.5"
               >
                 Close
               </button>
@@ -1185,14 +1185,14 @@ function ServiceSelectionDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-neutral-950/35 p-4 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-[#0D1321]/35 p-4 backdrop-blur-sm sm:items-center"
       role="dialog"
       aria-modal="true"
       aria-label="Select vendor services"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl rounded-[30px] bg-white p-5 shadow-[0_34px_120px_rgba(20,20,20,0.22)]"
+        className="w-full max-w-2xl rounded-[30px] bg-white p-5 shadow-[0_34px_120px_rgba(13,19,33,0.22)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
@@ -1207,7 +1207,7 @@ function ServiceSelectionDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-neutral-950"
+            className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-[#0D1321]"
           >
             Close
           </button>
@@ -1226,8 +1226,8 @@ function ServiceSelectionDialog({
                 onClick={() => toggleService(option.service)}
                 className={`rounded-3xl border p-4 text-left transition hover:-translate-y-0.5 disabled:cursor-default disabled:opacity-60 disabled:hover:translate-y-0 ${
                   isSelected
-                    ? "border-neutral-950 bg-neutral-950 text-white"
-                    : "border-neutral-200 bg-[#fbfbfa] text-neutral-950 hover:border-neutral-400"
+                    ? "border-[#0D1321] bg-[#0D1321] text-white"
+                    : "border-neutral-200 bg-[#FFFCF7] text-neutral-950 hover:border-neutral-400"
                 }`}
               >
                 <span className="flex items-start justify-between gap-4">
@@ -1277,7 +1277,7 @@ function ServiceSelectionDialog({
             type="button"
             disabled={!selectedOptions.length}
             onClick={() => onConfirm(selectedOptions)}
-            className="h-12 rounded-full bg-neutral-950 px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+            className="h-12 rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
           >
             Add selected services
           </button>
@@ -1356,7 +1356,7 @@ function EventContextPanel({
   onUseCurrentLocation: () => void;
 }) {
   return (
-    <section className="rounded-[24px] border border-neutral-200 bg-white/92 p-3 shadow-[0_14px_44px_rgba(20,20,20,0.055)] backdrop-blur sm:p-4">
+    <section className="rounded-[24px] border border-[#D4AF37]/16 bg-white/92 p-3 shadow-[0_14px_44px_rgba(13,19,33,0.055)] backdrop-blur sm:p-4">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
@@ -1383,8 +1383,8 @@ function EventContextPanel({
             onClick={onToggleHomeVenue}
             className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 ${
               useHomeVenue
-                ? "bg-neutral-950 text-white"
-                : "border border-neutral-300 bg-white text-neutral-800"
+                ? "bg-[#0D1321] text-white shadow-[0_12px_26px_rgba(13,19,33,0.16)]"
+                : "border border-[#D4AF37]/20 bg-white text-neutral-800"
             }`}
           >
             {useHomeVenue ? "Using address" : "Use address"}
@@ -1392,7 +1392,7 @@ function EventContextPanel({
           <button
             type="button"
             onClick={onOpenFilters}
-            className="shrink-0 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-950 transition hover:-translate-y-0.5 hover:border-neutral-950"
+            className="shrink-0 rounded-full border border-[#D4AF37]/20 bg-white px-4 py-2 text-sm font-semibold text-neutral-950 transition hover:-translate-y-0.5 hover:border-[#D4AF37]/60"
           >
             Refine
           </button>
@@ -1400,28 +1400,28 @@ function EventContextPanel({
       </div>
 
       {initialNotes ? (
-        <p className="mt-3 rounded-2xl bg-[#f7f7f5] px-4 py-2 text-sm font-semibold text-neutral-700">
+        <p className="mt-3 rounded-2xl bg-[#F6F3EA] px-4 py-2 text-sm font-semibold text-neutral-700 ring-1 ring-[#D4AF37]/10">
           Added details: {initialNotes}
         </p>
       ) : null}
 
       {useHomeVenue ? (
-          <div className="mt-3 grid gap-3 rounded-2xl border border-neutral-200 bg-[#fbfbfa] p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className="mt-3 grid gap-3 rounded-2xl border border-[#D4AF37]/14 bg-[#FFFCF7] p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
             <input
               value={homeAddress}
               onChange={(event) => onHomeAddressChange(event.target.value)}
               placeholder="Home or event address"
-              className="h-11 rounded-2xl border border-neutral-300 px-3 text-sm font-semibold text-neutral-900 outline-none focus:border-neutral-950"
+              className="h-11 rounded-2xl border border-[#D4AF37]/20 px-3 text-sm font-semibold text-neutral-900 outline-none focus:border-[#D4AF37]"
             />
             <button
               type="button"
               onClick={onUseCurrentLocation}
-              className="h-11 rounded-full bg-neutral-950 px-4 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-neutral-800"
+              className="h-11 rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(13,19,33,0.16)] transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
             >
               Use current location
             </button>
             {isSearchingAddress || addressSuggestions.length ? (
-              <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white sm:col-span-2">
+              <div className="overflow-hidden rounded-2xl border border-[#D4AF37]/14 bg-white sm:col-span-2">
                 {isSearchingAddress ? (
                   <p className="px-4 py-3 text-xs font-semibold text-neutral-500">
                     Searching nearby matches...
@@ -1432,7 +1432,7 @@ function EventContextPanel({
                     key={suggestion.id}
                     type="button"
                     onClick={() => onSelectAddressSuggestion(suggestion)}
-                    className="flex w-full items-start justify-between gap-3 border-t border-neutral-100 px-4 py-3 text-left transition hover:bg-white"
+                    className="flex w-full items-start justify-between gap-3 border-t border-neutral-100 px-4 py-3 text-left transition hover:bg-[#FFF8E1]"
                   >
                     <span>
                       <span className="block text-sm font-semibold text-neutral-900">
@@ -1442,7 +1442,7 @@ function EventContextPanel({
                         {getSuggestionLabel(suggestion)}
                       </span>
                     </span>
-                    <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500">
+                    <span className="rounded-full bg-[#FFF8E1] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A6A16]">
                       Select
                     </span>
                   </button>
@@ -1476,8 +1476,8 @@ function getSuggestionLabel(suggestion: AddressSuggestion) {
 
 function SummaryPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-w-fit rounded-full bg-[#f7f7f5] px-3 py-2">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
+    <div className="min-w-fit rounded-full bg-[#F6F3EA] px-3 py-2 ring-1 ring-[#D4AF37]/10">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8A6A16]/70">
         {label}
       </p>
       <p className="truncate text-xs font-semibold text-neutral-800">{value}</p>

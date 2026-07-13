@@ -3,7 +3,7 @@ import { Logo } from "./Logo";
 
 export function Footer() {
   return (
-    <footer className="border-t border-neutral-200 bg-neutral-950 px-6 py-10 text-white sm:px-8 lg:px-12">
+    <footer className="border-t border-[#D4AF37]/16 bg-[#0D1321] px-6 py-10 text-white sm:px-8 lg:px-12">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Logo inverted />
@@ -12,19 +12,19 @@ export function Footer() {
           </p>
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-neutral-300">
-          <Link className="transition hover:text-white" href="/#categories">
+          <Link className="transition hover:text-[#D4AF37]" href="/#categories">
             Categories
           </Link>
-          <Link className="transition hover:text-white" href="/marketplace">
+          <Link className="transition hover:text-[#D4AF37]" href="/marketplace">
             Marketplace
           </Link>
-          <Link className="transition hover:text-white" href="/account">
+          <Link className="transition hover:text-[#D4AF37]" href="/account">
             Account
           </Link>
-          <Link className="transition hover:text-white" href="/">
+          <Link className="transition hover:text-[#D4AF37]" href="/">
             Home
           </Link>
-          <Link className="transition hover:text-white" href="/discover">
+          <Link className="transition hover:text-[#D4AF37]" href="/discover">
             Start Planning
           </Link>
         </div>
