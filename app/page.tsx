@@ -25,7 +25,7 @@ export default function Home() {
         <div className="absolute bottom-0 left-0 right-0 -z-10 h-28 bg-[linear-gradient(180deg,transparent,#F7F4EC)]" />
         <div className="relative mx-auto flex min-h-[calc(100vh-170px)] max-w-7xl flex-col justify-center">
           <p className="w-fit rounded-full border border-[#D4AF37]/20 bg-white/82 px-4 py-2 text-sm font-semibold text-[#0D1321] shadow-[0_12px_30px_rgba(13,19,33,0.08)] backdrop-blur">
-            Calm event planning starts here
+            Elevate every event
           </p>
           <h1 className="mt-8 max-w-4xl text-5xl font-semibold tracking-tight text-neutral-950 sm:text-7xl lg:text-8xl">
             What are you planning?

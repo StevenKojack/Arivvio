@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { eventExamples } from "@/lib/event-intelligence/taxonomy";
@@ -31,12 +32,14 @@ export function EventDiscoverySearch() {
         className="relative"
       >
         <div className="flex min-h-[72px] items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-white/94 px-4 py-3 shadow-[0_24px_80px_rgba(13,19,33,0.13)] transition focus-within:border-[#D4AF37]/55 focus-within:shadow-[0_28px_90px_rgba(13,19,33,0.17)] sm:px-5">
-          <div className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#0D1321] text-[#D4AF37] shadow-[0_12px_28px_rgba(13,19,33,0.2)] sm:flex">
-            <svg aria-hidden="true" className="h-7 w-7" viewBox="0 0 48 48" fill="none">
-              <path d="M8 35 21 10c1.4-2.7 4.6-2.7 6 0l13 25" stroke="currentColor" strokeWidth="5.2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M10 35 17.5 29M38 35 30.5 29" stroke="currentColor" strokeWidth="5.2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="m18 21 6 8 6-8M19 30l5 6.4 5-6.4" stroke="currentColor" strokeWidth="4.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <div className="hidden h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#0D1321] shadow-[0_12px_28px_rgba(13,19,33,0.2)] sm:flex">
+            <Image
+              src="/logo-assets/web/arivvio-mark-dark.png"
+              alt=""
+              width={575}
+              height={570}
+              className="h-9 w-9 object-cover"
+            />
           </div>
           <input
             value={query}

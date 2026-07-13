@@ -7,6 +7,9 @@ export function Footer() {
       <div className="mx-auto flex max-w-7xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Logo inverted />
+          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
+            Elevate every event
+          </p>
           <p className="mt-2 text-sm text-neutral-400">
             The modern marketplace for planning every event.
           </p>
