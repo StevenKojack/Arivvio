@@ -33,6 +33,7 @@ function VendorCardComponent({
   onAdd,
 }: VendorCardProps) {
   const imageUrl = item.photoUrl ?? getVendorImage(item);
+  const isDemoProvider = item.databaseSource === false;
   const tags = [
     item.type,
     ...(item.tags ?? []),
@@ -87,6 +88,11 @@ function VendorCardComponent({
         </div>
       </div>
       <div className="p-4">
+        {isDemoProvider ? (
+          <p className="mb-3 w-fit rounded-full bg-[#FFF8E1] px-3 py-1 text-xs font-semibold text-[#8A6A16] ring-1 ring-[#D4AF37]/18">
+            Demo provider
+          </p>
+        ) : null}
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
@@ -115,7 +121,9 @@ function VendorCardComponent({
         </div>
         <div className="mt-4 flex items-end justify-between gap-3">
           <div>
-            <p className="text-xs text-neutral-500">Starts around</p>
+            <p className="text-xs text-neutral-500">
+              {isDemoProvider ? "Demo estimate" : "Estimated from"}
+            </p>
             <p className="text-lg font-semibold text-neutral-950">
               ${quote.toLocaleString()}
             </p>

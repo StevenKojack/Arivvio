@@ -69,11 +69,15 @@ export function QuoteCartDrawer({
                 {cart.length} selected
               </h2>
               <p className="text-sm font-semibold text-neutral-600">
-                ${total.toLocaleString()} est.
+                ${total.toLocaleString()} demo est.
               </p>
             </div>
             <p className="mt-1 truncate text-xs font-semibold text-neutral-500">
               {cartMessage || eventSummary}
+            </p>
+            <p className="mt-1 text-xs font-semibold text-[#8A6A16]">
+              Pre-Beta demo. Quote requests are not guaranteed real vendor
+              commitments.
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -90,7 +94,7 @@ export function QuoteCartDrawer({
               disabled={isRequestingQuotes}
               className="h-10 rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(13,19,33,0.18)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
             >
-              {isRequestingQuotes ? "Requesting..." : "Request quotes"}
+              {isRequestingQuotes ? "Requesting..." : "Request demo quotes"}
             </button>
           </div>
         </div>
@@ -124,6 +128,10 @@ export function QuoteCartDrawer({
 
       <p className="mt-4 rounded-2xl bg-[#F6F3EA] px-4 py-3 text-sm text-neutral-600 ring-1 ring-[#D4AF37]/10">
         {eventSummary}
+      </p>
+      <p className="mt-3 rounded-2xl bg-[#FFF8E1] px-4 py-3 text-xs font-semibold leading-5 text-[#8A6A16]">
+        Pre-Beta demo. Prices are estimates and quote requests are not
+        guaranteed real vendor commitments.
       </p>
 
       {!canPersistCart ? (
@@ -165,7 +173,7 @@ export function QuoteCartDrawer({
 
       <div className={`${isCompact ? "mt-4 pt-4" : "mt-5 pt-5"} border-t border-neutral-100`}>
         <div className="flex items-end justify-between">
-          <p className="text-sm text-neutral-500">Estimated total</p>
+          <p className="text-sm text-neutral-500">Demo estimated total</p>
           <p className={`${isCompact ? "text-2xl" : "text-3xl"} font-semibold`}>
             ${total.toLocaleString()}
           </p>
@@ -176,7 +184,7 @@ export function QuoteCartDrawer({
           disabled={isRequestingQuotes}
           className="mt-5 h-12 w-full rounded-full bg-[#0D1321] text-sm font-semibold text-white shadow-[0_14px_30px_rgba(13,19,33,0.18)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
         >
-          {isRequestingQuotes ? "Requesting..." : "Request quotes"}
+          {isRequestingQuotes ? "Requesting..." : "Request demo quotes"}
         </button>
       </div>
     </aside>

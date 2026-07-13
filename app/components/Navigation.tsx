@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { isAdminEmail } from "@/lib/auth/roles";
 import { getCurrentProfile } from "@/lib/repositories/profilesRepository";
@@ -20,6 +21,7 @@ const centerLinks = [
 ];
 
 export function Navigation() {
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [navState, setNavState] = useState<SessionNavState>({
@@ -83,8 +85,16 @@ export function Navigation() {
     : [
         { href: "/auth/login", label: "Log in", show: true },
         { href: "/auth/signup", label: "Sign up", show: true },
-        { href: "/setup", label: "Help", show: true },
+        { href: "/?info=1", label: "Pre-Beta information", show: true },
+        { href: "/support-project", label: "Contact Arivvio", show: true },
       ];
+  const isInternalDemoRoute = pathname !== "/";
+
+  useEffect(() => {
+    if (isInternalDemoRoute) {
+      window.sessionStorage.setItem("arivvio-demo-entered", "true");
+    }
+  }, [isInternalDemoRoute]);
 
   return (
     <header className="sticky top-0 z-30 border-b border-[#D4AF37]/10 bg-[#FFFCF7]/86 px-5 shadow-[0_10px_40px_rgba(13,19,33,0.055)] backdrop-blur-xl sm:px-8 lg:px-12">
@@ -102,6 +112,15 @@ export function Navigation() {
             </Link>
           ))}
         </div>
+
+        {isInternalDemoRoute ? (
+          <Link
+            href="/?info=1"
+            className="hidden rounded-full border border-[#D4AF37]/18 bg-[#FFF8E1] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8A6A16] transition hover:-translate-y-0.5 hover:border-[#D4AF37]/50 lg:inline-flex"
+          >
+            Pre-Beta Demo
+          </Link>
+        ) : null}
 
         <div className="flex items-center gap-2">
           <Link
@@ -163,6 +182,8 @@ export function Navigation() {
           {[
             ...centerLinks,
             { href: "/vendor/onboarding", label: "List your service" },
+            { href: "/?info=1", label: "Pre-Beta information" },
+            { href: "/support-project", label: "Contact Arivvio" },
           ]
             .map((item) => (
               <Link

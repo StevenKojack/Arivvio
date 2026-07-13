@@ -343,6 +343,31 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["event_tags"]["Insert"]>;
         Relationships: [];
       };
+      project_inquiries: {
+        Row: RowWithTimestamps & {
+          email: string;
+          full_name: string;
+          id: string;
+          interest_types: string[];
+          message: string;
+          organization: string | null;
+          preferred_contact_method: string | null;
+          source_page: string;
+          status: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["project_inquiries"]["Row"]
+        > & {
+          email: string;
+          full_name: string;
+          interest_types: string[];
+          message: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["project_inquiries"]["Insert"]
+        >;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

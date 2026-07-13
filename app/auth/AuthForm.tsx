@@ -63,7 +63,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         }
 
         setStatus(
-          "Check your email to confirm your account. After confirming, return to Arivvio and log in.",
+          "Your account has been created for demo access. Check your email to confirm it, then return to Arivvio and log in. Features may remain incomplete until Arivvio reaches a later development stage.",
         );
         router.refresh();
         return;
@@ -96,6 +96,19 @@ export function AuthForm({ mode }: AuthFormProps) {
       onSubmit={submitAuth}
       className="mx-auto mt-10 grid max-w-xl gap-4 rounded-[28px] border border-[#D4AF37]/16 bg-white p-6 shadow-[0_22px_60px_rgba(13,19,33,0.07)]"
     >
+      {isSignup ? (
+        <div className="rounded-2xl border border-[#D4AF37]/18 bg-[#FFF8E1] px-4 py-3 text-left text-sm leading-6 text-[#8A6A16]">
+          <p className="font-semibold text-[#0D1321]">
+            Pre-Beta demo account
+          </p>
+          <p className="mt-1">
+            Creating an account currently provides access to the Arivvio
+            Pre-Beta demo only. It does not activate full booking, payment,
+            vendor, quote, or planning services, and demo data may change during
+            development.
+          </p>
+        </div>
+      ) : null}
       {isSignup ? (
         <label className="grid gap-2 text-sm font-semibold text-neutral-800">
           Full name
