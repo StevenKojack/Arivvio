@@ -25,6 +25,7 @@ const typeLabels: Record<PlanningPreferenceType, string> = {
   atmosphere: "Atmosphere",
   audience: "Audience",
   culture: "Culture and tradition",
+  cuisine: "Cuisine",
   equipment: "Production equipment",
   food: "Food and cuisine",
   location: "Location type",
@@ -39,11 +40,11 @@ const typeLabels: Record<PlanningPreferenceType, string> = {
 export function PlanningSearch({
   categories,
   compact = false,
-  label = "Tell us what matters for this event",
+  label = "Search services and vendor types",
   onSelect,
   selectedIds,
   suggestions,
-  support = "Search for services, activities, food, culture, traditions, audience details, or anything else you want included.",
+  support = "Search services, activities, rentals, food formats, transportation, staffing, and logistics.",
   types,
 }: {
   categories?: string[];
@@ -69,9 +70,9 @@ export function PlanningSearch({
   );
   const results = useMemo(
     () => query.trim().length >= 2
-      ? searchPlanningPreferences(query, { categories, excludeIds: selectedIds, types })
-      : inspiration.filter((item) => !selectedIds.includes(item.id)),
-    [categories, inspiration, query, selectedIds, types],
+      ? searchPlanningPreferences(query, { categories, types })
+      : inspiration,
+    [categories, inspiration, query, types],
   );
   const placeholders = inspiration.length ? inspiration.map((item) => item.label) : fallbackPlaceholderExamples;
 
@@ -96,6 +97,7 @@ export function PlanningSearch({
   }, []);
 
   function choose(preference: PlanningPreference) {
+    if (selectedIds.includes(preference.id)) return;
     onSelect(preference);
     setQuery("");
     setActiveIndex(-1);
@@ -153,29 +155,33 @@ export function PlanningSearch({
           role="listbox"
           className="absolute inset-x-0 top-full z-50 mt-2 max-h-[min(360px,52vh)] touch-pan-y scroll-py-2 overflow-y-auto overscroll-contain scroll-smooth rounded-2xl border border-neutral-200 bg-white p-2 shadow-[0_24px_70px_rgba(13,19,33,0.18)]"
         >
-          {results.length ? results.map((result, index) => (
+          {results.length ? results.map((result, index) => {
+            const selected = selectedIds.includes(result.id);
+            return (
             <button
               id={`${listboxId}-${result.id}`}
               key={result.id}
               ref={(element) => { optionRefs.current[index] = element; }}
               type="button"
               role="option"
-              aria-selected={index === activeIndex}
+              aria-selected={selected}
+              aria-label={selected ? `${result.label} is already selected` : `Add ${result.label}`}
               onMouseEnter={() => setActiveIndex(index)}
               onClick={() => choose(result)}
-              className={`flex w-full items-start justify-between gap-4 rounded-xl px-3 py-3 text-left transition ${
-                index === activeIndex ? "bg-[#F7F4EC]" : "hover:bg-neutral-50"
+              className={`flex w-full items-start justify-between gap-4 rounded-xl border px-3 py-3 text-left transition ${
+                selected ? "border-[#2E7D5B]/30 bg-[#EFF8F3]" : index === activeIndex ? "border-transparent bg-[#F7F4EC]" : "border-transparent hover:bg-neutral-50"
               }`}
             >
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold text-[#0D1321]">{result.label}</span>
                 <span className="mt-1 block text-xs text-neutral-500">{result.description}</span>
+                <span className="mt-1 block text-[11px] font-semibold text-[#8B6816]">{result.category}</span>
               </span>
-              <span className="shrink-0 rounded-full bg-[#0D1321]/6 px-2.5 py-1 text-[11px] font-semibold text-neutral-600">
-                {typeLabels[result.type]}
+              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${selected ? "bg-[#2E7D5B] text-white" : "bg-[#0D1321] text-white"}`}>
+                <span className="sr-only">{typeLabels[result.type]}: </span>{selected ? "✓" : "+"}
               </span>
             </button>
-          )) : (
+          );}) : (
             <p className="px-3 py-5 text-center text-sm text-neutral-500">
               No close match yet. Try a broader word such as music, food, rentals, or access.
             </p>

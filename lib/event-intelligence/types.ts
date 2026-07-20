@@ -81,11 +81,21 @@ export type AudienceType =
 
 export type AudienceProfile = {
   audienceType?: AudienceType;
-  genderContext?: "boy" | "female" | "girl" | "male";
+  genderContext?: GenderContext;
+  genderDescription?: string;
   guestAgeMax?: number;
   guestAgeMin?: number;
   honoreeAge?: number;
 };
+
+export type GenderContext =
+  | "boy"
+  | "female"
+  | "girl"
+  | "male"
+  | "nonbinary"
+  | "prefer-not-to-say"
+  | "self-described";
 
 export type IntelligenceSource =
   | "explicit-selection"

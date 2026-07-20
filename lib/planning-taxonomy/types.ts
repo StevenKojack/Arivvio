@@ -6,6 +6,7 @@ export type PlanningPreferenceType =
   | "atmosphere"
   | "audience"
   | "culture"
+  | "cuisine"
   | "equipment"
   | "food"
   | "location"

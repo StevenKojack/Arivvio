@@ -413,7 +413,7 @@ export function MarketplaceBrowser() {
     return counts;
   }, [cart]);
   const marketplaceRows = useMemo(
-    () => buildMarketplaceRows(filteredItems, entryMode === "service" ? selectedServices : []),
+    () => buildMarketplaceRows(filteredItems, entryMode === "browse" || entryMode === "category" ? [] : selectedServices),
     [entryMode, filteredItems, selectedServices],
   );
   const activeRow = useMemo(

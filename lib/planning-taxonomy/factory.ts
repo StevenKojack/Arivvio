@@ -9,7 +9,7 @@ const aliasMap: Record<string, string[]> = {
   "chocolate fountain": ["chocolate fondue fountain"],
   "ceremony music": ["wedding ceremony music", "processional music"],
   "cultural dj": ["armenian dj", "latin dj", "persian dj", "multicultural dj"],
-  "disc jockey": ["dj"],
+  "dj": ["disc jockey", "disc jockeys"],
   "foam cannon": ["foam party", "foam machine"],
   "floral arrangements": ["funeral flowers", "memorial flowers", "flower arrangements"],
   "guest transportation": ["guest shuttle", "shuttle guests"],
@@ -22,6 +22,7 @@ const aliasMap: Record<string, string[]> = {
   "social-media coverage": ["social media content", "event content creator"],
   "temporary tattoos": ["temp tattoos"],
   "taco cart": ["tacos", "taco catering"],
+  "tables": ["table rental", "table rentals", "rental tables"],
   "vip transportation": ["vip transport", "executive transportation"],
   "wedding cake": ["bridal cake"],
 };

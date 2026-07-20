@@ -16,8 +16,17 @@ import {
 import { buildEventIntelligenceProfile } from "@/lib/event-intelligence/engine";
 import { saveEventIntelligenceProfile } from "@/lib/event-intelligence/storage";
 import { getEssentialServices, formatNaturalList } from "@/lib/event-intelligence/service-plan";
-import type { AudienceProfile, EventRecognition, EventStage } from "@/lib/event-intelligence/types";
-import type { PlanningPreference, SelectedPlanningPreference } from "@/lib/planning-taxonomy";
+import type { AudienceProfile, EventIntelligenceProfile, EventRecognition, EventStage } from "@/lib/event-intelligence/types";
+import {
+  createPreferenceSelection,
+  createServiceSelection,
+  isAdvancedPreference,
+  toSelectedPreferenceFromPlan,
+  type PlanSelection,
+  type PlanSelectionSource,
+  type PlanningPreference,
+  type SelectedPlanningPreference,
+} from "@/lib/planning-taxonomy";
 import { toSelectedPreference } from "@/lib/planning-taxonomy/search";
 import { AddressAutocomplete, type AddressSuggestion } from "./components/AddressAutocomplete";
 import {
@@ -84,7 +93,6 @@ export function EventWizard() {
     () => buildEventIntelligenceProfile({ query: initialQuery || "Private party" }),
     [initialQuery],
   );
-  const initialRecognition = initialIntelligence.recognition;
   const initialStages = initialIntelligence.stages;
   const [step, setStep] = useState(initialQuery ? 1 : 0);
   const [query, setQuery] = useState(initialQuery);
@@ -103,14 +111,25 @@ export function EventWizard() {
   ]);
   const [guestCount, setGuestCount] = useState(60);
   const [budget, setBudget] = useState(6000);
-  const [preferences, setPreferences] = useState<SelectedPlanningPreference[]>(initialIntelligence.preferences);
+  const [planSelections, setPlanSelections] = useState<PlanSelection[]>(() => createInitialPlanSelections(initialIntelligence));
+  const [advancedPreferences, setAdvancedPreferences] = useState<SelectedPlanningPreference[]>(
+    () => initialIntelligence.preferences.filter(isAdvancedPreference),
+  );
   const [audience, setAudience] = useState<AudienceProfile>(initialIntelligence.audience);
   const [stages, setStages] = useState<EventStage[]>(initialStages);
-  const [selectedServices, setSelectedServices] = useState<ServiceName[]>(
-    () => Array.from(new Set([
-      ...getEssentialServices(initialRecognition, initialStages),
-      ...initialIntelligence.requestedServices,
-    ])),
+  const selectedServices = useMemo(
+    () => Array.from(new Set(planSelections.flatMap((item) => item.linkedService ? [item.linkedService] : []))),
+    [planSelections],
+  );
+  const preferences = useMemo(
+    () => [
+      ...planSelections.flatMap((item) => {
+        const preference = toSelectedPreferenceFromPlan(item);
+        return preference ? [preference] : [];
+      }),
+      ...advancedPreferences,
+    ],
+    [advancedPreferences, planSelections],
   );
   const eventIntelligence = useMemo(
     () => buildEventIntelligenceProfile({
@@ -227,47 +246,31 @@ export function EventWizard() {
     const nextIntelligence = buildEventIntelligenceProfile({ query: cleanQuery });
     setStages(nextIntelligence.stages);
     setAudience(nextIntelligence.audience);
-    setPreferences(nextIntelligence.preferences);
-    setSelectedServices(Array.from(new Set([
-      ...getEssentialServices(nextIntelligence.recognition, nextIntelligence.stages),
-      ...nextIntelligence.requestedServices,
-    ])));
+    setPlanSelections(createInitialPlanSelections(nextIntelligence));
+    setAdvancedPreferences(nextIntelligence.preferences.filter(isAdvancedPreference));
     setStep(1);
   }
 
-  function toggleService(service: ServiceName) {
-    setSelectedServices((current) =>
-      current.includes(service)
-        ? current.filter((item) => item !== service)
-        : [...current, service],
-    );
+  function addService(service: ServiceName, source: PlanSelectionSource = "initial-suggestion") {
+    const selection = createServiceSelection(service, source);
+    setPlanSelections((current) => current.some((item) => item.id === selection.id) ? current : [...current, selection]);
   }
 
-  function addService(service: ServiceName) {
-    setSelectedServices((current) =>
-      current.includes(service) ? current : [...current, service],
-    );
+  function addPlanPreference(preference: PlanningPreference, source: PlanSelectionSource) {
+    const selection = createPreferenceSelection(preference, source);
+    setPlanSelections((current) => current.some((item) => item.id === selection.id) ? current : [...current, selection]);
   }
 
-  function addPreference(preference: PlanningPreference) {
-    setPreferences((current) =>
-      current.some((item) => item.id === preference.id)
-        ? current
-        : [...current, toSelectedPreference(preference)],
-    );
-    if (preference.linkedService) addService(preference.linkedService);
+  function removePlanSelection(selection: PlanSelection) {
+    setPlanSelections((current) => current.filter((item) => item.id !== selection.id));
   }
 
-  function removePreference(preference: SelectedPlanningPreference) {
-    setPreferences((current) => current.filter((item) => item.id !== preference.id));
-    if (!preference.linkedService) return;
-    const sameServiceRemains = preferences.some(
-      (item) => item.id !== preference.id && item.linkedService === preference.linkedService,
-    );
-    const isEssential = getEssentialServices(recognition, stages).includes(preference.linkedService);
-    if (!sameServiceRemains && !isEssential) {
-      setSelectedServices((current) => current.filter((service) => service !== preference.linkedService));
-    }
+  function addAdvancedPreference(preference: PlanningPreference) {
+    setAdvancedPreferences((current) => current.some((item) => item.id === preference.id) ? current : [...current, toSelectedPreference(preference)]);
+  }
+
+  function removeAdvancedPreference(preference: SelectedPlanningPreference) {
+    setAdvancedPreferences((current) => current.filter((item) => item.id !== preference.id));
   }
 
   function updateLocation(id: number, updates: Partial<EventLocation>) {
@@ -345,17 +348,20 @@ export function EventWizard() {
               action={<PrimaryButton label="Looks right" onClick={() => setStep(2)} />}
             >
               <StepTwoConfirmation
+                key={query}
+                advancedPreferences={advancedPreferences}
                 audience={audience}
                 intelligence={eventIntelligence}
+                onAdvancedPreferenceAdd={addAdvancedPreference}
+                onAdvancedPreferenceRemove={removeAdvancedPreference}
                 onAudienceChange={setAudience}
                 onChangeEvent={continueFromSearch}
-                onPreferenceAdd={addPreference}
-                onPreferenceRemove={removePreference}
+                onPlanPreferenceAdd={addPlanPreference}
+                onPlanSelectionRemove={removePlanSelection}
+                onPlanServiceAdd={addService}
                 onStagesChange={setStages}
-                onToggleService={toggleService}
-                preferences={preferences}
+                planSelections={planSelections}
                 recognition={recognition}
-                selectedServices={selectedServices}
                 stages={stages}
               />
             </StepCard>
@@ -459,7 +465,7 @@ export function EventWizard() {
                     selectedLabel: suggestion.label,
                     zones: [],
                   });
-                  setSelectedServices((current) => current.filter((service) => service !== "Venue"));
+                  setPlanSelections((current) => current.filter((item) => item.linkedService !== "Venue"));
                 }}
                 onSelectMode={(mode) => {
                   updateLocation(locations[0].id, {
@@ -597,6 +603,21 @@ export function EventWizard() {
       </div>
     </section>
   );
+}
+
+function createInitialPlanSelections(intelligence: EventIntelligenceProfile) {
+  const preferenceSelections = intelligence.preferences
+    .filter((preference) => !isAdvancedPreference(preference))
+    .map((preference) => createPreferenceSelection(preference, "natural-language-inference"));
+  const representedServices = new Set(preferenceSelections.flatMap((item) => item.linkedService ? [item.linkedService] : []));
+  const serviceSelections = Array.from(new Set([
+    ...getEssentialServices(intelligence.recognition, intelligence.stages),
+    ...intelligence.requestedServices,
+  ]))
+    .filter((service) => !representedServices.has(service))
+    .map((service) => createServiceSelection(service, "initial-suggestion"));
+
+  return [...serviceSelections, ...preferenceSelections];
 }
 
 function StepRail({

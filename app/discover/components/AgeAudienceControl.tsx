@@ -47,7 +47,7 @@ export function AgeAudienceControl({
         className="flex min-h-12 w-full items-center justify-between gap-4 rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-left transition hover:-translate-y-0.5 hover:border-[#D4AF37]"
       >
         <span>
-          <span className="block text-sm font-semibold text-[#0D1321]">Age and audience</span>
+          <span className="block text-sm font-semibold text-[#0D1321]">Age</span>
           <span className="mt-1 block text-xs text-neutral-500">{summarizeAudience(value)}</span>
         </span>
         <span className="text-sm font-semibold text-[#B88A1D]">Edit</span>

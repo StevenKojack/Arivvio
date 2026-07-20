@@ -9,6 +9,14 @@ export const culturePreferences = preferenceGroup(
   { category: "Culture and traditions", description: "A cultural context the planner wants represented thoughtfully.", type: "culture" },
 );
 
+export const cuisinePreferences = preferenceGroup(
+  [
+    "Armenian", "Mexican", "Persian", "Mediterranean", "Italian", "Korean", "Filipino",
+    "Halal", "Kosher", "Vegan", "Vegetarian",
+  ],
+  { category: "Cuisine", description: "A cuisine or food tradition that should inform vendor matching.", type: "cuisine" },
+);
+
 export const traditionPreferences = preferenceGroup(
   [
     "Religious ceremony", "Cultural ceremony", "Traditional music", "Traditional dance",
@@ -21,7 +29,7 @@ export const traditionPreferences = preferenceGroup(
 export const foodPreferences = [
   ...preferenceGroup(
     ["Armenian catering", "Mexican catering", "Persian catering", "Italian catering", "Mediterranean catering", "Reception catering", "Sushi", "Steakhouse"],
-    { category: "Cuisine", description: "A requested catering specialty.", linkedService: "Catering", type: "food" },
+    { category: "Food and Catering", description: "A requested catering specialty.", linkedService: "Catering", type: "food" },
   ),
   ...preferenceGroup(
     ["Halal", "Kosher", "Vegan", "Vegetarian", "Gluten-free", "Dairy-free", "Nut-aware"],

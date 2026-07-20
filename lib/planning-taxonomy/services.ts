@@ -12,7 +12,7 @@ export const venuePreferences = preferenceGroup(
 
 export const entertainmentPreferences = [
   ...preferenceGroup(
-    ["Disc jockey", "Cultural DJ", "Armenian DJ", "Persian DJ", "Latin DJ"],
+    ["DJ", "Cultural DJ", "Armenian DJ", "Persian DJ", "Latin DJ"],
     { category: "Music", description: "Music and event flow led by a DJ.", linkedService: "DJ", type: "service" },
   ),
   ...preferenceGroup(

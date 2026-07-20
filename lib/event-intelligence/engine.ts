@@ -180,8 +180,7 @@ export function inferPlanningPreferences(query: string) {
 
   if (containsPhrase(normalized, "arcade")) addByLabel(inferred, ["Arcade", "Arcade games"]);
   if (containsPhrase(normalized, "backyard")) addByLabel(inferred, ["Backyard", "At home"]);
-  if (/\bdj\b/.test(normalized)) addByLabel(inferred, ["Disc jockey"]);
-  if (/\b(taco|tacos)\b/.test(normalized)) addByLabel(inferred, ["Mexican catering"]);
+  if (/\bdj\b/.test(normalized)) addByLabel(inferred, ["DJ"]);
   if (containsPhrase(normalized, "church")) addByLabel(inferred, ["Church", "Religious ceremony"]);
 
   return uniquePreferences(inferred).map((item) => toSelectedPreference(item, "explicit-text"));
