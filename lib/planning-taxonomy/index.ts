@@ -1,6 +1,6 @@
 import { audiencePreferences, accessibilityPreferences, atmospherePreferences, settingPreferences } from "./contexts";
 import { culturePreferences, foodPreferences, traditionPreferences } from "./food-culture";
-import { designMediaPreferences, entertainmentPreferences, rentalPreferences, staffingPreferences, transportationPreferences, venuePreferences } from "./services";
+import { designMediaPreferences, entertainmentPreferences, productionPreferences, rentalPreferences, staffingPreferences, transportationPreferences, venuePreferences } from "./services";
 
 export type { PlanningPreference, PlanningPreferenceType, SelectedPlanningPreference } from "./types";
 
@@ -9,6 +9,7 @@ export const planningPreferenceCatalog = [
   ...foodPreferences,
   ...entertainmentPreferences,
   ...rentalPreferences,
+  ...productionPreferences,
   ...transportationPreferences,
   ...staffingPreferences,
   ...designMediaPreferences,

@@ -77,6 +77,11 @@ const messages: Record<string, EventMessage> = {
     support: "Let's plan a graduation celebration that gives the moment room to feel special.",
     tone: "celebratory",
   },
+  "gender-reveal": {
+    heading: "Let's plan a gathering that feels personal and welcoming.",
+    support: "We'll keep the setting, food, and guest experience easy to shape without making assumptions for you.",
+    tone: "warm",
+  },
   memorial: {
     heading: "We'll help you bring the memorial together with care.",
     support: "The plan will stay respectful, clear, and centered on the people gathering.",

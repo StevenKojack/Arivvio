@@ -1,10 +1,10 @@
 import { normalizeSearchText } from "@/lib/event-intelligence/normalize";
 import { planningPreferenceCatalog } from ".";
-import type { PlanningPreference, PlanningPreferenceType } from "./types";
+import type { PlanningPreference, PlanningPreferenceType, SelectedPlanningPreference } from "./types";
 
 export function searchPlanningPreferences(
   query: string,
-  options: { excludeIds?: string[]; limit?: number; types?: PlanningPreferenceType[] } = {},
+  options: { categories?: string[]; excludeIds?: string[]; limit?: number; types?: PlanningPreferenceType[] } = {},
 ) {
   const normalized = normalizeSearchText(query);
   const excluded = new Set(options.excludeIds ?? []);
@@ -14,6 +14,7 @@ export function searchPlanningPreferences(
   return planningPreferenceCatalog
     .filter((item) => !excluded.has(item.id))
     .filter((item) => !options.types || options.types.includes(item.type))
+    .filter((item) => !options.categories || options.categories.includes(item.category))
     .map((item) => ({ item, score: scorePreference(item, normalized) }))
     .filter(({ score }) => score > 0.18)
     .sort((left, right) => right.score - left.score || left.item.label.localeCompare(right.item.label))
@@ -33,12 +34,16 @@ function scorePreference(item: PlanningPreference, query: string) {
   }));
 }
 
-export function toSelectedPreference(item: PlanningPreference) {
+export function toSelectedPreference(
+  item: PlanningPreference,
+  selectionSource: SelectedPlanningPreference["selectionSource"] = "explicit-step-choice",
+) {
   return {
     category: item.category,
     id: item.id,
     label: item.label,
     linkedService: item.linkedService,
+    selectionSource,
     type: item.type,
   };
 }

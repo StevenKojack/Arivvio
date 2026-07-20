@@ -2,12 +2,13 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { searchPlanningPreferences } from "@/lib/planning-taxonomy/search";
+import { getCategoryPlanningSuggestions } from "@/lib/event-intelligence/suggestions";
 import type {
   PlanningPreference,
   PlanningPreferenceType,
 } from "@/lib/planning-taxonomy";
 
-const placeholderExamples = [
+const fallbackPlaceholderExamples = [
   "Armenian DJ",
   "Taco cart",
   "Teen activities",
@@ -36,17 +37,21 @@ const typeLabels: Record<PlanningPreferenceType, string> = {
 };
 
 export function PlanningSearch({
+  categories,
   compact = false,
   label = "Tell us what matters for this event",
   onSelect,
   selectedIds,
+  suggestions,
   support = "Search for services, activities, food, culture, traditions, audience details, or anything else you want included.",
   types,
 }: {
+  categories?: string[];
   compact?: boolean;
   label?: string;
   onSelect: (preference: PlanningPreference) => void;
   selectedIds: string[];
+  suggestions?: PlanningPreference[];
   support?: string;
   types?: PlanningPreferenceType[];
 }) {
@@ -55,20 +60,32 @@ export function PlanningSearch({
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const inputId = useId();
   const listboxId = useId();
-  const results = useMemo(
-    () => searchPlanningPreferences(query, { excludeIds: selectedIds, types }),
-    [query, selectedIds, types],
+  const inspiration = useMemo(
+    () => suggestions?.length ? suggestions : getCategoryPlanningSuggestions({ categories, types }),
+    [categories, suggestions, types],
   );
+  const results = useMemo(
+    () => query.trim().length >= 2
+      ? searchPlanningPreferences(query, { categories, excludeIds: selectedIds, types })
+      : inspiration.filter((item) => !selectedIds.includes(item.id)),
+    [categories, inspiration, query, selectedIds, types],
+  );
+  const placeholders = inspiration.length ? inspiration.map((item) => item.label) : fallbackPlaceholderExamples;
 
   useEffect(() => {
     const timer = window.setInterval(
-      () => setPlaceholderIndex((current) => (current + 1) % placeholderExamples.length),
+      () => setPlaceholderIndex((current) => (current + 1) % placeholders.length),
       4200,
     );
     return () => window.clearInterval(timer);
-  }, []);
+  }, [placeholders.length]);
+
+  useEffect(() => {
+    optionRefs.current[activeIndex]?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex]);
 
   useEffect(() => {
     function closeOnOutsideClick(event: PointerEvent) {
@@ -123,23 +140,24 @@ export function PlanningSearch({
               setIsOpen(false);
             }
           }}
-          placeholder={`Try ${placeholderExamples[placeholderIndex]}`}
+          placeholder={`Try ${placeholders[placeholderIndex % placeholders.length]}`}
           className={`${compact ? "h-11" : "h-14"} w-full rounded-2xl border border-neutral-300 bg-white px-4 pr-12 text-sm font-semibold text-[#0D1321] outline-none transition placeholder:font-medium placeholder:text-neutral-400 focus:border-[#D4AF37]`}
         />
         <span aria-hidden="true" className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-lg text-[#B88A1D]">
           +
         </span>
       </div>
-      {isOpen && query.trim().length >= 2 ? (
+      {isOpen && (results.length > 0 || query.trim().length >= 2) ? (
         <div
           id={listboxId}
           role="listbox"
-          className="absolute inset-x-0 top-full z-50 mt-2 max-h-[min(360px,52vh)] overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-2 shadow-[0_24px_70px_rgba(13,19,33,0.18)]"
+          className="absolute inset-x-0 top-full z-50 mt-2 max-h-[min(360px,52vh)] touch-pan-y scroll-py-2 overflow-y-auto overscroll-contain scroll-smooth rounded-2xl border border-neutral-200 bg-white p-2 shadow-[0_24px_70px_rgba(13,19,33,0.18)]"
         >
           {results.length ? results.map((result, index) => (
             <button
               id={`${listboxId}-${result.id}`}
               key={result.id}
+              ref={(element) => { optionRefs.current[index] = element; }}
               type="button"
               role="option"
               aria-selected={index === activeIndex}

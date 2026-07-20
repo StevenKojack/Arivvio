@@ -92,7 +92,17 @@ export function getInitialStages(recognition: EventRecognition): EventStage[] {
     )
     .map((item) => item.id);
 
-  return resolveStages(configuration, explicitStageIds);
+  if (recognition.identity.canonicalEventType === "wedding" && query.includes("church")) {
+    explicitStageIds.push("ceremony");
+  }
+  if (
+    recognition.identity.canonicalEventType === "wedding" &&
+    /\b(banquet hall|reception hall)\b/.test(query)
+  ) {
+    explicitStageIds.push("reception");
+  }
+
+  return resolveStages(configuration, Array.from(new Set(explicitStageIds)));
 }
 
 export function resolveStages(configuration: StageConfiguration, stageIds: string[]) {

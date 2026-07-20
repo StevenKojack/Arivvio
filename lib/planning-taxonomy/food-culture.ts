@@ -20,7 +20,7 @@ export const traditionPreferences = preferenceGroup(
 
 export const foodPreferences = [
   ...preferenceGroup(
-    ["Armenian catering", "Mexican catering", "Persian catering", "Italian catering", "Mediterranean catering"],
+    ["Armenian catering", "Mexican catering", "Persian catering", "Italian catering", "Mediterranean catering", "Reception catering", "Sushi", "Steakhouse"],
     { category: "Cuisine", description: "A requested catering specialty.", linkedService: "Catering", type: "food" },
   ),
   ...preferenceGroup(
@@ -29,11 +29,11 @@ export const foodPreferences = [
   ),
   ...preferenceGroup(
     [
-      "Taco cart", "Food truck", "Pizza", "Barbecue", "Buffet", "Plated dinner", "Family style",
+      "Catering", "Taco cart", "Food truck", "Pizza", "Barbecue", "Buffet", "Plated dinner", "Family style",
       "Formal plated dinner", "Bartending", "Mocktail bar", "Coffee cart", "Ice cream cart",
-      "Dessert table", "Cake", "Cupcakes", "Chocolate fountain", "Candy table", "Cotton candy",
+      "Dessert table", "Cake", "Wedding cake", "Cupcakes", "Chocolate fountain", "Candy table", "Cotton candy",
       "Popcorn machine", "Snow cone machine",
     ],
     { category: "Food and beverage", description: "A food, beverage, or service style for the event.", linkedService: "Catering", type: "food" },
   ),
-].map((item) => ["Dessert table", "Cake", "Cupcakes", "Chocolate fountain", "Candy table"].includes(item.label) ? { ...item, linkedService: "Cake & Desserts" as const } : item.label === "Bartending" ? { ...item, linkedService: "Bartending" as const } : item);
+].map((item) => ["Dessert table", "Cake", "Wedding cake", "Cupcakes", "Chocolate fountain", "Candy table"].includes(item.label) ? { ...item, linkedService: "Cake & Desserts" as const } : item.label === "Bartending" ? { ...item, linkedService: "Bartending" as const } : item);

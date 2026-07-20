@@ -131,6 +131,15 @@ export function MarketplaceBrowser() {
   const initialBudget = searchParams.get("budget");
   const initialLocation = searchParams.get("location") ?? "";
   const initialNotes = searchParams.get("notes") ?? "";
+  const initialAudience = searchParams.get("audience")?.replace("teens", "teen").replace("all-ages", "all ages") ?? "";
+  const initialHonoreeAge = Number(searchParams.get("honoreeAge"));
+  const initialGenderContext = searchParams.get("genderContext") ?? "";
+  const eventIntelligenceNotes = [
+    initialNotes,
+    initialAudience,
+    Number.isFinite(initialHonoreeAge) ? `${initialHonoreeAge} year old` : "",
+    initialGenderContext,
+  ].filter(Boolean).join(" ");
   const initialLocationContext = searchParams.get("locationContext") ?? "";
   const initialSearchRadiusMiles = Number(searchParams.get("searchRadiusMiles") ?? 0);
   const initialRecommendedServices =
@@ -183,6 +192,7 @@ export function MarketplaceBrowser() {
   const [selectedMapItemId, setSelectedMapItemId] = useState<number | null>(null);
   const [isRequestingQuotes, setIsRequestingQuotes] = useState(false);
   const durationHours = getHoursBetween(startTime, endTime);
+
   const globalQuoteContext: QuoteContext = useMemo(
     () => ({
       date: eventDate,
@@ -272,7 +282,7 @@ export function MarketplaceBrowser() {
         eventLabel: initialEventLabel ?? selectedEvent,
         locationContext: initialLocationContext,
         locationText: `${initialLocation} ${homeAddress}`,
-        notes: initialNotes,
+        notes: eventIntelligenceNotes,
       }),
     [
       homeAddress,
@@ -280,7 +290,7 @@ export function MarketplaceBrowser() {
       initialEventLabel,
       initialLocation,
       initialLocationContext,
-      initialNotes,
+      eventIntelligenceNotes,
       selectedEvent,
     ],
   );

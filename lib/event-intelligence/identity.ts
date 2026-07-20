@@ -8,6 +8,7 @@ const concepts = [
   { id: "bachelorette-party", label: "Bachelorette Party", terms: ["bachelorette"] },
   { id: "bachelor-party", label: "Bachelor Party", terms: ["bachelor"] },
   { id: "baby-shower", label: "Baby Shower", terms: ["baby shower"] },
+  { id: "gender-reveal", label: "Gender Reveal", terms: ["gender reveal"] },
   { id: "pool-party", label: "Pool Party", terms: ["pool party", "pool event"] },
   { id: "sweet-16", label: "Sweet 16", terms: ["sweet 16", "sweet sixteen"] },
   { id: "quinceanera", label: "Quincea\u00f1era", terms: ["quinceanera", "quince", "sweet fifteen"] },

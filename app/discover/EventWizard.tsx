@@ -11,13 +11,12 @@ import {
   type ServiceName,
 } from "../data/marketplace";
 import {
-  recognizeEventIntent,
   searchEventIntents,
 } from "@/lib/event-intelligence/search";
-import { derivePlanningContext } from "@/lib/event-intelligence/context";
+import { buildEventIntelligenceProfile } from "@/lib/event-intelligence/engine";
+import { saveEventIntelligenceProfile } from "@/lib/event-intelligence/storage";
 import { getEssentialServices, formatNaturalList } from "@/lib/event-intelligence/service-plan";
-import { getInitialStages } from "@/lib/event-intelligence/stages";
-import type { AudienceProfile, EventStage } from "@/lib/event-intelligence/types";
+import type { AudienceProfile, EventRecognition, EventStage } from "@/lib/event-intelligence/types";
 import type { PlanningPreference, SelectedPlanningPreference } from "@/lib/planning-taxonomy";
 import { toSelectedPreference } from "@/lib/planning-taxonomy/search";
 import { AddressAutocomplete, type AddressSuggestion } from "./components/AddressAutocomplete";
@@ -81,11 +80,12 @@ const steps = ["What", "Confirm", "When", "Where", "Guests", "Review"] as const;
 export function EventWizard() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("query") ?? "";
-  const initialRecognition = useMemo(
-    () => recognizeEventIntent(initialQuery || "Private party"),
+  const initialIntelligence = useMemo(
+    () => buildEventIntelligenceProfile({ query: initialQuery || "Private party" }),
     [initialQuery],
   );
-  const initialStages = useMemo(() => getInitialStages(initialRecognition), [initialRecognition]);
+  const initialRecognition = initialIntelligence.recognition;
+  const initialStages = initialIntelligence.stages;
   const [step, setStep] = useState(initialQuery ? 1 : 0);
   const [query, setQuery] = useState(initialQuery);
   const [timing, setTiming] = useState({
@@ -103,16 +103,29 @@ export function EventWizard() {
   ]);
   const [guestCount, setGuestCount] = useState(60);
   const [budget, setBudget] = useState(6000);
-  const [preferences, setPreferences] = useState<SelectedPlanningPreference[]>([]);
-  const [audience, setAudience] = useState<AudienceProfile>(() => inferAudienceProfile(initialQuery));
+  const [preferences, setPreferences] = useState<SelectedPlanningPreference[]>(initialIntelligence.preferences);
+  const [audience, setAudience] = useState<AudienceProfile>(initialIntelligence.audience);
   const [stages, setStages] = useState<EventStage[]>(initialStages);
   const [selectedServices, setSelectedServices] = useState<ServiceName[]>(
-    () => getEssentialServices(initialRecognition, initialStages),
+    () => Array.from(new Set([
+      ...getEssentialServices(initialRecognition, initialStages),
+      ...initialIntelligence.requestedServices,
+    ])),
   );
-  const recognition = useMemo(
-    () => recognizeEventIntent(query || "Private party"),
-    [query],
+  const eventIntelligence = useMemo(
+    () => buildEventIntelligenceProfile({
+      audience,
+      guestSize: guestCount,
+      inferPreferencesFromQuery: false,
+      locationContext: locations[0]?.mode === "has_venue" ? "has_venue" : locations[0]?.context,
+      preferences,
+      query: query || "Private party",
+      selectedServices,
+      stages,
+    }),
+    [audience, guestCount, locations, preferences, query, selectedServices, stages],
   );
+  const recognition = eventIntelligence.recognition;
   const planningNotes = useMemo(
     () =>
       [
@@ -138,6 +151,7 @@ export function EventWizard() {
       entryMode: "event",
       event: profile.marketplaceEventType ?? "Private Party",
       eventLabel: recognition.identity.selectedDisplayEvent,
+      eventProfile: "session",
       guests: String(guestCount),
       location: locationSummary,
       locationProfile: "session",
@@ -148,6 +162,10 @@ export function EventWizard() {
     if (planningNotes) {
       params.set("notes", planningNotes);
     }
+
+    if (audience.audienceType) params.set("audience", audience.audienceType);
+    if (audience.honoreeAge !== undefined) params.set("honoreeAge", String(audience.honoreeAge));
+    if (audience.genderContext) params.set("genderContext", audience.genderContext);
 
     if (stages.length) {
       params.set("stages", stages.map((stage) => stage.id).join(","));
@@ -166,6 +184,7 @@ export function EventWizard() {
 
     return `/marketplace?${params.toString()}`;
   }, [
+    audience,
     budget,
     durationHours,
     eventAnchor,
@@ -193,6 +212,10 @@ export function EventWizard() {
     }
   }, [locations]);
 
+  useEffect(() => {
+    saveEventIntelligenceProfile(eventIntelligence);
+  }, [eventIntelligence]);
+
   function continueFromSearch(nextQuery = query) {
     const cleanQuery = nextQuery.trim();
 
@@ -201,12 +224,14 @@ export function EventWizard() {
     }
 
     setQuery(cleanQuery);
-    const nextRecognition = recognizeEventIntent(cleanQuery);
-    const nextStages = getInitialStages(nextRecognition);
-    setStages(nextStages);
-    setAudience(inferAudienceProfile(cleanQuery));
-    setPreferences([]);
-    setSelectedServices(getEssentialServices(nextRecognition, nextStages));
+    const nextIntelligence = buildEventIntelligenceProfile({ query: cleanQuery });
+    setStages(nextIntelligence.stages);
+    setAudience(nextIntelligence.audience);
+    setPreferences(nextIntelligence.preferences);
+    setSelectedServices(Array.from(new Set([
+      ...getEssentialServices(nextIntelligence.recognition, nextIntelligence.stages),
+      ...nextIntelligence.requestedServices,
+    ])));
     setStep(1);
   }
 
@@ -321,6 +346,7 @@ export function EventWizard() {
             >
               <StepTwoConfirmation
                 audience={audience}
+                intelligence={eventIntelligence}
                 onAudienceChange={setAudience}
                 onChangeEvent={continueFromSearch}
                 onPreferenceAdd={addPreference}
@@ -1026,7 +1052,7 @@ function FinalReview({
   guestCount: number;
   locations: EventLocation[];
   preferences: SelectedPlanningPreference[];
-  recognition: ReturnType<typeof recognizeEventIntent>;
+  recognition: EventRecognition;
   selectedServices: ServiceName[];
   stages: EventStage[];
   timing: {
@@ -1320,18 +1346,4 @@ function getNearestHomeArea(coordinates: { lat: number; lng: number }) {
       distance: getDistanceMiles(coordinates, area.coordinates),
     }))
     .sort((a, b) => a.distance - b.distance)[0]?.area;
-}
-
-function inferAudienceProfile(query: string): AudienceProfile {
-  const context = derivePlanningContext({ eventLabel: query });
-
-  return {
-    audienceType:
-      context.lifeStage === "teen"
-        ? "teens"
-        : context.lifeStage === "kids"
-          ? "kids"
-          : undefined,
-    honoreeAge: context.age,
-  };
 }

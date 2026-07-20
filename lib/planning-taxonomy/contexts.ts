@@ -14,7 +14,7 @@ export const accessibilityPreferences = preferenceGroup(
 );
 
 export const settingPreferences = preferenceGroup(
-  ["Indoor", "Outdoor", "Indoor and outdoor", "At home", "Near public transit", "Pet-friendly", "Rain backup", "Outdoor seating", "Poolside"],
+  ["Indoor", "Outdoor", "Indoor and outdoor", "At home", "Nightclub", "Near public transit", "Pet-friendly", "Rain backup", "Outdoor seating", "Poolside"],
   { category: "Setting", description: "A practical preference for the event setting.", type: "setting" },
 );
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import type { AudienceProfile, AudienceType } from "@/lib/event-intelligence/types";
+import type { AudienceProfile, AudienceType, EventRecognition } from "@/lib/event-intelligence/types";
 
 const options: Array<{ id: AudienceType; label: string }> = [
   { id: "all-ages", label: "All ages" },
@@ -16,13 +16,16 @@ const options: Array<{ id: AudienceType; label: string }> = [
 
 export function AgeAudienceControl({
   onChange,
+  recognition,
   value,
 }: {
   onChange: (value: AudienceProfile) => void;
+  recognition: EventRecognition;
   value: AudienceProfile;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState(value);
+  const agePrompt = getAgePrompt(recognition.identity.canonicalEventType);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -56,14 +59,14 @@ export function AgeAudienceControl({
           <div role="dialog" aria-modal="true" aria-labelledby="audience-title" className="max-h-[92dvh] w-full overflow-y-auto rounded-t-[28px] bg-white p-5 shadow-[0_30px_100px_rgba(13,19,33,0.28)] sm:max-w-xl sm:rounded-[28px] sm:p-6">
             <div className="flex items-start justify-between gap-5">
               <div>
-                <h3 id="audience-title" className="text-xl font-semibold text-[#0D1321]">Who is this for?</h3>
-                <p className="mt-1 text-sm leading-6 text-neutral-600">The person being celebrated and the guest audience are separate details.</p>
+                <h3 id="audience-title" className="text-xl font-semibold text-[#0D1321]">Who should this plan work for?</h3>
+                <p className="mt-1 text-sm leading-6 text-neutral-600">Choose the guest audience. Age is only included when it genuinely helps the plan.</p>
               </div>
               <button type="button" onClick={() => setIsOpen(false)} className="rounded-full border border-neutral-200 px-3 py-2 text-xs font-semibold text-neutral-600 hover:border-[#0D1321]">Close</button>
             </div>
 
-            <label className="mt-6 block text-sm font-semibold text-[#0D1321]">
-              Honoree age <span className="font-normal text-neutral-500">(optional)</span>
+            {agePrompt ? <label className="mt-6 block text-sm font-semibold text-[#0D1321]">
+              {agePrompt}
               <input
                 type="number"
                 min="0"
@@ -73,7 +76,7 @@ export function AgeAudienceControl({
                 placeholder="For example, 15"
                 className="mt-2 h-12 w-full rounded-2xl border border-neutral-300 px-4 text-sm font-semibold outline-none focus:border-[#D4AF37]"
               />
-            </label>
+            </label> : null}
 
             <fieldset className="mt-6">
               <legend className="text-sm font-semibold text-[#0D1321]">Guest audience</legend>
@@ -82,6 +85,7 @@ export function AgeAudienceControl({
                   <button
                     key={option.id}
                     type="button"
+                    aria-pressed={draft.audienceType === option.id}
                     onClick={() => setDraft((current) => ({ ...current, audienceType: option.id }))}
                     className={`min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold transition ${draft.audienceType === option.id ? "border-[#0D1321] bg-[#0D1321] text-white" : "border-neutral-200 bg-white text-neutral-700 hover:border-[#D4AF37]"}`}
                   >
@@ -117,7 +121,15 @@ export function AgeAudienceControl({
 
 function summarizeAudience(value: AudienceProfile) {
   const audience = options.find((option) => option.id === value.audienceType)?.label;
-  const parts = [value.honoreeAge !== undefined ? `Honoree age ${value.honoreeAge}` : "", audience ?? "Not specified"];
+  const parts = [value.honoreeAge !== undefined ? `Age ${value.honoreeAge}` : "", audience ?? "Not specified"];
   if (value.audienceType === "custom") parts.push(`ages ${value.guestAgeMin ?? 0}-${value.guestAgeMax ?? 100}`);
   return parts.filter(Boolean).join(" / ");
+}
+
+function getAgePrompt(canonicalEventType: string) {
+  if (["birthday", "sweet-16", "quinceanera"].includes(canonicalEventType)) {
+    return "What age are we celebrating?";
+  }
+  if (canonicalEventType === "graduation") return "Age (optional)";
+  return undefined;
 }

@@ -7,16 +7,23 @@ const aliasMap: Record<string, string[]> = {
   "armenian catering": ["armenian food", "armenian caterer"],
   "character performers": ["costume characters", "spiderman", "superhero", "princess"],
   "chocolate fountain": ["chocolate fondue fountain"],
+  "ceremony music": ["wedding ceremony music", "processional music"],
   "cultural dj": ["armenian dj", "latin dj", "persian dj", "multicultural dj"],
   "disc jockey": ["dj"],
   "foam cannon": ["foam party", "foam machine"],
+  "floral arrangements": ["funeral flowers", "memorial flowers", "flower arrangements"],
   "guest transportation": ["guest shuttle", "shuttle guests"],
   "kids activities": ["children activities", "kid activities"],
   "limousine": ["limo"],
   "photo booth": ["photobooth"],
+  "reception catering": ["funeral reception catering", "memorial catering", "repass catering"],
+  "registration staff": ["event registration", "check in staff", "check-in staff"],
   "portable restrooms": ["porta potty", "porta potties"],
   "social-media coverage": ["social media content", "event content creator"],
   "temporary tattoos": ["temp tattoos"],
+  "taco cart": ["tacos", "taco catering"],
+  "vip transportation": ["vip transport", "executive transportation"],
+  "wedding cake": ["bridal cake"],
 };
 
 export function preferenceGroup(

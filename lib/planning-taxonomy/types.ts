@@ -30,4 +30,6 @@ export type PlanningPreference = {
 export type SelectedPlanningPreference = Pick<
   PlanningPreference,
   "category" | "id" | "label" | "linkedService" | "type"
->;
+> & {
+  selectionSource?: "explicit-step-choice" | "explicit-text";
+};

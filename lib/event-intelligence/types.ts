@@ -1,4 +1,5 @@
 import type { EventType, ServiceName } from "@/app/data/marketplace";
+import type { SelectedPlanningPreference } from "@/lib/planning-taxonomy/types";
 
 export type BudgetTier = "economy" | "standard" | "premium" | "luxury";
 export type Formality = "casual" | "semi-formal" | "formal" | "black-tie";
@@ -80,9 +81,55 @@ export type AudienceType =
 
 export type AudienceProfile = {
   audienceType?: AudienceType;
+  genderContext?: "boy" | "female" | "girl" | "male";
   guestAgeMax?: number;
   guestAgeMin?: number;
   honoreeAge?: number;
+};
+
+export type IntelligenceSource =
+  | "explicit-selection"
+  | "explicit-text"
+  | "explicit-step-choice"
+  | "deterministic-inference"
+  | "default";
+
+export type IntelligenceValue<T> = {
+  confidence: number;
+  source: IntelligenceSource;
+  userConfirmed: boolean;
+  value: T;
+};
+
+export type IntelligenceEvidence = IntelligenceValue<string | number | boolean> & {
+  field: string;
+};
+
+export type EventIntelligenceProfile = {
+  activityStyle: string[];
+  audience: AudienceProfile;
+  commercialVenue: boolean;
+  cultures: string[];
+  evidence: IntelligenceEvidence[];
+  entertainment: string[];
+  eventType: IntelligenceValue<string>;
+  excludedServices: ServiceName[];
+  foodStyles: string[];
+  guestSize?: number;
+  homeEvent: boolean;
+  indoorOutdoor?: IndoorOutdoor;
+  inferredPreferenceIds: string[];
+  preferences: SelectedPlanningPreference[];
+  recognition: EventRecognition;
+  recommendationScores: Partial<Record<ServiceName, number>>;
+  religiousContext: string[];
+  requestedServices: ServiceName[];
+  stages: EventStage[];
+  subtype?: IntelligenceValue<string>;
+  transportationNeeds: string[];
+  travelRequired: boolean;
+  venuePreferences: string[];
+  venueRequired: boolean;
 };
 
 export type DiscoveryQuestion = {

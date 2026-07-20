@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { ServiceName } from "@/app/data/marketplace";
 import { getEventMessage } from "@/lib/event-intelligence/messaging";
+import { getContextualPlanningSuggestions } from "@/lib/event-intelligence/suggestions";
 import {
   formatServiceSummary,
   getEssentialServices,
@@ -11,6 +12,7 @@ import {
 import { getStageConfiguration } from "@/lib/event-intelligence/stages";
 import type {
   AudienceProfile,
+  EventIntelligenceProfile,
   EventRecognition,
   EventStage,
 } from "@/lib/event-intelligence/types";
@@ -23,9 +25,20 @@ import { AgeAudienceControl } from "./AgeAudienceControl";
 import { PlanningSearch } from "./PlanningSearch";
 import { ServiceRecommendationCard } from "./ServiceRecommendationCard";
 import { StageSelector } from "./StageSelector";
+import { TagDirectoryModal } from "./TagDirectoryModal";
+
+const entertainmentCategories = [
+  "Music",
+  "Live music",
+  "Entertainment",
+  "Performers",
+  "Interactive media",
+  "Activities and entertainment",
+];
 
 export function StepTwoConfirmation({
   audience,
+  intelligence,
   onAudienceChange,
   onChangeEvent,
   onPreferenceAdd,
@@ -38,6 +51,7 @@ export function StepTwoConfirmation({
   stages,
 }: {
   audience: AudienceProfile;
+  intelligence: EventIntelligenceProfile;
   onAudienceChange: (value: AudienceProfile) => void;
   onChangeEvent: (value: string) => void;
   onPreferenceAdd: (preference: PlanningPreference) => void;
@@ -52,12 +66,28 @@ export function StepTwoConfirmation({
   const [isEditingEvent, setIsEditingEvent] = useState(false);
   const [eventQuery, setEventQuery] = useState(recognition.identity.selectedDisplayEvent);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [directoryOpen, setDirectoryOpen] = useState(false);
   const eventSuggestions = useMemo(() => searchEventIntents(eventQuery, 5), [eventQuery]);
   const message = getEventMessage(recognition, audience.honoreeAge);
   const stageConfiguration = getStageConfiguration(recognition);
   const essentials = getEssentialServices(recognition, stages);
-  const recommendations = getServiceSuggestions(recognition, selectedServices, stages);
+  const recommendations = getServiceSuggestions(
+    recognition,
+    essentials,
+    stages,
+    intelligence.recommendationScores,
+  );
   const selectedOptionalServices = selectedServices.filter((service) => !essentials.includes(service));
+  const optionalItems = [
+    ...recommendations,
+    ...selectedOptionalServices
+      .filter((service) => !recommendations.some((item) => item.service === service))
+      .map((service) => ({ reason: "Added from the details you requested.", service })),
+  ];
+  const contextualSuggestions = useMemo(
+    () => getContextualPlanningSuggestions(recognition, audience),
+    [audience, recognition],
+  );
   const specificServiceIds = new Set(preferences.filter((item) => item.linkedService).map((item) => item.linkedService));
   const summaryLabels = [
     ...selectedServices.filter((service) => !specificServiceIds.has(service)),
@@ -127,35 +157,30 @@ export function StepTwoConfirmation({
         </div>
       </section>
 
-      {recommendations.length || selectedOptionalServices.length ? (
+      {optionalItems.length ? (
         <section className="rounded-[24px] border border-neutral-200 bg-[#FFFCF7] p-4 sm:p-5">
           <h3 className="text-base font-semibold text-[#0D1321]">You may also want</h3>
-          <p className="mt-1 text-sm leading-6 text-neutral-600">These are optional. Nothing is added unless you choose it.</p>
-          {selectedOptionalServices.length ? (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {selectedOptionalServices.map((service) => (
-                <button key={service} type="button" onClick={() => onToggleService(service)} aria-label={`Remove ${service}`} className="rounded-full border border-[#D4AF37]/30 bg-white px-3 py-2 text-xs font-semibold text-[#0D1321] transition hover:-translate-y-0.5 hover:border-[#D4AF37]">
-                  Selected: {service} <span aria-hidden="true">x</span>
-                </button>
-              ))}
-            </div>
-          ) : null}
+          <p className="mt-1 text-sm leading-6 text-neutral-600">Optional ideas stay highlighted here when they become part of your plan.</p>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {recommendations.map(({ reason, service }) => (
-              <button key={service} type="button" onClick={() => onToggleService(service)} className="group flex min-h-[76px] items-start justify-between gap-4 rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-left transition hover:-translate-y-0.5 hover:border-[#D4AF37] hover:shadow-[0_12px_28px_rgba(13,19,33,0.06)]">
+            {optionalItems.map(({ reason, service }) => {
+              const selected = selectedServices.includes(service);
+              return <button key={service} type="button" aria-pressed={selected} onClick={() => onToggleService(service)} className={`group flex min-h-[76px] items-start justify-between gap-4 rounded-2xl border px-4 py-3 text-left transition duration-200 hover:-translate-y-0.5 ${selected ? "border-[#2E7D5B] bg-[#EFF8F3] shadow-[0_12px_28px_rgba(46,125,91,0.12)]" : "border-neutral-200 bg-white hover:border-[#D4AF37] hover:shadow-[0_12px_28px_rgba(13,19,33,0.06)]"}`}>
                 <span>
                   <span className="block text-sm font-semibold text-[#0D1321]">{service}</span>
-                  <span className="mt-1 block text-xs leading-5 text-neutral-500">{reason}</span>
+                  <span className="mt-1 block text-xs leading-5 text-neutral-500">{selected ? "Currently part of your plan. Select again to remove." : reason}</span>
                 </span>
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0D1321] text-sm font-semibold text-white transition group-hover:bg-[#B88A1D]">+</span>
-              </button>
-            ))}
+                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white transition ${selected ? "bg-[#2E7D5B]" : "bg-[#0D1321] group-hover:bg-[#B88A1D]"}`}>{selected ? <span aria-hidden="true">&#10003;</span> : "+"}</span>
+              </button>;
+            })}
           </div>
         </section>
       ) : null}
 
       <section className="rounded-[24px] border border-[#D4AF37]/22 bg-white p-4 shadow-[0_16px_50px_rgba(13,19,33,0.05)] sm:p-5">
-        <PlanningSearch selectedIds={preferences.map((item) => item.id)} onSelect={addPreference} />
+        <PlanningSearch suggestions={contextualSuggestions} selectedIds={preferences.map((item) => item.id)} onSelect={addPreference} />
+        <button type="button" onClick={() => setDirectoryOpen(true)} className="mt-3 rounded-full border border-neutral-200 bg-[#FFFCF7] px-4 py-2 text-sm font-semibold text-[#0D1321] transition hover:-translate-y-0.5 hover:border-[#D4AF37]">
+          Browse everything
+        </button>
         {preferences.length ? (
           <div className="mt-4 flex flex-wrap gap-2">
             {preferences.map((preference) => (
@@ -180,15 +205,17 @@ export function StepTwoConfirmation({
         </button>
         {advancedOpen ? (
           <div className="grid gap-4 border-t border-neutral-200 p-4 sm:p-5 lg:grid-cols-2">
-            <AgeAudienceControl value={audience} onChange={onAudienceChange} />
+            <AgeAudienceControl recognition={recognition} value={audience} onChange={onAudienceChange} />
             <PlanningSearch compact label="Culture and traditions" support="Add one or more cultural contexts or traditions." types={["culture", "tradition"]} selectedIds={preferences.map((item) => item.id)} onSelect={addPreference} />
             <PlanningSearch compact label="Food and cuisine" support="Add cuisines, service styles, or dietary needs." types={["food"]} selectedIds={preferences.map((item) => item.id)} onSelect={addPreference} />
+            <PlanningSearch compact categories={entertainmentCategories} label="Entertainment and activities" support="Add music, performances, or guest activities." types={["activity", "service"]} selectedIds={preferences.map((item) => item.id)} onSelect={addPreference} />
+            <PlanningSearch compact label="Transportation and logistics" support="Add arrival, travel, parking, or staffing needs." types={["transportation", "staffing"]} selectedIds={preferences.map((item) => item.id)} onSelect={addPreference} />
             <PlanningSearch compact label="Setting, atmosphere, and access" support="Add only the details that affect matching." types={["setting", "atmosphere", "accessibility", "audience"]} selectedIds={preferences.map((item) => item.id)} onSelect={addPreference} />
             {advancedPreferences.length ? (
               <div className="rounded-2xl bg-[#F7F4EC] p-4 lg:col-span-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-500">Added details</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {advancedPreferences.map((preference) => <span key={preference.id} className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-neutral-700">{preference.label}</span>)}
+                  {advancedPreferences.map((preference) => <button key={preference.id} type="button" onClick={() => onPreferenceRemove(preference)} aria-label={`Remove ${preference.label}`} className="rounded-full border border-transparent bg-white px-3 py-2 text-xs font-semibold text-neutral-700 transition hover:border-[#D4AF37]">{preference.label} <span aria-hidden="true">x</span></button>)}
                 </div>
               </div>
             ) : null}
@@ -200,6 +227,7 @@ export function StepTwoConfirmation({
           </div>
         ) : null}
       </section>
+      <TagDirectoryModal isOpen={directoryOpen} onClose={() => setDirectoryOpen(false)} onSelect={addPreference} selectedIds={preferences.map((item) => item.id)} />
     </div>
   );
 }

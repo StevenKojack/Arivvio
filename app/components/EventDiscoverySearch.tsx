@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { eventExamples } from "@/lib/event-intelligence/taxonomy";
 import { searchEventIntents } from "@/lib/event-intelligence/search";
@@ -12,8 +12,23 @@ export function EventDiscoverySearch() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
-  const suggestions = useMemo(() => searchEventIntents(query, 6), [query]);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const listboxId = useId();
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const suggestions = useMemo(() => {
+    const seen = new Set<string>();
+    return searchEventIntents(query, eventExamples.length).filter((suggestion) => {
+      const key = suggestion.label.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [query]);
   const placeholder = eventExamples[0];
+
+  useEffect(() => {
+    optionRefs.current[activeIndex]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [activeIndex]);
 
   function submitSearch(nextQuery = query) {
     const cleanQuery = nextQuery.trim() || placeholder;
@@ -34,10 +49,33 @@ export function EventDiscoverySearch() {
         <div className="flex min-h-[72px] items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-white/94 px-4 py-3 shadow-[0_24px_80px_rgba(13,19,33,0.13)] transition focus-within:border-[#D4AF37]/55 focus-within:shadow-[0_28px_90px_rgba(13,19,33,0.17)] sm:px-5">
           <SearchLogoMark />
           <input
+            role="combobox"
+            aria-label="What are you planning?"
+            aria-autocomplete="list"
+            aria-controls={listboxId}
+            aria-expanded={focused}
+            aria-activedescendant={activeIndex >= 0 && suggestions[activeIndex] ? `${listboxId}-${activeIndex}` : undefined}
             value={query}
-            onBlur={() => window.setTimeout(() => setFocused(false), 120)}
-            onChange={(event) => setQuery(event.target.value)}
+            onBlur={() => window.setTimeout(() => { setFocused(false); setActiveIndex(-1); }, 120)}
+            onChange={(event) => { setQuery(event.target.value); setActiveIndex(-1); }}
             onFocus={() => setFocused(true)}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowDown" && suggestions.length) {
+                event.preventDefault();
+                setFocused(true);
+                setActiveIndex((current) => (current + 1 + suggestions.length) % suggestions.length);
+              } else if (event.key === "ArrowUp" && suggestions.length) {
+                event.preventDefault();
+                setFocused(true);
+                setActiveIndex((current) => current < 0 ? suggestions.length - 1 : (current - 1 + suggestions.length) % suggestions.length);
+              } else if (event.key === "Enter" && activeIndex >= 0 && suggestions[activeIndex]) {
+                event.preventDefault();
+                submitSearch(suggestions[activeIndex].label);
+              } else if (event.key === "Escape") {
+                setFocused(false);
+                setActiveIndex(-1);
+              }
+            }}
             placeholder={placeholder}
             className="h-12 min-w-0 flex-1 bg-transparent text-lg font-semibold text-neutral-950 outline-none placeholder:text-neutral-400 sm:text-xl"
           />
@@ -50,14 +88,19 @@ export function EventDiscoverySearch() {
         </div>
 
         {focused ? (
-          <div className="absolute left-0 right-0 top-[84px] z-20 overflow-hidden rounded-[28px] border border-[#D4AF37]/18 bg-white p-2 shadow-[0_28px_90px_rgba(13,19,33,0.16)]">
-            {suggestions.map((suggestion) => (
+          <div id={listboxId} role="listbox" className="absolute left-0 right-0 top-[84px] z-20 max-h-[min(420px,56vh)] touch-pan-y scroll-py-2 overflow-y-auto overscroll-contain scroll-smooth rounded-[28px] border border-[#D4AF37]/18 bg-white p-2 shadow-[0_28px_90px_rgba(13,19,33,0.16)]">
+            {suggestions.map((suggestion, index) => (
               <button
                 key={`${suggestion.label}-${suggestion.recognition.profile.id}`}
+                id={`${listboxId}-${index}`}
+                ref={(element) => { optionRefs.current[index] = element; }}
                 type="button"
+                role="option"
+                aria-selected={index === activeIndex}
                 onMouseDown={(event) => event.preventDefault()}
+                onMouseEnter={() => setActiveIndex(index)}
                 onClick={() => submitSearch(suggestion.label)}
-                className="flex w-full items-center justify-between gap-4 rounded-[22px] px-4 py-3 text-left transition hover:bg-[#FFF8E1]"
+                className={`flex w-full items-center justify-between gap-4 rounded-[22px] px-4 py-3 text-left transition ${index === activeIndex ? "bg-[#FFF8E1]" : "hover:bg-[#FFF8E1]"}`}
               >
                 <span>
                   <span className="block text-sm font-semibold text-neutral-950">
