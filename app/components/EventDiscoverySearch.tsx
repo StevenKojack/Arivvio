@@ -68,7 +68,7 @@ export function EventDiscoverySearch() {
                   </span>
                 </span>
                 <span className="shrink-0 rounded-full bg-[#FFF8E1] px-3 py-1 text-xs font-semibold text-[#8A6A16]">
-                  {suggestion.recognition.profile.primaryType}
+                  Event
                 </span>
               </button>
             ))}

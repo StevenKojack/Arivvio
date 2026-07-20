@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
-  allServices,
   getHoursBetween,
   getDistanceMiles,
   homeAreas,
@@ -15,11 +14,12 @@ import {
   recognizeEventIntent,
   searchEventIntents,
 } from "@/lib/event-intelligence/search";
-import {
-  derivePlanningContext,
-  getContextDetails,
-  getContextServices,
-} from "@/lib/event-intelligence/context";
+import { derivePlanningContext } from "@/lib/event-intelligence/context";
+import { getEssentialServices, formatNaturalList } from "@/lib/event-intelligence/service-plan";
+import { getInitialStages } from "@/lib/event-intelligence/stages";
+import type { AudienceProfile, EventStage } from "@/lib/event-intelligence/types";
+import type { PlanningPreference, SelectedPlanningPreference } from "@/lib/planning-taxonomy";
+import { toSelectedPreference } from "@/lib/planning-taxonomy/search";
 import { AddressAutocomplete, type AddressSuggestion } from "./components/AddressAutocomplete";
 import {
   searchAddressSuggestions,
@@ -39,8 +39,8 @@ import {
   type LocationProfile,
 } from "@/lib/maps/zones";
 import { CalendarPicker } from "./components/CalendarPicker";
-import { ServiceRecommendationCard } from "./components/ServiceRecommendationCard";
 import { StepCard } from "./components/StepCard";
+import { StepTwoConfirmation } from "./components/StepTwoConfirmation";
 import { TimeDurationPicker } from "./components/TimeDurationPicker";
 import { formatTime } from "@/lib/utils/format";
 
@@ -76,18 +76,16 @@ type EventLocation = {
   zones: MapZone[];
 };
 
-type PlanAddition = {
-  id: string;
-  kind: "Culture/style" | "Service" | "Venue style" | "Note";
-  label: string;
-  service?: ServiceName;
-};
-
 const steps = ["What", "Confirm", "When", "Where", "Guests", "Review"] as const;
 
 export function EventWizard() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("query") ?? "";
+  const initialRecognition = useMemo(
+    () => recognizeEventIntent(initialQuery || "Private party"),
+    [initialQuery],
+  );
+  const initialStages = useMemo(() => getInitialStages(initialRecognition), [initialRecognition]);
   const [step, setStep] = useState(initialQuery ? 1 : 0);
   const [query, setQuery] = useState(initialQuery);
   const [timing, setTiming] = useState({
@@ -105,10 +103,11 @@ export function EventWizard() {
   ]);
   const [guestCount, setGuestCount] = useState(60);
   const [budget, setBudget] = useState(6000);
-  const [customNote, setCustomNote] = useState("");
-  const [planAdditions, setPlanAdditions] = useState<PlanAddition[]>([]);
+  const [preferences, setPreferences] = useState<SelectedPlanningPreference[]>([]);
+  const [audience, setAudience] = useState<AudienceProfile>(() => inferAudienceProfile(initialQuery));
+  const [stages, setStages] = useState<EventStage[]>(initialStages);
   const [selectedServices, setSelectedServices] = useState<ServiceName[]>(
-    () => recognizeEventIntent(initialQuery || "Private party").recommendedServices,
+    () => getEssentialServices(initialRecognition, initialStages),
   );
   const recognition = useMemo(
     () => recognizeEventIntent(query || "Private party"),
@@ -117,30 +116,14 @@ export function EventWizard() {
   const planningNotes = useMemo(
     () =>
       [
-        ...planAdditions.map((addition) => addition.label),
-        customNote.trim(),
+        ...preferences.map((preference) => preference.label),
       ]
         .filter(Boolean)
         .join(", "),
-    [customNote, planAdditions],
-  );
-  const planningContext = useMemo(
-    () =>
-      derivePlanningContext({
-        budget,
-        eventLabel: query,
-        locationContext: locations[0]?.context,
-        locationText: getLocationSummary(locations),
-        notes: planningNotes,
-      }),
-    [budget, locations, planningNotes, query],
+    [preferences],
   );
   const suggestions = useMemo(() => searchEventIntents(query, 5), [query]);
-  const contextualServices = useMemo(
-    () => getContextServices(planningContext),
-    [planningContext],
-  );
-  const visibleServices = mergeServices(selectedServices, contextualServices).filter(
+  const visibleServices = selectedServices.filter(
     (service) => !recognition.excludedServices.includes(service),
   );
   const locationSummary = getLocationSummary(locations);
@@ -154,6 +137,7 @@ export function EventWizard() {
       duration: String(durationHours),
       entryMode: "event",
       event: profile.marketplaceEventType ?? "Private Party",
+      eventLabel: recognition.identity.selectedDisplayEvent,
       guests: String(guestCount),
       location: locationSummary,
       locationProfile: "session",
@@ -163,6 +147,10 @@ export function EventWizard() {
 
     if (planningNotes) {
       params.set("notes", planningNotes);
+    }
+
+    if (stages.length) {
+      params.set("stages", stages.map((stage) => stage.id).join(","));
     }
 
     if (eventAnchor) {
@@ -185,7 +173,9 @@ export function EventWizard() {
     locationSummary,
     locations,
     planningNotes,
+    recognition.identity.selectedDisplayEvent,
     recognition.profile,
+    stages,
     timing.date,
     timing.startTime,
     visibleServices,
@@ -211,7 +201,12 @@ export function EventWizard() {
     }
 
     setQuery(cleanQuery);
-    setSelectedServices(recognizeEventIntent(cleanQuery).recommendedServices);
+    const nextRecognition = recognizeEventIntent(cleanQuery);
+    const nextStages = getInitialStages(nextRecognition);
+    setStages(nextStages);
+    setAudience(inferAudienceProfile(cleanQuery));
+    setPreferences([]);
+    setSelectedServices(getEssentialServices(nextRecognition, nextStages));
     setStep(1);
   }
 
@@ -229,39 +224,24 @@ export function EventWizard() {
     );
   }
 
-  function addCustomNoteToPlan() {
-    const additions = parsePlanAdditions(customNote);
-    const nextAdditions: PlanAddition[] =
-      additions.length > 0
-        ? additions
-        : [
-            {
-              id: `note-${normalizeId(customNote)}`,
-              kind: "Note" as const,
-              label: customNote.trim(),
-            },
-          ].filter((addition) => addition.label);
-
-    if (!nextAdditions.length) {
-      return;
-    }
-
-    setPlanAdditions((current) => mergeAdditions(current, nextAdditions));
-    nextAdditions.forEach((addition) => {
-      if (addition.service) {
-        addService(addition.service);
-      }
-    });
-    setCustomNote("");
+  function addPreference(preference: PlanningPreference) {
+    setPreferences((current) =>
+      current.some((item) => item.id === preference.id)
+        ? current
+        : [...current, toSelectedPreference(preference)],
+    );
+    if (preference.linkedService) addService(preference.linkedService);
   }
 
-  function removePlanAddition(addition: PlanAddition) {
-    setPlanAdditions((current) => current.filter((item) => item.id !== addition.id));
-
-    if (addition.service && !recognition.recommendedServices.includes(addition.service)) {
-      setSelectedServices((current) =>
-        current.filter((service) => service !== addition.service),
-      );
+  function removePreference(preference: SelectedPlanningPreference) {
+    setPreferences((current) => current.filter((item) => item.id !== preference.id));
+    if (!preference.linkedService) return;
+    const sameServiceRemains = preferences.some(
+      (item) => item.id !== preference.id && item.linkedService === preference.linkedService,
+    );
+    const isEssential = getEssentialServices(recognition, stages).includes(preference.linkedService);
+    if (!sameServiceRemains && !isEssential) {
+      setSelectedServices((current) => current.filter((service) => service !== preference.linkedService));
     }
   }
 
@@ -297,7 +277,7 @@ export function EventWizard() {
     <section className="px-6 py-10 sm:px-8 lg:px-12">
       <div
         className={`mx-auto min-w-0 transition-[max-width] duration-300 ${
-          step === 3 ? "max-w-[1600px]" : "max-w-5xl"
+          step === 3 ? "max-w-[1600px]" : step === 1 ? "max-w-6xl" : "max-w-5xl"
         }`}
       >
         <StepRail
@@ -334,21 +314,23 @@ export function EventWizard() {
           {step === 1 ? (
             <StepCard
               eyebrow="Step 2"
-              title={getConfirmationTitle(recognition)}
-              body={getConfirmationBody(recognition)}
+              title="Confirm your plan."
+              body="Make sure we understood the occasion, then add only the details that should shape your matches."
+              layout="wide"
               action={<PrimaryButton label="Looks right" onClick={() => setStep(2)} />}
             >
-              <UnderstandingCard
-                additions={planAdditions}
-                customNote={customNote}
-                planningContext={planningContext}
+              <StepTwoConfirmation
+                audience={audience}
+                onAudienceChange={setAudience}
+                onChangeEvent={continueFromSearch}
+                onPreferenceAdd={addPreference}
+                onPreferenceRemove={removePreference}
+                onStagesChange={setStages}
+                onToggleService={toggleService}
+                preferences={preferences}
                 recognition={recognition}
                 selectedServices={selectedServices}
-                onAddCustomNote={addCustomNoteToPlan}
-                onAddService={addService}
-                onCustomNoteChange={setCustomNote}
-                onRemoveAddition={removePlanAddition}
-                onToggleService={toggleService}
+                stages={stages}
               />
             </StepCard>
           ) : null}
@@ -435,12 +417,10 @@ export function EventWizard() {
             >
               <LocationStep
                 eventLabel={
-                  recognition.preservedSubtype ??
-                  recognition.profile.subtype ??
-                  recognition.profile.primaryType
+                  recognition.identity.selectedDisplayEvent
                 }
                 location={locations[0]}
-                onSelectAddress={(suggestion) =>
+                onSelectAddress={(suggestion) => {
                   updateLocation(locations[0].id, {
                     context: suggestion.context,
                     coordinates: suggestion.coordinates,
@@ -452,9 +432,10 @@ export function EventWizard() {
                     selectedAddress: suggestion.address,
                     selectedLabel: suggestion.label,
                     zones: [],
-                  })
-                }
-                onSelectMode={(mode) =>
+                  });
+                  setSelectedServices((current) => current.filter((service) => service !== "Venue"));
+                }}
+                onSelectMode={(mode) => {
                   updateLocation(locations[0].id, {
                     context: mode === "needs_venue" ? "venue_needed" : "",
                     currentLocationUsed: false,
@@ -466,8 +447,9 @@ export function EventWizard() {
                     selectedLabel: "",
                     selectedVenueId: undefined,
                     zones: mode === "needs_venue" ? getDefaultPlannerZones(eventAnchor ?? getDefaultMapCenter()) : [],
-                  })
-                }
+                  });
+                  if (mode === "needs_venue") addService("Venue");
+                }}
                 onUpdate={(updates) => updateLocation(locations[0].id, updates)}
               />
             </StepCard>
@@ -564,12 +546,13 @@ export function EventWizard() {
               }
             >
               <FinalReview
-                additions={planAdditions}
                 budget={budget}
                 guestCount={guestCount}
                 locations={locations}
+                preferences={preferences}
                 recognition={recognition}
                 selectedServices={visibleServices}
+                stages={stages}
                 timing={timing}
               />
             </StepCard>
@@ -670,158 +653,6 @@ function SearchBox({
             </span>
           </button>
         ))}
-      </div>
-    </div>
-  );
-}
-
-function UnderstandingCard({
-  additions,
-  customNote,
-  onAddCustomNote,
-  onAddService,
-  onCustomNoteChange,
-  onRemoveAddition,
-  onToggleService,
-  planningContext,
-  recognition,
-  selectedServices,
-}: {
-  additions: PlanAddition[];
-  customNote: string;
-  onAddCustomNote: () => void;
-  onAddService: (service: ServiceName) => void;
-  onCustomNoteChange: (value: string) => void;
-  onRemoveAddition: (addition: PlanAddition) => void;
-  onToggleService: (service: ServiceName) => void;
-  planningContext: ReturnType<typeof derivePlanningContext>;
-  recognition: ReturnType<typeof recognizeEventIntent>;
-  selectedServices: ServiceName[];
-}) {
-  const profile = recognition.profile;
-  const [isEditing, setIsEditing] = useState(false);
-  const [serviceSearch, setServiceSearch] = useState("");
-  const visibleServices = selectedServices.filter(
-    (service) => !recognition.excludedServices.includes(service),
-  );
-  const addableServices = allServices.filter(
-    (service) =>
-      !visibleServices.includes(service) &&
-      !recognition.excludedServices.includes(service) &&
-      (!serviceSearch ||
-        service.toLowerCase().includes(serviceSearch.trim().toLowerCase())),
-  );
-  const contextDetails = getContextDetails(planningContext);
-
-  return (
-    <div className="space-y-5">
-      <div className="rounded-[30px] border border-neutral-200 bg-[linear-gradient(135deg,#FFFCF7,#ffffff)] p-5">
-        <p className="text-sm font-semibold text-neutral-500">
-          Looks like you are planning
-        </p>
-        <h2 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-950">
-          {recognition.preservedSubtype ?? profile.subtype ?? profile.primaryType}
-        </h2>
-        <p className="mt-3 text-base leading-7 text-neutral-600">
-          {getConfirmationBody(recognition)}
-        </p>
-        {contextDetails.length ? (
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {contextDetails.map(([label, value]) => (
-              <PlainDetail key={label} label={label} value={value} />
-            ))}
-          </div>
-        ) : null}
-      </div>
-
-      <div className="rounded-[30px] border border-neutral-200 p-5">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-neutral-950">
-              We will start with
-            </p>
-            <p className="mt-1 text-sm text-neutral-600">
-              Add or remove only what matters now.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsEditing((current) => !current)}
-            className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-[#0D1321]"
-          >
-            {isEditing ? "Done" : "Edit details"}
-          </button>
-        </div>
-        <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          {visibleServices.map((service) => (
-            <ServiceRecommendationCard
-              key={service}
-              service={service}
-              isSelected
-              onToggle={onToggleService}
-            />
-          ))}
-        </div>
-      </div>
-
-      {isEditing ? (
-        <div className="rounded-[30px] border border-neutral-200 bg-white p-5 shadow-[0_18px_50px_rgba(13,19,33,0.06)]">
-          <label className="block text-sm font-semibold text-neutral-800">
-            Add a service
-            <input
-              value={serviceSearch}
-              onChange={(event) => setServiceSearch(event.target.value)}
-              placeholder="Search services"
-              className="mt-2 h-12 w-full rounded-2xl border border-neutral-300 px-4 text-sm font-semibold outline-none transition focus:border-[#0D1321]"
-            />
-          </label>
-          <div className="mt-3 grid max-h-56 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
-            {addableServices.slice(0, 8).map((service) => (
-              <ServiceRecommendationCard
-                key={service}
-                service={service}
-                isSelected={false}
-                onToggle={onAddService}
-              />
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      <div className="rounded-[30px] border border-neutral-200 bg-[#FFFCF7] p-5">
-        <label className="block text-sm font-semibold text-neutral-800">
-          Want to add anything?
-          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-            <input
-              value={customNote}
-              onChange={(event) => onCustomNoteChange(event.target.value)}
-              placeholder="Tell us anything that matters: age, culture, food style, activities, guests, vibe, traditions..."
-              className="h-12 flex-1 rounded-2xl border border-neutral-300 bg-white px-4 text-sm font-semibold outline-none transition focus:border-[#0D1321]"
-            />
-            <button
-              type="button"
-              onClick={onAddCustomNote}
-              disabled={!customNote.trim()}
-              className="h-12 rounded-full bg-[#0D1321] px-5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Add to plan
-            </button>
-          </div>
-        </label>
-        {additions.length ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {additions.map((addition) => (
-              <button
-                key={addition.id}
-                type="button"
-                onClick={() => onRemoveAddition(addition)}
-                className="rounded-full border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-[#0D1321]"
-              >
-                {addition.kind}: {addition.label} x
-              </button>
-            ))}
-          </div>
-        ) : null}
       </div>
     </div>
   );
@@ -1182,30 +1013,29 @@ function VenueDiscoveryMap({
 }
 
 function FinalReview({
-  additions,
   budget,
   guestCount,
   locations,
+  preferences,
   recognition,
   selectedServices,
+  stages,
   timing,
 }: {
-  additions: PlanAddition[];
   budget: number;
   guestCount: number;
   locations: EventLocation[];
+  preferences: SelectedPlanningPreference[];
   recognition: ReturnType<typeof recognizeEventIntent>;
   selectedServices: ServiceName[];
+  stages: EventStage[];
   timing: {
     date: string;
     endTime: string;
     startTime: string;
   };
 }) {
-  const eventName =
-    recognition.preservedSubtype ??
-    recognition.profile.subtype ??
-    recognition.profile.primaryType;
+  const eventName = recognition.identity.selectedDisplayEvent;
 
   return (
     <div className="space-y-5">
@@ -1217,7 +1047,7 @@ function FinalReview({
           {eventName}
         </h2>
         <p className="mt-3 text-base leading-7 text-neutral-600">
-          We will start with {toFriendlyNeeds(selectedServices)}.
+          We will start with {formatNaturalList(selectedServices.map((service) => service.toLowerCase()))}.
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -1226,6 +1056,18 @@ function FinalReview({
         <PlainDetail label="Guests" value={guestCount.toLocaleString()} />
         <PlainDetail label="Budget" value={`$${budget.toLocaleString()}`} />
       </div>
+      {stages.length ? (
+        <div className="rounded-[30px] border border-neutral-200 bg-white p-5">
+          <p className="text-sm font-semibold text-neutral-950">Event parts</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {stages.map((stage) => (
+              <span key={stage.id} className="rounded-full bg-[#F7F4EC] px-3 py-2 text-xs font-semibold text-neutral-700">
+                {stage.order}. {stage.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
       <div className="rounded-[30px] border border-neutral-200 bg-white p-5">
         <p className="text-sm font-semibold text-neutral-950">Locations</p>
         <div className="mt-3 space-y-2">
@@ -1240,16 +1082,16 @@ function FinalReview({
           ))}
         </div>
       </div>
-      {additions.length ? (
+      {preferences.length ? (
         <div className="rounded-[30px] border border-neutral-200 bg-white p-5">
           <p className="text-sm font-semibold text-neutral-950">Added details</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {additions.map((addition) => (
+            {preferences.map((preference) => (
               <span
-                key={addition.id}
+                key={preference.id}
                 className="rounded-full bg-[#F6F3EA] px-3 py-2 text-xs font-semibold text-neutral-700"
               >
-                {addition.label}
+                {preference.label}
               </span>
             ))}
           </div>
@@ -1312,117 +1154,6 @@ function PrimaryButton({
   );
 }
 
-function parsePlanAdditions(value: string): PlanAddition[] {
-  const text = value.toLowerCase();
-  const additions: PlanAddition[] = [];
-  const context = derivePlanningContext({
-    eventLabel: text,
-    notes: text,
-  });
-  const cultures = [
-    "armenian",
-    "mexican",
-    "persian",
-    "filipino",
-    "korean",
-    "japanese",
-    "indian",
-    "jewish",
-    "latin",
-  ];
-  const detectedCulture = cultures.find((culture) => text.includes(culture));
-
-  if (detectedCulture) {
-    additions.push({
-      id: `culture-${detectedCulture}`,
-      kind: "Culture/style",
-      label: capitalize(detectedCulture),
-    });
-  }
-
-  addServiceMatch(additions, text, ["dj", "disc jockey"], detectedCulture ? `${capitalize(detectedCulture)} DJ` : "DJ", "DJ");
-  addServiceMatch(additions, text, ["catering", "caterer", "food"], detectedCulture ? `${capitalize(detectedCulture)} catering` : "Catering", "Catering");
-  addServiceMatch(additions, text, ["security", "guard"], "Security", "Security");
-  addServiceMatch(additions, text, ["porta potties", "portable restroom", "restrooms", "bathrooms"], "Portable restrooms", "Portable Restrooms");
-  addServiceMatch(additions, text, ["photographer", "photography", "photo coverage"], "Photography", "Photography");
-  addServiceMatch(additions, text, ["live band", "live music", "band"], "Live Music", "Live Music");
-  addServiceMatch(additions, text, ["photo booth", "photobooth"], "Photo Booth", "Photo Booth");
-  addServiceMatch(additions, text, ["flowers", "florals"], "Florals", "Florals");
-  addServiceMatch(additions, text, ["cake", "dessert"], "Cake & Desserts", "Cake & Desserts");
-  addServiceMatch(additions, text, ["bounce house", "bounce houses", "inflatable"], "Bounce houses", "Bounce Houses");
-  addServiceMatch(additions, text, ["party bus", "limo", "transportation", "shuttle"], "Transportation", "Transportation");
-  addServiceMatch(additions, text, ["tables", "chairs", "tent", "shade", "rentals"], "Rentals", "Rentals");
-  addServiceMatch(additions, text, ["cleanup", "cleaning"], "Cleaning", "Cleaning");
-
-  getContextServices(context).forEach((service) => {
-    additions.push({
-      id: `service-${normalizeId(service)}`,
-      kind: "Service",
-      label: service,
-      service,
-    });
-  });
-
-  if (text.includes("banquet hall")) {
-    additions.push({
-      id: "venue-style-banquet-hall",
-      kind: "Venue style",
-      label: "Banquet Hall",
-    });
-    additions.push({
-      id: "service-venue",
-      kind: "Service",
-      label: "Venue",
-      service: "Venue",
-    });
-  } else if (text.includes("venue") || text.includes("hall")) {
-    additions.push({
-      id: "service-venue",
-      kind: "Service",
-      label: "Venue",
-      service: "Venue",
-    });
-  }
-
-  return mergeAdditions([], additions);
-}
-
-function addServiceMatch(
-  additions: PlanAddition[],
-  text: string,
-  terms: string[],
-  label: string,
-  service: ServiceName,
-) {
-  if (terms.some((term) => text.includes(term))) {
-    additions.push({
-      id: `service-${normalizeId(label)}`,
-      kind: "Service",
-      label,
-      service,
-    });
-  }
-}
-
-function mergeAdditions(current: PlanAddition[], incoming: PlanAddition[]) {
-  const additions = [...current];
-
-  incoming.forEach((addition) => {
-    if (!additions.some((item) => item.id === addition.id)) {
-      additions.push(addition);
-    }
-  });
-
-  return additions;
-}
-
-function mergeServices(
-  current: ServiceName[],
-  incoming: ServiceName[],
-) {
-  return Array.from(new Set([...current, ...incoming]));
-}
-
 function getInitialLocationFromSession(): EventLocation {
   const profile = loadLocationProfile();
 
@@ -1432,7 +1163,6 @@ function getInitialLocationFromSession(): EventLocation {
 
   return locationFromProfile(profile);
 }
-
 function getEmptyLocation(): EventLocation {
   return {
     context: "",
@@ -1592,64 +1322,16 @@ function getNearestHomeArea(coordinates: { lat: number; lng: number }) {
     .sort((a, b) => a.distance - b.distance)[0]?.area;
 }
 
-function getConfirmationTitle(recognition: ReturnType<typeof recognizeEventIntent>) {
-  const label =
-    recognition.preservedSubtype ??
-    recognition.profile.subtype ??
-    recognition.profile.primaryType.toLowerCase();
+function inferAudienceProfile(query: string): AudienceProfile {
+  const context = derivePlanningContext({ eventLabel: query });
 
-  return `Looks like ${startsWithVowel(label) ? "an" : "a"} ${label}.`;
-}
-
-function getConfirmationBody(recognition: ReturnType<typeof recognizeEventIntent>) {
-  const profile = recognition.profile;
-  const services = toFriendlyNeeds(profile.likelyNeeds ?? recognition.recommendedServices);
-
-  if (profile.id === "pool-party") {
-    return "We will start with food, rentals, drinks, shade, lighting, cleanup, and optional lifeguards.";
-  }
-
-  if (profile.id === "bachelor-party") {
-    return "We will start with venues, transportation, food and drinks, entertainment, and late-night options.";
-  }
-
-  if (profile.id === "funeral") {
-    return "We will focus on venues, catering, flowers, printed programs, transportation, and livestreaming.";
-  }
-
-  if (
-    (recognition.preservedSubtype ?? profile.subtype ?? "")
-      .toLowerCase()
-      .includes("sweet")
-  ) {
-    return "We will start with DJ, cake, decor, photo booth, photographer, and rentals.";
-  }
-
-  return `We will help you find ${services}.`;
-}
-
-function toFriendlyNeeds(needs: string[]) {
-  const visibleNeeds = needs.slice(0, 7).map((need) => need.toLowerCase());
-
-  if (visibleNeeds.length <= 1) {
-    return visibleNeeds[0] ?? "the right vendors";
-  }
-
-  return `${visibleNeeds.slice(0, -1).join(", ")}, and ${visibleNeeds.at(-1)}`;
-}
-
-function startsWithVowel(value: string) {
-  return /^[aeiou]/i.test(value.trim());
-}
-
-function normalizeId(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-function capitalize(value: string) {
-  return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
+  return {
+    audienceType:
+      context.lifeStage === "teen"
+        ? "teens"
+        : context.lifeStage === "kids"
+          ? "kids"
+          : undefined,
+    honoreeAge: context.age,
+  };
 }

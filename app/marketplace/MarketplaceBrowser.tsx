@@ -119,6 +119,7 @@ export function MarketplaceBrowser() {
   const searchParams = useSearchParams();
   const initialCoordinates = getInitialCoordinates(searchParams);
   const initialEvent = searchParams.get("event");
+  const initialEventLabel = searchParams.get("eventLabel") ?? initialEvent;
   const eventId = searchParams.get("eventId");
   const initialServices = searchParams
     .get("services")
@@ -244,7 +245,7 @@ export function MarketplaceBrowser() {
     [excludedServices, selectedEvent, selectedServices],
   );
   const planSummary = [
-    isEventType(initialEvent) ? initialEvent : null,
+    initialEventLabel,
     guestCount ? `${guestCount.toLocaleString()} guests` : null,
     initialBudget ? `$${Number(initialBudget).toLocaleString()} budget` : null,
   ]
@@ -268,7 +269,7 @@ export function MarketplaceBrowser() {
     () =>
       derivePlanningContext({
         budget: initialBudget,
-        eventLabel: selectedEvent === "All" ? initialEvent : selectedEvent,
+        eventLabel: initialEventLabel ?? selectedEvent,
         locationContext: initialLocationContext,
         locationText: `${initialLocation} ${homeAddress}`,
         notes: initialNotes,
@@ -276,7 +277,7 @@ export function MarketplaceBrowser() {
     [
       homeAddress,
       initialBudget,
-      initialEvent,
+      initialEventLabel,
       initialLocation,
       initialLocationContext,
       initialNotes,
@@ -355,7 +356,7 @@ export function MarketplaceBrowser() {
     const profile = getProfileByMarketplaceType(selectedEvent);
     const rankedItems = rankMarketplaceItems(
       nextItems,
-      recognizeEventIntent(profile.subtype ?? profile.primaryType),
+      recognizeEventIntent(profile.primaryType),
       {
         coordinates: eventCoordinates,
         quoteContext: globalQuoteContext,

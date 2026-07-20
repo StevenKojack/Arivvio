@@ -30,7 +30,6 @@ const activityTerms = [
   "activity",
   "activities",
   "active",
-  "fun",
   "games",
   "go kart",
   "go-kart",

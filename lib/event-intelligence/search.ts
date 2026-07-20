@@ -5,6 +5,10 @@ import {
 } from "./taxonomy";
 import type { ServiceName } from "@/app/data/marketplace";
 import type { EventRecognition, EventTaxonomyProfile } from "./types";
+import { buildEventIdentity } from "./identity";
+import { normalizeSearchText } from "./normalize";
+
+export { normalizeSearchText } from "./normalize";
 
 const synonymFamilies = [
   ["bbq", "barbecue", "barbeque", "cookout"],
@@ -17,28 +21,19 @@ const synonymFamilies = [
   ["corporate", "company", "business"],
 ];
 
-export function normalizeSearchText(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/&/g, " and ")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 export function recognizeEventIntent(query: string): EventRecognition {
   const normalizedQuery = normalizeSearchText(query);
   const matches = scoreProfiles(normalizedQuery);
   const best = matches[0];
   const profile = best?.profile ?? getDefaultProfile();
   const preservedSubtype = inferSubtype(query, profile);
+  const identity = buildEventIdentity(query, profile, preservedSubtype);
   const recommendedServices = getRecommendedServices(profile, normalizedQuery);
   const excludedServices = getExcludedServices(profile, normalizedQuery);
   const tags = Array.from(
     new Set([
       profile.id,
+      identity.canonicalEventType,
       profile.eventFamily ?? "",
       normalizeSearchText(profile.primaryType),
       normalizeSearchText(profile.subtype ?? ""),
@@ -53,6 +48,7 @@ export function recognizeEventIntent(query: string): EventRecognition {
 
   return {
     confidence: best?.score ?? 0.35,
+    identity,
     matchedAlias: best?.matchedAlias ?? profile.aliases[0],
     normalizedQuery,
     recommendedServices,

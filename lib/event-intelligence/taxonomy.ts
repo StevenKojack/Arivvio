@@ -469,7 +469,10 @@ export const eventTaxonomyProfiles: EventTaxonomyProfile[] = [
 ];
 
 export function getDefaultProfile() {
-  return eventTaxonomyProfiles[0];
+  return (
+    eventTaxonomyProfiles.find((profile) => profile.id === "private-party") ??
+    eventTaxonomyProfiles[0]
+  );
 }
 
 export function getProfileByMarketplaceType(eventType: EventType) {

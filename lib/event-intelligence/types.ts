@@ -5,6 +5,22 @@ export type Formality = "casual" | "semi-formal" | "formal" | "black-tie";
 export type IndoorOutdoor = "indoor" | "outdoor" | "indoor-outdoor";
 export type TimeOfDay = "morning" | "afternoon" | "evening" | "late-night";
 
+export type EventTone =
+  | "celebratory"
+  | "professional"
+  | "respectful"
+  | "warm"
+  | "neutral";
+
+export type EventIdentity = {
+  aliases: string[];
+  canonicalEventType: string;
+  inferredContext: string[];
+  internalEventFamily: string;
+  selectedDisplayEvent: string;
+  subtype?: string;
+};
+
 export type EventTaxonomyProfile = {
   aliases: string[];
   ageContext?: string;
@@ -36,6 +52,7 @@ export type EventTaxonomyProfile = {
 
 export type EventRecognition = {
   confidence: number;
+  identity: EventIdentity;
   matchedAlias: string;
   normalizedQuery: string;
   profile: EventTaxonomyProfile;
@@ -44,6 +61,28 @@ export type EventRecognition = {
   excludedServices: ServiceName[];
   suggestedClarifyingQuestions: string[];
   tags: string[];
+};
+
+export type EventStage = {
+  id: string;
+  label: string;
+  order: number;
+};
+
+export type AudienceType =
+  | "all-ages"
+  | "adults"
+  | "kids"
+  | "teens"
+  | "families"
+  | "seniors"
+  | "custom";
+
+export type AudienceProfile = {
+  audienceType?: AudienceType;
+  guestAgeMax?: number;
+  guestAgeMin?: number;
+  honoreeAge?: number;
 };
 
 export type DiscoveryQuestion = {
