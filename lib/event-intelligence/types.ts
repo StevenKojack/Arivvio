@@ -1,5 +1,6 @@
 import type { EventType, ServiceName } from "@/app/data/marketplace";
 import type { SelectedPlanningPreference } from "@/lib/planning-taxonomy/types";
+import type { PlanSelection } from "@/lib/planning-taxonomy/selection";
 
 export type BudgetTier = "economy" | "standard" | "premium" | "luxury";
 export type Formality = "casual" | "semi-formal" | "formal" | "black-tie";
@@ -80,13 +81,19 @@ export type AudienceType =
   | "custom";
 
 export type AudienceProfile = {
+  audienceGender?: AudienceGender;
   audienceType?: AudienceType;
+  celebrating?: "self" | "someone-else";
   genderContext?: GenderContext;
   genderDescription?: string;
   guestAgeMax?: number;
   guestAgeMin?: number;
+  honoreeDueDate?: string;
+  honoreeGender?: GenderContext;
   honoreeAge?: number;
 };
+
+export type AudienceGender = "all-genders" | "mixed" | "mostly-female" | "mostly-male";
 
 export type GenderContext =
   | "boy"
@@ -115,11 +122,26 @@ export type IntelligenceEvidence = IntelligenceValue<string | number | boolean> 
   field: string;
 };
 
+export type HonoreeProfile = {
+  age?: number;
+  dueDate?: string;
+  gender?: GenderContext;
+  genderDescription?: string;
+  relationship?: "self" | "someone-else";
+};
+
+export type PlannerIntent = {
+  explicitTerms: string[];
+  inferredTerms: string[];
+  rawText: string;
+};
+
 export type EventIntelligenceProfile = {
   activityStyle: string[];
   audience: AudienceProfile;
   commercialVenue: boolean;
   cultures: string[];
+  cuisines: string[];
   evidence: IntelligenceEvidence[];
   entertainment: string[];
   eventType: IntelligenceValue<string>;
@@ -127,8 +149,11 @@ export type EventIntelligenceProfile = {
   foodStyles: string[];
   guestSize?: number;
   homeEvent: boolean;
+  honoree: HonoreeProfile;
   indoorOutdoor?: IndoorOutdoor;
   inferredPreferenceIds: string[];
+  planSelections: PlanSelection[];
+  plannerIntent: PlannerIntent;
   preferences: SelectedPlanningPreference[];
   recognition: EventRecognition;
   recommendationScores: Partial<Record<ServiceName, number>>;

@@ -7,6 +7,7 @@ import type {
   PlanningPreference,
   PlanningPreferenceType,
 } from "@/lib/planning-taxonomy";
+import { createPreferenceSelection } from "@/lib/planning-taxonomy";
 
 const fallbackPlaceholderExamples = [
   "Armenian DJ",
@@ -68,12 +69,18 @@ export function PlanningSearch({
     () => suggestions?.length ? suggestions : getCategoryPlanningSuggestions({ categories, types }),
     [categories, suggestions, types],
   );
-  const results = useMemo(
-    () => query.trim().length >= 2
+  const results = useMemo(() => {
+    const matches = query.trim().length >= 2
       ? searchPlanningPreferences(query, { categories, types })
-      : inspiration,
-    [categories, inspiration, query, types],
-  );
+      : inspiration;
+    const seen = new Set<string>();
+    return matches.filter((item) => {
+      const primaryId = createPreferenceSelection(item, "user-search").id;
+      if (seen.has(primaryId)) return false;
+      seen.add(primaryId);
+      return true;
+    });
+  }, [categories, inspiration, query, types]);
   const placeholders = inspiration.length ? inspiration.map((item) => item.label) : fallbackPlaceholderExamples;
 
   useEffect(() => {
@@ -97,7 +104,8 @@ export function PlanningSearch({
   }, []);
 
   function choose(preference: PlanningPreference) {
-    if (selectedIds.includes(preference.id)) return;
+    const primaryId = createPreferenceSelection(preference, "user-search").id;
+    if (selectedIds.includes(preference.id) || selectedIds.includes(primaryId)) return;
     onSelect(preference);
     setQuery("");
     setActiveIndex(-1);
@@ -156,7 +164,8 @@ export function PlanningSearch({
           className="absolute inset-x-0 top-full z-50 mt-2 max-h-[min(360px,52vh)] touch-pan-y scroll-py-2 overflow-y-auto overscroll-contain scroll-smooth rounded-2xl border border-neutral-200 bg-white p-2 shadow-[0_24px_70px_rgba(13,19,33,0.18)]"
         >
           {results.length ? results.map((result, index) => {
-            const selected = selectedIds.includes(result.id);
+            const selection = createPreferenceSelection(result, "user-search");
+            const selected = selectedIds.includes(result.id) || selectedIds.includes(selection.id);
             return (
             <button
               id={`${listboxId}-${result.id}`}
@@ -173,7 +182,8 @@ export function PlanningSearch({
               }`}
             >
               <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-[#0D1321]">{result.label}</span>
+                <span className="block truncate text-sm font-semibold text-[#0D1321]">{selection.label}</span>
+                {selection.details.length ? <span className="mt-1 block text-xs font-semibold text-[#285E49]">Includes {selection.details.map((detail) => detail.label).join(", ")}</span> : null}
                 <span className="mt-1 block text-xs text-neutral-500">{result.description}</span>
                 <span className="mt-1 block text-[11px] font-semibold text-[#8B6816]">{result.category}</span>
               </span>

@@ -1,5 +1,61 @@
-import type { EventType } from "@/app/data/marketplace";
+import type { EventType, ServiceName } from "@/app/data/marketplace";
 import type { EventTaxonomyProfile } from "./types";
+
+function holidayProfile(
+  id: string,
+  name: string,
+  aliases: string[],
+  season: string,
+  vibe: string,
+  tags: string[],
+  recommendedVendors: ServiceName[] = ["Catering", "Rentals", "DJ"],
+): EventTaxonomyProfile {
+  return {
+    aliases: [name, `${name} party`, `${name} event`, ...aliases],
+    budgetTier: "standard",
+    description: `A ${name} gathering shaped by its traditions, guest mix, food, and setting.`,
+    eventFamily: "holiday gathering",
+    formality: "casual",
+    guestSize: "10-250",
+    id,
+    indoorOutdoor: "indoor-outdoor",
+    likelyGuestType: "friends, family, colleagues, or community",
+    likelyNeeds: ["Location", "Food and drinks", "Guest comfort", "Decor", "Music or activities"],
+    likelyVibe: vibe,
+    luxuryAddOns: ["Live Music", "Photography", "Florals"],
+    marketplaceEventType: "Private Party",
+    optionalVendors: ["Photography", "Security", "Cleaning"],
+    primaryType: "Private Party",
+    recommendedTags: ["holiday", id, ...tags],
+    recommendedVendors,
+    requiredVendors: ["Venue"],
+    season,
+    subtype: name,
+    timeOfDay: "evening",
+    venueStyle: "home, restaurant, hall, community space, or event venue",
+  };
+}
+
+const holidayTaxonomyProfiles: EventTaxonomyProfile[] = [
+  holidayProfile("christmas", "Christmas", ["christmas dinner", "office christmas party"], "winter", "warm, festive, generous", ["winter", "family", "gifts", "dinner"]),
+  holidayProfile("halloween", "Halloween", ["costume party", "halloween celebration"], "fall", "playful, theatrical, costume-friendly", ["costumes", "spooky", "candy", "performers"], ["Rentals", "DJ", "Character Performers"]),
+  holidayProfile("thanksgiving", "Thanksgiving", ["friendsgiving", "thanksgiving dinner"], "fall", "warm, food-centered, communal", ["dinner", "family", "friendsgiving"], ["Catering", "Rentals", "Cleaning"]),
+  holidayProfile("fourth-of-july", "Fourth of July", ["4th of july", "independence day party"], "summer", "outdoor, social, patriotic", ["outdoor", "barbecue", "summer"], ["Catering", "Rentals", "Security"]),
+  holidayProfile("new-years-eve", "New Year's Eve", ["nye", "new years eve"], "winter", "late-night, celebratory, polished", ["midnight", "countdown", "late-night"], ["DJ", "Catering", "Security"]),
+  holidayProfile("new-years-day", "New Year's Day", ["new years day", "new year brunch"], "winter", "fresh, relaxed, social", ["brunch", "daytime"], ["Catering", "Rentals", "Photography"]),
+  holidayProfile("valentines-day", "Valentine's Day", ["valentines", "galentines", "galentine's day"], "winter", "intimate, warm, romantic", ["romantic", "dinner", "friends"], ["Catering", "Florals", "Live Music"]),
+  holidayProfile("mothers-day", "Mother's Day", ["mothers day", "mother day brunch"], "spring", "warm, appreciative, family-centered", ["brunch", "family"], ["Catering", "Florals", "Photography"]),
+  holidayProfile("fathers-day", "Father's Day", ["fathers day", "father day barbecue"], "summer", "relaxed, appreciative, family-centered", ["barbecue", "family"], ["Catering", "Rentals", "Photography"]),
+  holidayProfile("cinco-de-mayo", "Cinco de Mayo", ["cinco party", "may fifth party"], "spring", "festive, social, food-forward", ["mexican", "music", "food"], ["Catering", "Live Music", "Rentals"]),
+  holidayProfile("st-patricks-day", "St. Patrick's Day", ["saint patricks day", "st patricks party"], "spring", "lively, casual, social", ["irish", "music", "drinks"], ["Catering", "Live Music", "Security"]),
+  holidayProfile("easter", "Easter", ["easter brunch", "easter egg hunt"], "spring", "bright, family-friendly, daytime", ["brunch", "family", "egg hunt"], ["Catering", "Rentals", "Character Performers"]),
+  holidayProfile("passover", "Passover", ["passover seder", "seder dinner"], "spring", "traditional, reflective, family-centered", ["jewish", "seder", "kosher"], ["Catering", "Rentals", "Printed Materials"]),
+  holidayProfile("hanukkah", "Hanukkah", ["chanukah", "festival of lights"], "winter", "warm, traditional, family-centered", ["jewish", "lights", "family"], ["Catering", "Rentals", "Live Music"]),
+  holidayProfile("diwali", "Diwali", ["festival of lights", "deepavali"], "fall", "bright, celebratory, tradition-rich", ["indian", "lights", "culture"], ["Catering", "Live Music", "Florals"]),
+  holidayProfile("lunar-new-year", "Lunar New Year", ["chinese new year", "tet", "seollal"], "winter", "festive, family-centered, tradition-rich", ["asian", "family", "tradition"], ["Catering", "Live Music", "Rentals"]),
+  holidayProfile("ramadan", "Ramadan", ["iftar", "ramadan iftar"], "seasonal", "reflective, communal, food-centered", ["muslim", "iftar", "halal"], ["Catering", "Rentals", "Printed Materials"]),
+  holidayProfile("eid", "Eid", ["eid al fitr", "eid al adha", "eid celebration"], "seasonal", "joyful, communal, family-centered", ["muslim", "halal", "family"], ["Catering", "Rentals", "Photography"]),
+];
 
 export const eventExamples = [
   "Birthday party",
@@ -24,6 +80,12 @@ export const eventExamples = [
   "Corporate retreat",
   "Funeral",
   "Holiday party",
+  "Christmas party",
+  "Halloween party",
+  "Thanksgiving dinner",
+  "New Year's Eve party",
+  "Diwali celebration",
+  "Lunar New Year",
   "BBQ",
   "Family reunion",
   "Sweet 16",
@@ -39,6 +101,7 @@ export const eventExamples = [
 ] as const;
 
 export const eventTaxonomyProfiles: EventTaxonomyProfile[] = [
+  ...holidayTaxonomyProfiles,
   {
     ageContext: "only if this is also a birthday",
     aliases: ["pool party", "pool event", "summer pool party", "backyard pool party"],

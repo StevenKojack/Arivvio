@@ -1,10 +1,7 @@
 import type { ServiceName } from "@/app/data/marketplace";
-import { planningPreferenceCatalog } from "@/lib/planning-taxonomy";
+import { planningPreferenceCatalog, type PlanSelection } from "@/lib/planning-taxonomy";
 import { toSelectedPreference } from "@/lib/planning-taxonomy/search";
-import type {
-  PlanningPreference,
-  SelectedPlanningPreference,
-} from "@/lib/planning-taxonomy/types";
+import type { PlanningPreference, SelectedPlanningPreference } from "@/lib/planning-taxonomy/types";
 import { derivePlanningContext } from "./context";
 import { normalizeSearchText } from "./normalize";
 import { recognizeEventIntent } from "./search";
@@ -21,6 +18,7 @@ export type EventIntelligenceInput = {
   guestSize?: number;
   inferPreferencesFromQuery?: boolean;
   locationContext?: string;
+  planSelections?: PlanSelection[];
   preferences?: SelectedPlanningPreference[];
   query: string;
   selectedServices?: ServiceName[];
@@ -42,8 +40,10 @@ export function buildEventIntelligenceProfile(
   const inferredIds = new Set(preferences.filter((item) => item.selectionSource === "explicit-text").map((item) => item.id));
   const stages = input.stages ?? getInitialStages(recognition);
   const audience = mergeAudience(inferAudienceFromQuery(input.query, recognition.identity.canonicalEventType), input.audience);
+  const planSelections = input.planSelections ?? [];
   const rawRequestedServices = unique([
     ...(input.selectedServices ?? []),
+    ...planSelections.flatMap((item) => item.matchingServices),
     ...preferences.flatMap((item) => item.linkedService ? [item.linkedService] : []),
   ]);
   const venuePreferences = preferences.filter((item) => item.type === "location").map((item) => item.label);
@@ -99,13 +99,29 @@ export function buildEventIntelligenceProfile(
     const genderWasInText = /\b(boy|girl|male|female)\b/.test(normalizedQuery);
     evidence.push({ confidence: 0.96, field: "audience.genderContext", source: genderWasInText ? "explicit-text" : "deterministic-inference", userConfirmed: genderWasInText, value: audience.genderContext });
   }
+  planSelections.forEach((selection) => {
+    selection.details.forEach((detail) => evidence.push({
+      confidence: detail.source === "explicit" ? 1 : 0.86,
+      field: `service.${selection.linkedService ?? selection.label}.${detail.group}`,
+      source: detail.source === "explicit" ? "explicit-step-choice" : "deterministic-inference",
+      userConfirmed: detail.source === "explicit",
+      value: detail.label,
+    }));
+  });
   if (homeEvent) evidence.push({ confidence: 0.96, field: "venue.homeEvent", source: "deterministic-inference", userConfirmed: false, value: true });
 
   return {
     activityStyle: preferences.filter((item) => item.type === "activity").map((item) => item.label),
     audience,
     commercialVenue: !homeEvent && (knownVenueContext || venuePreferences.length > 0),
-    cultures: preferences.filter((item) => item.type === "culture").map((item) => item.label),
+    cultures: unique([
+      ...preferences.filter((item) => item.type === "culture").map((item) => item.label),
+      ...getPlanDetailLabels(planSelections, ["culture", "cultures"]),
+    ]),
+    cuisines: unique([
+      ...preferences.filter((item) => item.type === "cuisine").map((item) => item.label),
+      ...getPlanDetailLabels(planSelections, ["cuisine"]),
+    ]),
     evidence,
     entertainment: preferences
       .filter((item) => item.type === "activity" || item.category.toLowerCase().includes("music") || item.category.toLowerCase().includes("entertainment"))
@@ -117,11 +133,33 @@ export function buildEventIntelligenceProfile(
       value: recognition.identity.selectedDisplayEvent,
     },
     excludedServices: recognition.excludedServices,
-    foodStyles: preferences.filter((item) => item.type === "food").map((item) => item.label),
+    foodStyles: unique([
+      ...preferences.filter((item) => item.type === "food").map((item) => item.label),
+      ...planSelections.filter((item) => item.linkedService === "Catering").flatMap((item) => item.details.filter((detail) => !["cuisine", "cultures"].includes(detail.group.toLowerCase())).map((detail) => detail.label)),
+    ]),
     guestSize: input.guestSize,
     homeEvent,
+    honoree: {
+      age: audience.honoreeAge,
+      dueDate: audience.honoreeDueDate,
+      gender: audience.honoreeGender ?? audience.genderContext,
+      genderDescription: audience.genderDescription,
+      relationship: audience.celebrating,
+    },
     indoorOutdoor: getIndoorOutdoor(preferences, recognition.profile.indoorOutdoor),
     inferredPreferenceIds: preferences.filter((item) => inferredIds.has(item.id)).map((item) => item.id),
+    planSelections,
+    plannerIntent: {
+      explicitTerms: unique([
+        recognition.identity.selectedDisplayEvent,
+        ...planSelections.filter((item) => item.source !== "natural-language-inference").flatMap((item) => [item.label, ...item.details.map((detail) => detail.label)]),
+      ]),
+      inferredTerms: unique([
+        ...recognition.tags,
+        ...planSelections.filter((item) => item.source === "natural-language-inference").flatMap((item) => [item.label, ...item.details.map((detail) => detail.label)]),
+      ]),
+      rawText: input.query,
+    },
     preferences,
     recognition,
     recommendationScores,
@@ -162,9 +200,19 @@ export function inferAudienceFromQuery(query: string, canonicalEventType?: strin
           ? "girl"
           : undefined;
 
+  const audienceGender = canonicalEventType === "bachelor-party"
+    ? "mostly-male"
+    : canonicalEventType === "bachelorette-party" || canonicalEventType === "baby-shower"
+      ? "mostly-female"
+      : ["conference", "seminar", "corporate-event", "corporate-dinner"].includes(canonicalEventType ?? "")
+        ? "mixed"
+        : "all-genders";
+
   return {
+    audienceGender,
     audienceType: context.lifeStage === "teen" ? "teens" : context.lifeStage === "kids" ? "kids" : undefined,
     genderContext,
+    honoreeGender: genderContext,
     honoreeAge: context.age,
   };
 }
@@ -230,4 +278,11 @@ function uniquePreferences(items: PlanningPreference[]) {
     seen.add(item.id);
     return true;
   });
+}
+
+function getPlanDetailLabels(planSelections: PlanSelection[], groups: string[]) {
+  const normalizedGroups = new Set(groups.map((group) => group.toLowerCase()));
+  return planSelections.flatMap((selection) => selection.details
+    .filter((detail) => normalizedGroups.has(detail.group.toLowerCase()))
+    .map((detail) => detail.label));
 }

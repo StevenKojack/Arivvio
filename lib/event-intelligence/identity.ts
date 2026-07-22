@@ -61,6 +61,10 @@ function cleanProfileLabel(profile: EventTaxonomyProfile) {
     return "Quincea\u00f1era";
   }
 
+  if (profile.eventFamily === "holiday gathering" && profile.subtype) {
+    return profile.subtype;
+  }
+
   return profile.primaryType;
 }
 

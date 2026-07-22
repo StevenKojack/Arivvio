@@ -14,6 +14,7 @@ const eventSuggestionLabels: Record<string, string[]> = {
   "bar-mitzvah": ["Religious ceremony", "Live band", "Cultural DJ", "Photographer", "Reception catering"],
   "bat-mitzvah": ["Religious ceremony", "Live band", "Cultural DJ", "Photographer", "Reception catering"],
   birthday: ["Teen activities", "Magician", "Taco cart", "Bounce house", "Photo booth", "Arcade", "Foam cannon"],
+  christmas: ["Catering", "Live band", "Florals", "Dessert table", "Photographer"],
   "celebration-of-life": ["Reception catering", "Floral arrangements", "Guest transportation", "Memorial printing", "Photographer"],
   christening: ["Church", "Reception catering", "Photographer", "Traditional music", "Family style"],
   "corporate-dinner": ["AV Production", "Stage", "Coffee cart", "Catering", "Registration staff", "Photographer"],
@@ -21,6 +22,7 @@ const eventSuggestionLabels: Record<string, string[]> = {
   conference: ["AV Production", "Stage", "Coffee cart", "Registration staff", "Projectors", "Event staff"],
   engagement: ["Private dining room", "Photographer", "Florals", "Live band", "Dessert table"],
   funeral: ["Reception catering", "Floral arrangements", "Guest transportation", "Memorial printing"],
+  halloween: ["Character performers", "DJ", "Dessert table", "Lighting", "Security"],
   "gender-reveal": ["Dessert table", "Balloons", "Photographer", "Mocktail bar", "Backdrop"],
   fundraiser: ["AV Production", "Registration staff", "Catering", "Photographer", "Custom signage"],
   graduation: ["Photo booth", "Photographer", "Taco cart", "DJ", "Balloons"],
@@ -31,6 +33,10 @@ const eventSuggestionLabels: Record<string, string[]> = {
   "sweet-16": ["Teen activities", "Photo booth", "DJ", "Party bus", "Arcade games", "Photographer"],
   "trade-show": ["AV Production", "Booth rentals", "Registration staff", "Custom signage", "Event staff"],
   wedding: ["Florals", "Live band", "String quartet", "Ceremony music", "Wedding cake", "Photographer"],
+  thanksgiving: ["Reception catering", "Tables", "Chairs", "Dessert table", "Cleanup"],
+  "new-years-eve": ["DJ", "Catering", "Lighting", "Security", "Guest transportation"],
+  diwali: ["Indian catering", "Live band", "Lighting", "Florals", "Photographer"],
+  "lunar-new-year": ["Reception catering", "Traditional music", "Florals", "Photographer", "Event staff"],
 };
 
 const typeSuggestionLabels: Partial<Record<PlanningPreferenceType, string[]>> = {
@@ -62,6 +68,26 @@ export function getContextualPlanningSuggestions(
   }
 
   return getPreferencesByLabels(labels);
+}
+
+export function getPlanningSearchHelper(
+  recognition: EventRecognition,
+  audience?: AudienceProfile,
+) {
+  const suggestions = getContextualPlanningSuggestions(recognition, audience)
+    .slice(0, 5)
+    .map((item) => item.label);
+
+  if (!suggestions.length) {
+    return "Search for a service, experience, or practical need.";
+  }
+
+  const finalSuggestion = suggestions.pop();
+  const readable = suggestions.length
+    ? `${suggestions.join(", ")}, or ${finalSuggestion}`
+    : finalSuggestion;
+
+  return `Try ${readable}.`;
 }
 
 export function getCategoryPlanningSuggestions(options: {

@@ -23,5 +23,5 @@ export const planningPreferenceCatalog = [
 ];
 
 export { audiencePreferences, cuisinePreferences, culturePreferences, foodPreferences };
-export type { PlanSelection, PlanSelectionSource } from "./selection";
-export { createPreferenceSelection, createServiceSelection, isAdvancedPreference, toSelectedPreferenceFromPlan } from "./selection";
+export type { PlanDetailTag, PlanSelection, PlanSelectionSource, ServiceDetailGroup } from "./selection";
+export { createPlanDetailTag, createPreferenceSelection, createServiceSelection, getServiceDetailGroups, isAdvancedPreference, mergePlanSelection, primaryServiceNames, serviceDetailCatalog, toSelectedPreferencesFromPlan, updateSelectionDetails } from "./selection";
