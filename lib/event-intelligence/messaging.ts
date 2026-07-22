@@ -1,4 +1,4 @@
-import type { EventRecognition, EventTone } from "./types";
+import type { AudienceProfile, EventRecognition, EventTone } from "./types";
 
 export type EventMessage = {
   heading: string;
@@ -109,7 +109,23 @@ const messages: Record<string, EventMessage> = {
   },
 };
 
-export function getEventMessage(recognition: EventRecognition, honoreeAge?: number) {
+export function getEventMessage(recognition: EventRecognition, audience: AudienceProfile = {}) {
+  const honoreeAge = audience.honoreeAge;
+  if (recognition.identity.canonicalEventType === "birthday" && audience.celebrating === "self") {
+    return {
+      heading: honoreeAge ? `Happy ${ordinal(honoreeAge)} birthday!` : "Let's plan a birthday that feels like you.",
+      support: "We'll shape the plan around what you enjoy and the people celebrating with you.",
+      tone: "celebratory",
+    } satisfies EventMessage;
+  }
+
+  if (recognition.identity.canonicalEventType === "birthday" && audience.celebrating === "someone-else") {
+    return {
+      heading: "Let's create an unforgettable birthday celebration.",
+      support: audience.isSurprise ? "We'll keep the surprise and the guest experience connected as the plan takes shape." : "We'll shape the plan around the person you are celebrating.",
+      tone: "celebratory",
+    } satisfies EventMessage;
+  }
   if (
     recognition.identity.canonicalEventType === "birthday" &&
     honoreeAge &&
@@ -130,4 +146,13 @@ export function getEventMessage(recognition: EventRecognition, honoreeAge?: numb
       tone: "neutral",
     }
   );
+}
+
+function ordinal(value: number) {
+  const remainder = value % 100;
+  if (remainder >= 11 && remainder <= 13) return `${value}th`;
+  if (value % 10 === 1) return `${value}st`;
+  if (value % 10 === 2) return `${value}nd`;
+  if (value % 10 === 3) return `${value}rd`;
+  return `${value}th`;
 }

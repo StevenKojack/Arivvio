@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { AudienceGender, AudienceProfile, AudienceType, EventRecognition, GenderContext } from "@/lib/event-intelligence/types";
+import { getFeaturedPersonPolicy } from "@/lib/event-intelligence/featured-person";
 
 const ageOptions: Array<{ label: string; value: AudienceType }> = [
   { label: "All Ages", value: "all-ages" },
@@ -41,10 +42,7 @@ export function InviteesModal({
 }) {
   const [draft, setDraft] = useState(value);
   const dialogRef = useRef<HTMLDivElement>(null);
-  const eventType = recognition.identity.canonicalEventType;
-  const showHonoree = isHonoreeRelevant(eventType);
-  const showGender = isHonoreeGenderRelevant(eventType);
-  const showDueDate = eventType === "baby-shower";
+  const featuredPerson = getFeaturedPersonPolicy(recognition);
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
@@ -102,25 +100,35 @@ export function InviteesModal({
             </div>
           </section>
 
-          {showHonoree ? (
+          {featuredPerson ? (
             <section className="mt-7 border-t border-neutral-200 pt-6">
-              <h4 className="text-base font-semibold text-[#0D1321]">Who are we celebrating?</h4>
+              <h4 className="text-base font-semibold text-[#0D1321]">{featuredPerson.question}</h4>
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <ChoiceButton label="Me" selected={draft.celebrating === "self"} onClick={() => setDraft((current) => ({ ...current, celebrating: "self" }))} />
                 <ChoiceButton label="Someone Else" selected={draft.celebrating === "someone-else"} onClick={() => setDraft((current) => ({ ...current, celebrating: "someone-else" }))} />
               </div>
 
-              {showDueDate ? (
-                <label className="mt-5 block text-sm font-semibold text-[#0D1321]">When is the baby due?
+              {draft.celebrating === "someone-else" && featuredPerson.allowSurprise ? (
+                <div className="mt-5">
+                  <p className="text-sm font-semibold text-[#0D1321]">Is it a surprise? <span className="font-normal text-neutral-500">(optional)</span></p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <ChoiceButton label="Yes" selected={draft.isSurprise === true} onClick={() => setDraft((current) => ({ ...current, isSurprise: true }))} />
+                    <ChoiceButton label="No" selected={draft.isSurprise === false} onClick={() => setDraft((current) => ({ ...current, isSurprise: false }))} />
+                  </div>
+                </div>
+              ) : null}
+
+              {featuredPerson.dueDateQuestion ? (
+                <label className="mt-5 block text-sm font-semibold text-[#0D1321]">{featuredPerson.dueDateQuestion}
                   <input type="date" value={draft.honoreeDueDate ?? ""} onChange={(event) => setDraft((current) => ({ ...current, honoreeDueDate: event.target.value }))} className="mt-2 h-12 w-full rounded-xl border border-neutral-300 px-4 text-sm outline-none focus:border-[#D4AF37]" />
                 </label>
-              ) : (
-                <label className="mt-5 block text-sm font-semibold text-[#0D1321]">{getAgeQuestion(eventType)}
+              ) : featuredPerson.ageQuestion ? (
+                <label className="mt-5 block text-sm font-semibold text-[#0D1321]">{featuredPerson.ageQuestion}
                   <input type="number" min="0" max="120" value={draft.honoreeAge ?? ""} onChange={(event) => setDraft((current) => ({ ...current, honoreeAge: event.target.value ? Number(event.target.value) : undefined }))} placeholder="Optional" className="mt-2 h-12 w-full rounded-xl border border-neutral-300 px-4 text-sm outline-none focus:border-[#D4AF37]" />
                 </label>
-              )}
+              ) : null}
 
-              {showGender ? (
+              {featuredPerson.askGender ? (
                 <div className="mt-5">
                   <p className="text-sm font-semibold text-[#0D1321]">About the person we&apos;re celebrating <span className="font-normal text-neutral-500">(optional)</span></p>
                   <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -150,22 +158,6 @@ export function InviteesModal({
 
 function ChoiceButton({ label, onClick, selected }: { label: string; onClick: () => void; selected: boolean }) {
   return <button type="button" aria-pressed={selected} onClick={onClick} className={`min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-[#0D1321] ${selected ? "border-[#2E7D5B] bg-[#EFF8F3] text-[#285E49]" : "border-neutral-200 bg-white text-neutral-700 hover:border-[#D4AF37]"}`}>{selected ? <span aria-hidden="true">✓ </span> : null}{label}</button>;
-}
-
-function isHonoreeRelevant(eventType: string) {
-  return !["celebration-of-life", "conference", "corporate-dinner", "corporate-event", "funeral", "memorial", "seminar", "trade-show"].includes(eventType);
-}
-
-function isHonoreeGenderRelevant(eventType: string) {
-  return ["bar-mitzvah", "bat-mitzvah", "birthday", "graduation", "quinceanera", "sweet-16"].includes(eventType);
-}
-
-function getAgeQuestion(eventType: string) {
-  if (eventType === "graduation") return "How old is the graduate?";
-  if (eventType === "quinceanera") return "Confirm the age we are celebrating";
-  if (eventType === "sweet-16") return "Confirm the age we are celebrating";
-  if (eventType === "bar-mitzvah" || eventType === "bat-mitzvah") return "How old is the person we are celebrating?";
-  return "What age are we celebrating?";
 }
 
 function normalizeGender(value?: GenderContext): GenderContext | undefined {

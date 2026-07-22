@@ -23,6 +23,7 @@ const concepts = [
   { id: "engagement", label: "Engagement Party", terms: ["engagement party", "engagement"] },
   { id: "wedding", label: "Wedding", terms: ["wedding"] },
   { id: "graduation", label: "Graduation", terms: ["graduation", "grad party"] },
+  { id: "retirement", label: "Retirement Party", terms: ["retirement party", "retirement celebration"] },
   { id: "birthday", label: "Birthday", terms: ["birthday"] },
   { id: "conference", label: "Conference", terms: ["conference", "summit"] },
   { id: "seminar", label: "Seminar", terms: ["seminar"] },

@@ -91,6 +91,7 @@ export type AudienceProfile = {
   honoreeDueDate?: string;
   honoreeGender?: GenderContext;
   honoreeAge?: number;
+  isSurprise?: boolean;
 };
 
 export type AudienceGender = "all-genders" | "mixed" | "mostly-female" | "mostly-male";
@@ -127,6 +128,7 @@ export type HonoreeProfile = {
   dueDate?: string;
   gender?: GenderContext;
   genderDescription?: string;
+  isSurprise?: boolean;
   relationship?: "self" | "someone-else";
 };
 

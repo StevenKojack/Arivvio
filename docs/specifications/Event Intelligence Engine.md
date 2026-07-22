@@ -47,6 +47,18 @@ Primary services are the planner-facing unit. A planner adds one DJ, Catering, P
 
 Each detail can contribute matching service identifiers and evidence to the profile. For example, Party Bus is stored as a Transportation detail while retaining Party Bus as a marketplace matching signal. This keeps Step 2 calm without discarding specificity.
 
+Specificity is never replaced by its parent. A canonical plan selection stores the primary marketplace service, every explicit taxonomy identifier, and the exact planner-facing labels together. The primary service supports matching; the specific label remains visible in the planner. Removing a specific choice removes only that relationship and retains the parent when the parent is still required or explicitly selected.
+
+## One Taxonomy, Three Views
+
+Search, Browse, and Suggestions are projections of the same planning taxonomy. Every path resolves through the same canonical selection builder and produces the same plan identity, dependency tags, matching services, and evidence. Browse groups are generated from taxonomy metadata rather than maintained as a second hand-written list.
+
+Examples in product directives describe reusable patterns, not one-off features. New services and preferences become searchable, browsable, selectable, and available to compatible detail panels through taxonomy data without requiring new Step 2 component code.
+
+## Featured Person Policy
+
+Events that center a person use a declarative featured-person policy. The policy controls natural relationship, age, due-date, optional gender, and surprise questions. Components render the policy without maintaining their own event-type lists, and the resulting honoree context is stored in the Event Profile for messaging and downstream matching.
+
 ## Holiday Taxonomy
 
 Major secular, cultural, and religious holidays have explicit taxonomy profiles rather than silently falling into the generic private-party profile. Holiday intent changes suggestions and matching context while still allowing the planner to add or remove any service.

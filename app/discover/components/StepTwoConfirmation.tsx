@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { ServiceName } from "@/app/data/marketplace";
 import { getEventMessage } from "@/lib/event-intelligence/messaging";
+import { getFeaturedPersonPolicy } from "@/lib/event-intelligence/featured-person";
 import {
   getContextualPlanningSuggestions,
   getPlanningSearchHelper,
@@ -14,12 +15,15 @@ import { searchEventIntents } from "@/lib/event-intelligence/search";
 import {
   createPreferenceSelection,
   createServiceSelection,
+  getPlanSelectionDisplayLabel,
+  isAdvancedPreference,
   type PlanDetailTag,
   type PlanSelection,
   type PlanSelectionSource,
   type PlanningPreference,
 } from "@/lib/planning-taxonomy";
 import { InviteesModal } from "./InviteesModal";
+import { EventContextModal } from "./EventContextModal";
 import { PlanSelectionCard } from "./PlanSelectionCard";
 import { PlanningSearch } from "./PlanningSearch";
 import { ServiceDetailsModal } from "./ServiceDetailsModal";
@@ -31,7 +35,10 @@ export function StepTwoConfirmation({
   intelligence,
   onAudienceChange,
   onChangeEvent,
+  onContextPreferencesChange,
   onPlanPreferenceAdd,
+  onPlanSelectionAdd,
+  onPlanSelectionChoiceRemove,
   onPlanSelectionRemove,
   onPlanSelectionUpdate,
   onPlanServiceAdd,
@@ -43,7 +50,10 @@ export function StepTwoConfirmation({
   intelligence: EventIntelligenceProfile;
   onAudienceChange: (value: AudienceProfile) => void;
   onChangeEvent: (value: string) => void;
+  onContextPreferencesChange: (preferences: PlanningPreference[]) => void;
   onPlanPreferenceAdd: (preference: PlanningPreference, source: PlanSelectionSource) => void;
+  onPlanSelectionAdd: (selection: PlanSelection) => void;
+  onPlanSelectionChoiceRemove: (selection: PlanSelection) => void;
   onPlanSelectionRemove: (selection: PlanSelection) => void;
   onPlanSelectionUpdate: (selection: PlanSelection, details: PlanDetailTag[]) => void;
   onPlanServiceAdd: (service: ServiceName, source: PlanSelectionSource) => void;
@@ -53,14 +63,15 @@ export function StepTwoConfirmation({
 }) {
   const [isEditingEvent, setIsEditingEvent] = useState(false);
   const [eventQuery, setEventQuery] = useState(recognition.identity.selectedDisplayEvent);
-  const [advancedOpen, setAdvancedOpen] = useState(() => hasInviteeDetails(audience));
+  const [advancedOpen, setAdvancedOpen] = useState(() => hasInviteeDetails(audience) || Boolean(getFeaturedPersonPolicy(recognition)));
   const [directoryOpen, setDirectoryOpen] = useState(false);
+  const [contextOpen, setContextOpen] = useState(false);
   const [inviteesOpen, setInviteesOpen] = useState(false);
   const [selectedPlanItem, setSelectedPlanItem] = useState<PlanSelection>();
   const [planMessage, setPlanMessage] = useState("");
   const planSelections = intelligence.planSelections;
   const eventSuggestions = useMemo(() => searchEventIntents(eventQuery, 5), [eventQuery]);
-  const message = getEventMessage(recognition, audience.honoreeAge);
+  const message = getEventMessage(recognition, audience);
   const stageConfiguration = getStageConfiguration(recognition);
   const essentialServices = getEssentialServices(recognition, stages);
   const recommendedServices = getServiceSuggestions(recognition, essentialServices, stages, intelligence.recommendationScores);
@@ -80,11 +91,12 @@ export function StepTwoConfirmation({
     }).slice(0, 6);
   }, [contextualSuggestions, essentialServices, planSelections, recommendedServices]);
   const selectedIds = planSelections.flatMap((item) => [item.id, ...item.preferenceIds]);
+  const contextPreferences = intelligence.preferences.filter(isAdvancedPreference);
 
   function addPlanPreference(preference: PlanningPreference, source: PlanSelectionSource) {
     const selection = createPreferenceSelection(preference, source);
     onPlanPreferenceAdd(preference, source);
-    setPlanMessage(`${selection.label} was added to your plan.`);
+    setPlanMessage(`${getPlanSelectionDisplayLabel(selection)} was added to your plan.`);
   }
 
   function removePlanSelection(selection: PlanSelection) {
@@ -142,7 +154,7 @@ export function StepTwoConfirmation({
                   if (preference) addPlanPreference(preference, "initial-suggestion");
                   else if (item.linkedService) onPlanServiceAdd(item.linkedService, "initial-suggestion");
                 }} className="group flex min-h-[72px] items-start justify-between gap-3 rounded-2xl border border-neutral-200 bg-[#FFFCF7] px-4 py-3 text-left outline-none transition hover:-translate-y-0.5 hover:border-[#D4AF37] focus-visible:ring-2 focus-visible:ring-[#0D1321]">
-                  <span><span className="block text-sm font-semibold text-[#0D1321]">{item.label}</span><span className="mt-1 block text-xs leading-5 text-neutral-500">{item.details.length ? item.details.map((detail) => detail.label).join(" · ") : item.category}</span></span>
+                  <span><span className="block text-sm font-semibold text-[#0D1321]">{getPlanSelectionDisplayLabel(item)}</span><span className="mt-1 block text-xs leading-5 text-neutral-500">{item.details.length ? `${item.label} · ${item.details.map((detail) => detail.label).join(", ")}` : item.category}</span></span>
                   <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0D1321] text-sm font-bold text-white transition group-hover:bg-[#B88A1D]">+</span>
                 </button>
               ))}
@@ -152,7 +164,7 @@ export function StepTwoConfirmation({
 
         <div className="mt-6 border-t border-neutral-200 pt-5">
           <h4 className="text-sm font-semibold text-[#0D1321]">Added to your plan</h4>
-          <p className="mt-1 text-xs leading-5 text-neutral-500">Open a service to add music, cuisine, vehicle, coverage, or other matching details.</p>
+          <p className="mt-1 text-xs leading-5 text-neutral-500">Click any selected service to personalize it. Your exact choices stay attached to the plan.</p>
           {planSelections.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{planSelections.map((item) => <PlanSelectionCard key={item.id} item={item} onOpen={setSelectedPlanItem} onRemove={removePlanSelection} />)}</div> : <div className="mt-3 rounded-2xl border border-dashed border-neutral-300 bg-[#FAFAF9] px-4 py-7 text-center text-sm text-neutral-500">Search or browse services to begin building your plan.</div>}
           <p aria-live="polite" className="mt-3 min-h-5 text-xs font-medium text-[#285E49]">{planMessage}</p>
         </div>
@@ -164,22 +176,23 @@ export function StepTwoConfirmation({
           <span className="shrink-0 text-sm font-semibold text-[#B88A1D]">{advancedOpen ? "Hide" : "Open"}</span>
         </button>
         {advancedOpen ? (
-          <div className="border-t border-neutral-200 bg-[#FFFCF7] p-4 sm:p-5">
+          <div className="grid gap-3 border-t border-neutral-200 bg-[#FFFCF7] p-4 sm:p-5 sm:grid-cols-2">
             <button type="button" onClick={() => setInviteesOpen(true)} className="flex w-full items-center justify-between gap-4 rounded-2xl border border-neutral-200 bg-white px-4 py-4 text-left outline-none transition hover:-translate-y-0.5 hover:border-[#D4AF37] focus-visible:ring-2 focus-visible:ring-[#0D1321]">
-              <span><span className="block text-sm font-semibold text-[#0D1321]">Invitees</span><span className="mt-1 block text-xs leading-5 text-neutral-500">{getInviteeSummary(audience)}</span></span>
+              <span><span className="block text-sm font-semibold text-[#0D1321]">Invitees</span><span className="mt-1 block text-xs leading-5 text-neutral-500">{getInviteeSummary(audience, recognition)}</span></span>
+              <span aria-hidden="true" className="text-lg text-[#B88A1D]">&rarr;</span>
+            </button>
+            <button type="button" onClick={() => setContextOpen(true)} className="flex w-full items-center justify-between gap-4 rounded-2xl border border-neutral-200 bg-white px-4 py-4 text-left outline-none transition hover:-translate-y-0.5 hover:border-[#D4AF37] focus-visible:ring-2 focus-visible:ring-[#0D1321]">
+              <span><span className="block text-sm font-semibold text-[#0D1321]">Culture and cuisine</span><span className="mt-1 block text-xs leading-5 text-neutral-500">{contextPreferences.length ? contextPreferences.slice(0, 3).map((preference) => preference.label).join(" · ") : "Optional context for food, music, and traditions."}</span></span>
               <span aria-hidden="true" className="text-lg text-[#B88A1D]">&rarr;</span>
             </button>
           </div>
         ) : null}
       </section>
 
-      {directoryOpen ? <TagDirectoryModal onClose={() => setDirectoryOpen(false)} onSelect={(service) => onPlanServiceAdd(service, "browse-all")} onRemove={(service) => {
-        const selectionId = createServiceSelection(service, "browse-all").id;
-        const selection = planSelections.find((item) => item.id === selectionId);
-        if (selection) removePlanSelection(selection);
-      }} selectedIds={selectedIds} /> : null}
+      {directoryOpen ? <TagDirectoryModal onClose={() => setDirectoryOpen(false)} onSelect={onPlanSelectionAdd} onRemove={onPlanSelectionChoiceRemove} selections={planSelections} /> : null}
       {selectedPlanItem ? <ServiceDetailsModal item={selectedPlanItem} onClose={() => setSelectedPlanItem(undefined)} onSave={(details) => onPlanSelectionUpdate(selectedPlanItem, details)} /> : null}
       {inviteesOpen ? <InviteesModal recognition={recognition} value={audience} onClose={() => setInviteesOpen(false)} onSave={onAudienceChange} /> : null}
+      {contextOpen ? <EventContextModal selectedIds={contextPreferences.map((preference) => preference.id)} onClose={() => setContextOpen(false)} onSave={onContextPreferencesChange} /> : null}
     </div>
   );
 }
@@ -188,13 +201,19 @@ function hasInviteeDetails(audience: AudienceProfile) {
   return Boolean(audience.honoreeAge !== undefined || audience.audienceType === "custom" || audience.celebrating);
 }
 
-function getInviteeSummary(audience: AudienceProfile) {
+function getInviteeSummary(audience: AudienceProfile, recognition: EventRecognition) {
   const details = [
     audience.audienceType ? formatLabel(audience.audienceType) : undefined,
     audience.audienceGender ? formatLabel(audience.audienceGender) : undefined,
     audience.honoreeAge !== undefined ? `celebrating age ${audience.honoreeAge}` : undefined,
   ].filter(Boolean);
-  return details.length ? details.join(" · ") : "Age range, audience mix, and who you are celebrating.";
+  if (details.length) return details.join(" · ");
+  const featuredPerson = getFeaturedPersonPolicy(recognition);
+  return featuredPerson?.ageQuestion
+    ? `${featuredPerson.question} Add their age and invitee mix.`
+    : featuredPerson?.dueDateQuestion
+      ? `${featuredPerson.question} Add the due date and invitee mix.`
+      : featuredPerson?.question ?? "Age range and audience mix.";
 }
 
 function formatLabel(value: string) {

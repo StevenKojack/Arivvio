@@ -20,8 +20,8 @@ import type { AudienceProfile, EventIntelligenceProfile, EventRecognition, Event
 import {
   createPreferenceSelection,
   createServiceSelection,
-  isAdvancedPreference,
   mergePlanSelection,
+  removePlanSelectionChoice,
   toSelectedPreferencesFromPlan,
   updateSelectionDetails,
   type PlanDetailTag,
@@ -114,22 +114,13 @@ export function EventWizard() {
   const [guestCount, setGuestCount] = useState(60);
   const [budget, setBudget] = useState(6000);
   const [planSelections, setPlanSelections] = useState<PlanSelection[]>(() => createInitialPlanSelections(initialIntelligence));
-  const [advancedPreferences, setAdvancedPreferences] = useState<SelectedPlanningPreference[]>(
-    () => initialIntelligence.preferences.filter(isAdvancedPreference),
-  );
   const [audience, setAudience] = useState<AudienceProfile>(initialIntelligence.audience);
   const [stages, setStages] = useState<EventStage[]>(initialStages);
   const selectedServices = useMemo(
     () => Array.from(new Set(planSelections.flatMap((item) => item.matchingServices))),
     [planSelections],
   );
-  const preferences = useMemo(
-    () => [
-      ...planSelections.flatMap(toSelectedPreferencesFromPlan),
-      ...advancedPreferences,
-    ],
-    [advancedPreferences, planSelections],
-  );
+  const preferences = useMemo(() => planSelections.flatMap(toSelectedPreferencesFromPlan), [planSelections]);
   const eventIntelligence = useMemo(
     () => buildEventIntelligenceProfile({
       audience,
@@ -248,7 +239,6 @@ export function EventWizard() {
     setStages(nextIntelligence.stages);
     setAudience(nextIntelligence.audience);
     setPlanSelections(createInitialPlanSelections(nextIntelligence));
-    setAdvancedPreferences(nextIntelligence.preferences.filter(isAdvancedPreference));
     setStep(1);
   }
 
@@ -262,12 +252,33 @@ export function EventWizard() {
     setPlanSelections((current) => mergePlanSelection(current, selection));
   }
 
+  function addCanonicalPlanSelection(selection: PlanSelection) {
+    setPlanSelections((current) => mergePlanSelection(current, selection));
+  }
+
+  function removePlanSelectionChoiceFromPlan(choice: PlanSelection) {
+    setPlanSelections((current) => current.flatMap((item) => {
+      if (item.id !== choice.id) return [item];
+      const updated = removePlanSelectionChoice(item, choice);
+      return updated ? [updated] : [];
+    }));
+  }
+
   function removePlanSelection(selection: PlanSelection) {
     setPlanSelections((current) => current.filter((item) => item.id !== selection.id));
   }
 
   function updatePlanDetails(selection: PlanSelection, details: PlanDetailTag[]) {
     setPlanSelections((current) => current.map((item) => item.id === selection.id ? updateSelectionDetails(item, details) : item));
+  }
+
+  function updateContextPreferences(nextPreferences: PlanningPreference[]) {
+    setPlanSelections((current) => nextPreferences
+      .map((preference) => createPreferenceSelection(preference, "browse-all"))
+      .reduce<PlanSelection[]>(
+        mergePlanSelection,
+        current.filter((item) => !["culture", "cuisine", "tradition"].includes(item.subtype)),
+      ));
   }
 
   function updateLocation(id: number, updates: Partial<EventLocation>) {
@@ -350,7 +361,10 @@ export function EventWizard() {
                 intelligence={eventIntelligence}
                 onAudienceChange={setAudience}
                 onChangeEvent={continueFromSearch}
+                onContextPreferencesChange={updateContextPreferences}
                 onPlanPreferenceAdd={addPlanPreference}
+                onPlanSelectionAdd={addCanonicalPlanSelection}
+                onPlanSelectionChoiceRemove={removePlanSelectionChoiceFromPlan}
                 onPlanSelectionRemove={removePlanSelection}
                 onPlanSelectionUpdate={updatePlanDetails}
                 onPlanServiceAdd={addService}
@@ -601,7 +615,6 @@ export function EventWizard() {
 
 function createInitialPlanSelections(intelligence: EventIntelligenceProfile) {
   const preferenceSelections = intelligence.preferences
-    .filter((preference) => !isAdvancedPreference(preference))
     .map((preference) => createPreferenceSelection(preference, "natural-language-inference"));
   const representedServices = new Set(preferenceSelections.flatMap((item) => item.matchingServices));
   const serviceSelections = Array.from(new Set([

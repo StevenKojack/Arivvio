@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { createPlanDetailTag, getServiceDetailGroups, type PlanDetailTag, type PlanSelection } from "@/lib/planning-taxonomy";
+import { createPlanDetailTag, getPlanSelectionDisplayLabel, getServiceDetailGroups, type PlanDetailTag, type PlanSelection } from "@/lib/planning-taxonomy";
 
 export function ServiceDetailsModal({
   item,
@@ -16,6 +16,7 @@ export function ServiceDetailsModal({
   const [details, setDetails] = useState(item.details);
   const dialogRef = useRef<HTMLDivElement>(null);
   const groups = getServiceDetailGroups(item.linkedService);
+  const displayLabel = getPlanSelectionDisplayLabel(item);
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
@@ -41,7 +42,8 @@ export function ServiceDetailsModal({
       setDetails((current) => current.filter((detail) => detail.id !== id));
       return;
     }
-    const next = createPlanDetailTag(group.label, label, matchingServices);
+    const option = group.options.find((item) => item.label === label);
+    const next = createPlanDetailTag(group.label, label, matchingServices, option?.preferenceId, option?.type);
     setDetails((current) => [
       ...(group.singleSelect ? current.filter((detail) => detail.group !== group.label) : current),
       next,
@@ -54,10 +56,10 @@ export function ServiceDetailsModal({
         <header className="flex items-start justify-between gap-4 border-b border-neutral-200 px-5 py-4 sm:px-6 sm:py-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#B88A1D]">{item.category}</p>
-            <h3 id="service-detail-title" className="mt-1 text-xl font-semibold text-[#0D1321] sm:text-2xl">Shape your {item.label} match</h3>
+            <h3 id="service-detail-title" className="mt-1 text-xl font-semibold text-[#0D1321] sm:text-2xl">Shape your {displayLabel} match</h3>
             <p className="mt-1 text-sm leading-6 text-neutral-600">Add only the details that matter. You will still have one {item.label} service in your plan.</p>
           </div>
-          <button type="button" onClick={onClose} aria-label={`Close ${item.label} details`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-xl text-neutral-600 outline-none hover:border-[#0D1321] focus-visible:ring-2 focus-visible:ring-[#0D1321]">&times;</button>
+          <button type="button" onClick={onClose} aria-label={`Close ${displayLabel} details`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-xl text-neutral-600 outline-none hover:border-[#0D1321] focus-visible:ring-2 focus-visible:ring-[#0D1321]">&times;</button>
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">

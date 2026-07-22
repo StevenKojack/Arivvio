@@ -1,4 +1,5 @@
 import type { ServiceName } from "@/app/data/marketplace";
+import { planningPreferenceCatalog } from "./catalog";
 import type { PlanningPreference, PlanningPreferenceType, SelectedPlanningPreference } from "./types";
 
 export type PlanSelectionSource =
@@ -26,6 +27,8 @@ export type ServiceDetailGroup = {
   options: Array<{
     label: string;
     matchingServices?: ServiceName[];
+    preferenceId?: string;
+    type?: PlanningPreferenceType;
   }>;
   singleSelect?: boolean;
 };
@@ -35,12 +38,14 @@ export type PlanSelection = {
   category: string;
   description: string;
   details: PlanDetailTag[];
+  explicitLabels: string[];
   id: string;
   label: string;
   linkedService?: ServiceName;
   matchingServices: ServiceName[];
   preferenceId?: string;
   preferenceIds: string[];
+  primaryExplicit: boolean;
   source: PlanSelectionSource;
   subtype: PlanningPreferenceType | "marketplace-service";
 };
@@ -120,11 +125,13 @@ export function createServiceSelection(service: ServiceName, source: PlanSelecti
     category: getServiceCategory(primaryService),
     description: getServiceDescription(primaryService),
     details: detail,
+    explicitLabels: service === primaryService ? [] : [service],
     id: serviceId(primaryService),
     label: primaryService,
     linkedService: primaryService,
     matchingServices: unique([primaryService, service]),
     preferenceIds: [],
+    primaryExplicit: service === primaryService,
     source,
     subtype: "marketplace-service",
   };
@@ -143,11 +150,13 @@ export function createPreferenceSelection(
       category: preference.category,
       description: "description" in preference ? preference.description : `Find ${preference.label.toLowerCase()} options for this event.`,
       details: [],
+      explicitLabels: [preference.label],
       id: `preference:${preference.id}`,
       label: preference.label,
       matchingServices: preference.linkedService ? [preference.linkedService] : [],
       preferenceId: preference.id,
       preferenceIds,
+      primaryExplicit: true,
       source,
       subtype: preference.type,
     };
@@ -159,6 +168,7 @@ export function createPreferenceSelection(
     category: getServiceCategory(primaryService),
     description: getServiceDescription(primaryService),
     details,
+    explicitLabels: normalize(preference.label) === normalize(primaryService) ? [] : [preference.label],
     id: serviceId(primaryService),
     label: primaryService,
     linkedService: primaryService,
@@ -169,6 +179,7 @@ export function createPreferenceSelection(
     ]),
     preferenceId: preference.id,
     preferenceIds,
+    primaryExplicit: normalize(preference.label) === normalize(primaryService),
     source,
     subtype: "marketplace-service",
   };
@@ -182,34 +193,90 @@ export function mergePlanSelection(items: PlanSelection[], incoming: PlanSelecti
     ...item,
     aliases: unique([...item.aliases, ...incoming.aliases]),
     details: mergeDetails(item.details, incoming.details),
+    explicitLabels: unique([...item.explicitLabels, ...incoming.explicitLabels]),
     matchingServices: unique([...item.matchingServices, ...incoming.matchingServices]),
     preferenceId: item.preferenceId ?? incoming.preferenceId,
     preferenceIds: unique([...item.preferenceIds, ...incoming.preferenceIds]),
+    primaryExplicit: item.primaryExplicit || incoming.primaryExplicit,
     source: incoming.source === "user-search" || incoming.source === "browse-all" ? incoming.source : item.source,
   });
 }
 
 export function updateSelectionDetails(selection: PlanSelection, details: PlanDetailTag[]) {
+  const previousDetailPreferenceIds = new Set(selection.details.flatMap((detail) => detail.preferenceId ? [detail.preferenceId] : []));
+  const nextDetailPreferenceIds = details.flatMap((detail) => detail.preferenceId ? [detail.preferenceId] : []);
+  const basePreferenceIds = selection.preferenceIds.filter((id) => !previousDetailPreferenceIds.has(id));
+  const preferenceIds = unique([...basePreferenceIds, ...nextDetailPreferenceIds]);
+  const nextPreferenceLabels = planningPreferenceCatalog
+    .filter((preference) => nextDetailPreferenceIds.includes(preference.id))
+    .filter((preference) => normalize(preference.label) !== normalize(selection.label))
+    .map((preference) => preference.label);
+  const retainedLabels = selection.explicitLabels.filter((label) => {
+    const preference = planningPreferenceCatalog.find((item) => normalize(item.label) === normalize(label));
+    return !preference || !previousDetailPreferenceIds.has(preference.id) || nextDetailPreferenceIds.includes(preference.id);
+  });
   return {
     ...selection,
     details,
+    explicitLabels: unique([...retainedLabels, ...nextPreferenceLabels]),
     matchingServices: unique([
       ...(selection.linkedService ? [selection.linkedService] : []),
       ...details.flatMap((detail) => detail.matchingServices ?? []),
     ]),
+    preferenceId: preferenceIds[0],
+    preferenceIds,
   };
+}
+
+export function removePlanSelectionChoice(existing: PlanSelection, choice: PlanSelection) {
+  const removedPreferenceIds = new Set(choice.preferenceIds);
+  const remainingDetails = existing.details.filter((detail) => !detail.preferenceId || !removedPreferenceIds.has(detail.preferenceId));
+  const remainingPreferenceIds = existing.preferenceIds.filter((id) => !removedPreferenceIds.has(id));
+  const remainingLabels = existing.explicitLabels.filter((label) => !choice.explicitLabels.includes(label));
+  const primaryExplicit = choice.primaryExplicit ? false : existing.primaryExplicit;
+
+  if (!primaryExplicit && !remainingPreferenceIds.length && !remainingDetails.length && !remainingLabels.length) {
+    return undefined;
+  }
+
+  return updateSelectionDetails({
+    ...existing,
+    explicitLabels: remainingLabels,
+    preferenceId: remainingPreferenceIds[0],
+    preferenceIds: remainingPreferenceIds,
+    primaryExplicit,
+  }, remainingDetails);
+}
+
+export function getPlanSelectionDisplayLabel(selection: PlanSelection) {
+  if (selection.explicitLabels.length === 1) return selection.explicitLabels[0];
+  if (selection.explicitLabels.length > 1) return selection.label;
+  const identityGroups = getServiceDetailGroups(selection.linkedService).filter((group) => group.singleSelect).map((group) => normalize(group.label));
+  const identityDetail = selection.details.find((detail) => identityGroups.includes(normalize(detail.group)));
+  if (!identityDetail) return selection.label;
+  return selection.linkedService === "Catering" ? `${identityDetail.label} Catering` : identityDetail.label;
 }
 
 export function createPlanDetailTag(
   group: string,
   label: string,
   matchingServices?: ServiceName[],
+  preferenceId?: string,
+  type?: PlanningPreferenceType,
 ): PlanDetailTag {
-  return createDetailTag(group, label, "explicit", undefined, matchingServices);
+  return createDetailTag(group, label, "explicit", preferenceId, matchingServices, type);
 }
 
 export function toSelectedPreferencesFromPlan(item: PlanSelection): SelectedPlanningPreference[] {
-  return item.details.flatMap((detail) => detail.preferenceId && detail.type ? [{
+  const selectionPreference = item.subtype !== "marketplace-service" && item.preferenceId ? [{
+    category: item.category,
+    id: item.preferenceId,
+    label: getPlanSelectionDisplayLabel(item),
+    linkedService: item.linkedService,
+    selectionSource: item.source === "natural-language-inference" ? "explicit-text" as const : "explicit-step-choice" as const,
+    type: item.subtype,
+  }] : [];
+  const detailPreferences = item.details.flatMap((detail) => detail.preferenceId && detail.type ? [{
     category: detail.group,
     id: detail.preferenceId,
     label: detail.label,
@@ -217,6 +284,7 @@ export function toSelectedPreferencesFromPlan(item: PlanSelection): SelectedPlan
     selectionSource: detail.source === "inferred" ? "explicit-text" as const : "explicit-step-choice" as const,
     type: detail.type,
   }] : []);
+  return [...selectionPreference, ...detailPreferences];
 }
 
 export function isAdvancedPreference(preference: Pick<PlanningPreference, "type">) {
@@ -224,7 +292,38 @@ export function isAdvancedPreference(preference: Pick<PlanningPreference, "type"
 }
 
 export function getServiceDetailGroups(service?: ServiceName) {
-  return service ? serviceDetailCatalog[service] ?? [] : [];
+  if (!service) return [];
+  const primaryService = getPrimaryService(service);
+  const generated = planningPreferenceCatalog
+    .filter((preference) => preference.linkedService && getPrimaryService(preference.linkedService) === primaryService)
+    .filter((preference) => normalize(preference.label) !== normalize(primaryService))
+    .map((preference) => ({
+      group: getDetailGroupForLabel(preference.label, preference.category),
+      option: {
+        label: getDetailLabel(preference.label, primaryService),
+        matchingServices: preference.linkedService ? [preference.linkedService] : undefined,
+        preferenceId: preference.id,
+        type: preference.type,
+      },
+    }));
+  const groups = (serviceDetailCatalog[primaryService] ?? []).map((group) => ({ ...group, options: [...group.options] }));
+
+  generated.forEach(({ group, option }) => {
+    const existing = groups.find((item) => normalize(item.label) === normalize(group));
+    if (existing) {
+      const existingIndex = existing.options.findIndex((item) => normalize(item.label) === normalize(option.label));
+      if (existingIndex === -1) existing.options.push(option);
+      else existing.options[existingIndex] = {
+        ...existing.options[existingIndex],
+        ...option,
+        matchingServices: unique([...(existing.options[existingIndex].matchingServices ?? []), ...(option.matchingServices ?? [])]),
+      };
+    } else {
+      groups.push(detailGroup(normalize(group).replace(/\s+/g, "-"), group, [option]));
+    }
+  });
+
+  return groups;
 }
 
 function getPreferenceDetails(
@@ -237,8 +336,7 @@ function getPreferenceDetails(
 
   const details: PlanDetailTag[] = [];
   const group = getDetailGroupForLabel(label, preference.category);
-  let detailLabel = label.replace(/\s+(dj|catering)$/i, "").trim();
-  if (!detailLabel) detailLabel = label;
+  const detailLabel = getDetailLabel(label, getPrimaryService(linkedService));
   details.push(createDetailTag(group, detailLabel, source, preference.id, [linkedService], preference.type));
 
   if (/taco cart/i.test(label)) {
@@ -247,7 +345,7 @@ function getPreferenceDetails(
   return details;
 }
 
-function getPrimaryService(service: ServiceName): ServiceName {
+export function getPrimaryService(service: ServiceName): ServiceName {
   if (["Party Bus", "Valet"].includes(service)) return "Transportation";
   if (["Photo Booth", "Live Streaming"].includes(service)) return "Photography";
   if (["Booth Rentals", "Portable Restrooms"].includes(service)) return "Rentals";
@@ -255,8 +353,20 @@ function getPrimaryService(service: ServiceName): ServiceName {
   return service;
 }
 
+function getDetailLabel(label: string, primaryService: ServiceName) {
+  const detailLabel = label.replace(new RegExp(`\\s+${escapeRegExp(primaryService)}$`, "i"), "").trim();
+  return detailLabel || label;
+}
+
 function getDetailGroupForLabel(label: string, category = "") {
   const value = `${label} ${category}`.toLowerCase();
+  const normalizedCategory = category.toLowerCase();
+  if (normalizedCategory.includes("venue")) return "Venue type";
+  if (normalizedCategory.includes("live music")) return "Music style";
+  if (normalizedCategory.includes("photo") || normalizedCategory.includes("media")) return "Coverage";
+  if (normalizedCategory.includes("production")) return "Production needs";
+  if (normalizedCategory.includes("performer")) return "Performer type";
+  if (normalizedCategory.includes("activities")) return "Experience type";
   if (/armenian|latin|persian|jewish|indian|multicultural/.test(value) && /dj|music|culture/.test(value)) return "Cultures";
   if (/catering|cuisine|armenian|mexican|persian|italian|mediterranean|korean|filipino/.test(value)) return "Cuisine";
   if (/party bus|limousine|shuttle|suv|classic car|valet|sprinter/.test(value)) return "Transportation type";
@@ -289,7 +399,7 @@ function createDetailTag(
 function detailGroup(
   id: string,
   label: string,
-  options: Array<string | { label: string; matchingServices?: ServiceName[] }>,
+  options: Array<string | { label: string; matchingServices?: ServiceName[]; preferenceId?: string; type?: PlanningPreferenceType }>,
   singleSelect = false,
 ): ServiceDetailGroup {
   return {
@@ -318,7 +428,7 @@ function unique<T>(items: T[]) {
   return Array.from(new Set(items));
 }
 
-function getServiceCategory(service: ServiceName) {
+export function getServiceCategory(service: ServiceName) {
   if (service === "Venue") return "Venues";
   if (["Catering", "Bartending"].includes(service)) return "Food and Catering";
   if (service === "Cake & Desserts") return "Desserts";
@@ -331,6 +441,10 @@ function getServiceCategory(service: ServiceName) {
   if (["Security", "Staffing", "Cleaning"].includes(service)) return "Staffing and Logistics";
   if (service === "AV Production") return "Production and Equipment";
   return "Guest Services";
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function getServiceDescription(service: ServiceName) {

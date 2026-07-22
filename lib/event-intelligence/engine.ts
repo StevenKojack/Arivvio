@@ -61,6 +61,17 @@ export function buildEventIntelligenceProfile(
   recognition.profile.recommendedVendors.forEach((service) => {
     recommendationScores[service] = Math.max(recommendationScores[service] ?? 0, 72);
   });
+  if (preferences.some((item) => item.type === "cuisine" || item.type === "food")) {
+    recommendationScores.Catering = Math.max(recommendationScores.Catering ?? 0, 94);
+  }
+  if (preferences.some((item) => item.type === "culture" || item.type === "tradition")) {
+    ["Catering", "DJ", "Live Music", "Florals"].forEach((service) => {
+      if (rawRequestedServices.includes(service as ServiceName)) {
+        const typedService = service as ServiceName;
+        recommendationScores[typedService] = Math.max(recommendationScores[typedService] ?? 0, 88);
+      }
+    });
+  }
   if (homeEvent) {
     recommendationScores.Rentals = 99;
     recommendationScores.Catering = 98;
@@ -144,6 +155,7 @@ export function buildEventIntelligenceProfile(
       dueDate: audience.honoreeDueDate,
       gender: audience.honoreeGender ?? audience.genderContext,
       genderDescription: audience.genderDescription,
+      isSurprise: audience.isSurprise,
       relationship: audience.celebrating,
     },
     indoorOutdoor: getIndoorOutdoor(preferences, recognition.profile.indoorOutdoor),

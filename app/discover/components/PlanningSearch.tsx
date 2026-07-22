@@ -7,7 +7,7 @@ import type {
   PlanningPreference,
   PlanningPreferenceType,
 } from "@/lib/planning-taxonomy";
-import { createPreferenceSelection } from "@/lib/planning-taxonomy";
+import { createPreferenceSelection, getPlanSelectionDisplayLabel } from "@/lib/planning-taxonomy";
 
 const fallbackPlaceholderExamples = [
   "Armenian DJ",
@@ -104,8 +104,11 @@ export function PlanningSearch({
   }, []);
 
   function choose(preference: PlanningPreference) {
-    const primaryId = createPreferenceSelection(preference, "user-search").id;
-    if (selectedIds.includes(preference.id) || selectedIds.includes(primaryId)) return;
+    const selection = createPreferenceSelection(preference, "user-search");
+    const selected = selection.explicitLabels.length
+      ? selectedIds.includes(preference.id)
+      : selectedIds.includes(selection.id);
+    if (selected) return;
     onSelect(preference);
     setQuery("");
     setActiveIndex(-1);
@@ -165,7 +168,9 @@ export function PlanningSearch({
         >
           {results.length ? results.map((result, index) => {
             const selection = createPreferenceSelection(result, "user-search");
-            const selected = selectedIds.includes(result.id) || selectedIds.includes(selection.id);
+            const selected = selection.explicitLabels.length
+              ? selectedIds.includes(result.id)
+              : selectedIds.includes(selection.id);
             return (
             <button
               id={`${listboxId}-${result.id}`}
@@ -182,7 +187,7 @@ export function PlanningSearch({
               }`}
             >
               <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-[#0D1321]">{selection.label}</span>
+                <span className="block truncate text-sm font-semibold text-[#0D1321]">{getPlanSelectionDisplayLabel(selection)}</span>
                 {selection.details.length ? <span className="mt-1 block text-xs font-semibold text-[#285E49]">Includes {selection.details.map((detail) => detail.label).join(", ")}</span> : null}
                 <span className="mt-1 block text-xs text-neutral-500">{result.description}</span>
                 <span className="mt-1 block text-[11px] font-semibold text-[#8B6816]">{result.category}</span>
