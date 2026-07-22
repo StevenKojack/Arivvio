@@ -20,7 +20,9 @@ import type { AudienceProfile, EventIntelligenceProfile, EventRecognition, Event
 import {
   createPreferenceSelection,
   createServiceSelection,
+  isAdvancedPreference,
   mergePlanSelection,
+  planningPreferenceCatalog,
   removePlanSelectionChoice,
   toSelectedPreferencesFromPlan,
   updateSelectionDetails,
@@ -30,6 +32,7 @@ import {
   type PlanningPreference,
   type SelectedPlanningPreference,
 } from "@/lib/planning-taxonomy";
+import { toSelectedPreference } from "@/lib/planning-taxonomy/search";
 import { AddressAutocomplete, type AddressSuggestion } from "./components/AddressAutocomplete";
 import {
   searchAddressSuggestions,
@@ -114,13 +117,19 @@ export function EventWizard() {
   const [guestCount, setGuestCount] = useState(60);
   const [budget, setBudget] = useState(6000);
   const [planSelections, setPlanSelections] = useState<PlanSelection[]>(() => createInitialPlanSelections(initialIntelligence));
+  const [contextPreferences, setContextPreferences] = useState<SelectedPlanningPreference[]>(
+    () => initialIntelligence.preferences.filter(isAdvancedPreference),
+  );
   const [audience, setAudience] = useState<AudienceProfile>(initialIntelligence.audience);
   const [stages, setStages] = useState<EventStage[]>(initialStages);
   const selectedServices = useMemo(
     () => Array.from(new Set(planSelections.flatMap((item) => item.matchingServices))),
     [planSelections],
   );
-  const preferences = useMemo(() => planSelections.flatMap(toSelectedPreferencesFromPlan), [planSelections]);
+  const preferences = useMemo(() => Array.from(new Map([
+    ...planSelections.flatMap(toSelectedPreferencesFromPlan),
+    ...contextPreferences,
+  ].map((preference) => [preference.id, preference])).values()), [contextPreferences, planSelections]);
   const eventIntelligence = useMemo(
     () => buildEventIntelligenceProfile({
       audience,
@@ -239,6 +248,7 @@ export function EventWizard() {
     setStages(nextIntelligence.stages);
     setAudience(nextIntelligence.audience);
     setPlanSelections(createInitialPlanSelections(nextIntelligence));
+    setContextPreferences(nextIntelligence.preferences.filter(isAdvancedPreference));
     setStep(1);
   }
 
@@ -248,15 +258,30 @@ export function EventWizard() {
   }
 
   function addPlanPreference(preference: PlanningPreference, source: PlanSelectionSource) {
+    if (isAdvancedPreference(preference)) {
+      addContextPreference(preference);
+      return;
+    }
     const selection = createPreferenceSelection(preference, source);
     setPlanSelections((current) => mergePlanSelection(current, selection));
   }
 
   function addCanonicalPlanSelection(selection: PlanSelection) {
+    if (isContextSelection(selection)) {
+      selection.preferenceIds.forEach((id) => {
+        const preference = planningPreferenceCatalog.find((item) => item.id === id);
+        if (preference) addContextPreference(preference);
+      });
+      return;
+    }
     setPlanSelections((current) => mergePlanSelection(current, selection));
   }
 
   function removePlanSelectionChoiceFromPlan(choice: PlanSelection) {
+    if (isContextSelection(choice)) {
+      setContextPreferences((current) => current.filter((preference) => !choice.preferenceIds.includes(preference.id)));
+      return;
+    }
     setPlanSelections((current) => current.flatMap((item) => {
       if (item.id !== choice.id) return [item];
       const updated = removePlanSelectionChoice(item, choice);
@@ -273,12 +298,14 @@ export function EventWizard() {
   }
 
   function updateContextPreferences(nextPreferences: PlanningPreference[]) {
-    setPlanSelections((current) => nextPreferences
-      .map((preference) => createPreferenceSelection(preference, "browse-all"))
-      .reduce<PlanSelection[]>(
-        mergePlanSelection,
-        current.filter((item) => !["culture", "cuisine", "tradition"].includes(item.subtype)),
-      ));
+    setContextPreferences(nextPreferences.map((preference) => toSelectedPreference(preference)));
+    setPlanSelections((current) => current.filter((item) => !isContextSelection(item)));
+  }
+
+  function addContextPreference(preference: PlanningPreference) {
+    setContextPreferences((current) => current.some((item) => item.id === preference.id)
+      ? current
+      : [...current, toSelectedPreference(preference)]);
   }
 
   function updateLocation(id: number, updates: Partial<EventLocation>) {
@@ -615,6 +642,7 @@ export function EventWizard() {
 
 function createInitialPlanSelections(intelligence: EventIntelligenceProfile) {
   const preferenceSelections = intelligence.preferences
+    .filter((preference) => !isAdvancedPreference(preference))
     .map((preference) => createPreferenceSelection(preference, "natural-language-inference"));
   const representedServices = new Set(preferenceSelections.flatMap((item) => item.matchingServices));
   const serviceSelections = Array.from(new Set([
@@ -625,6 +653,10 @@ function createInitialPlanSelections(intelligence: EventIntelligenceProfile) {
     .map((service) => createServiceSelection(service, "initial-suggestion"));
 
   return [...serviceSelections, ...preferenceSelections].reduce<PlanSelection[]>(mergePlanSelection, []);
+}
+
+function isContextSelection(selection: PlanSelection) {
+  return ["culture", "cuisine", "tradition"].includes(selection.subtype);
 }
 
 function StepRail({

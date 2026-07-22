@@ -67,7 +67,7 @@ export function EventContextModal({
           <div className="mt-6 space-y-7">{groups.map((group) => (
             <fieldset key={group.id}><legend className="text-sm font-semibold text-[#0D1321]">{group.label}</legend><p className="mt-1 text-xs leading-5 text-neutral-500">{group.support}</p><div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">{group.options.map((option) => {
               const selected = draftIds.has(option.id);
-              return <button key={option.id} type="button" aria-pressed={selected} onClick={() => toggle(option.id)} className={`min-h-11 rounded-xl border px-3 py-2 text-left text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-[#0D1321] ${selected ? "border-[#2E7D5B] bg-[#EFF8F3] text-[#285E49]" : "border-neutral-200 bg-white text-neutral-700 hover:border-[#D4AF37]"}`}>{selected ? <span aria-hidden="true">\u2713 </span> : null}{option.label}</button>;
+              return <button key={option.id} type="button" aria-pressed={selected} onClick={() => toggle(option.id)} className={`min-h-11 rounded-xl border px-3 py-2 text-left text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-[#0D1321] ${selected ? "border-[#2E7D5B] bg-[#EFF8F3] text-[#285E49]" : "border-neutral-200 bg-white text-neutral-700 hover:border-[#D4AF37]"}`}>{selected ? <span aria-hidden="true">&#10003; </span> : null}{option.label}</button>;
             })}</div></fieldset>
           ))}</div>
         </div>

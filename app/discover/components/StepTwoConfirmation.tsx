@@ -90,13 +90,19 @@ export function StepTwoConfirmation({
       return true;
     }).slice(0, 6);
   }, [contextualSuggestions, essentialServices, planSelections, recommendedServices]);
-  const selectedIds = planSelections.flatMap((item) => [item.id, ...item.preferenceIds]);
   const contextPreferences = intelligence.preferences.filter(isAdvancedPreference);
+  const contextSelections = contextPreferences.map((preference) => createPreferenceSelection(preference, "browse-all"));
+  const selectedIds = [
+    ...planSelections.flatMap((item) => [item.id, ...item.preferenceIds]),
+    ...contextSelections.flatMap((item) => [item.id, ...item.preferenceIds]),
+  ];
 
   function addPlanPreference(preference: PlanningPreference, source: PlanSelectionSource) {
     const selection = createPreferenceSelection(preference, source);
     onPlanPreferenceAdd(preference, source);
-    setPlanMessage(`${getPlanSelectionDisplayLabel(selection)} was added to your plan.`);
+    setPlanMessage(isAdvancedPreference(preference)
+      ? `${preference.label} was saved in Advanced details.`
+      : `${getPlanSelectionDisplayLabel(selection)} was added to your plan.`);
   }
 
   function removePlanSelection(selection: PlanSelection) {
@@ -189,7 +195,7 @@ export function StepTwoConfirmation({
         ) : null}
       </section>
 
-      {directoryOpen ? <TagDirectoryModal onClose={() => setDirectoryOpen(false)} onSelect={onPlanSelectionAdd} onRemove={onPlanSelectionChoiceRemove} selections={planSelections} /> : null}
+      {directoryOpen ? <TagDirectoryModal onClose={() => setDirectoryOpen(false)} onSelect={onPlanSelectionAdd} onRemove={onPlanSelectionChoiceRemove} planItemCount={planSelections.length} selections={[...planSelections, ...contextSelections]} /> : null}
       {selectedPlanItem ? <ServiceDetailsModal item={selectedPlanItem} onClose={() => setSelectedPlanItem(undefined)} onSave={(details) => onPlanSelectionUpdate(selectedPlanItem, details)} /> : null}
       {inviteesOpen ? <InviteesModal recognition={recognition} value={audience} onClose={() => setInviteesOpen(false)} onSave={onAudienceChange} /> : null}
       {contextOpen ? <EventContextModal selectedIds={contextPreferences.map((preference) => preference.id)} onClose={() => setContextOpen(false)} onSave={onContextPreferencesChange} /> : null}

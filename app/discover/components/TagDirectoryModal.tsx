@@ -13,11 +13,13 @@ export function TagDirectoryModal({
   onClose,
   onRemove,
   onSelect,
+  planItemCount,
   selections,
 }: {
   onClose: () => void;
   onRemove: (selection: PlanSelection) => void;
   onSelect: (selection: PlanSelection) => void;
+  planItemCount: number;
   selections: PlanSelection[];
 }) {
   const [activeCategoryId, setActiveCategoryId] = useState<string>();
@@ -96,7 +98,7 @@ export function TagDirectoryModal({
           </>}
         </div>
 
-        <footer className="flex items-center justify-between gap-4 border-t border-neutral-200 bg-[#FFFCF7] px-5 py-4 sm:px-6"><p className="text-sm font-semibold text-neutral-600">{selections.length} plan item{selections.length === 1 ? "" : "s"}</p><button type="button" onClick={closeModal} className="h-11 rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white outline-none hover:bg-[#16233B] focus-visible:ring-2 focus-visible:ring-[#D4AF37]">Done</button></footer>
+        <footer className="flex items-center justify-between gap-4 border-t border-neutral-200 bg-[#FFFCF7] px-5 py-4 sm:px-6"><p className="text-sm font-semibold text-neutral-600">{planItemCount} plan item{planItemCount === 1 ? "" : "s"}</p><button type="button" onClick={closeModal} className="h-11 rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white outline-none hover:bg-[#16233B] focus-visible:ring-2 focus-visible:ring-[#D4AF37]">Done</button></footer>
       </div>
     </div>,
     document.body,
