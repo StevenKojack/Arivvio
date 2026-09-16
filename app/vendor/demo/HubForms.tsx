@@ -13,7 +13,7 @@ export function EventForm({ event, state, onSave, onCancel }: { event: VendorEve
   const [error, setError] = useState("");
   const [acknowledged, setAcknowledged] = useState(false);
   const warnings = scheduleWarnings(state, draft);
-  function update(key: keyof VendorEvent, value: string) { setDraft({ ...draft, [key]: value }); setAcknowledged(false); }
+  function update(key: keyof VendorEvent, value: string) { setDraft({ ...draft, [key]: value }); setAcknowledged(false); setError(""); }
   return <Panel title={state.events.some(e => e.id === event.id) ? "Edit event" : "Add an external booking"}>
     <p className="mb-6 text-sm text-neutral-600">Keep every event here, wherever your client found you. Times use your business location&apos;s local time. Use a separate entry for each day of a multi-day event.</p>
     <form onSubmit={e => { e.preventDefault(); if (draft.end <= draft.start) { setError("End time must be after start time on the same day."); return; } if (!draft.name.trim() || !draft.client.trim()) { setError("Enter an event and client name."); return; } if (warnings.length && !acknowledged) { setError("Review the scheduling notice and confirm before saving."); return; } onSave(draft); }} className="space-y-5">
