@@ -27,6 +27,7 @@ type QuoteCartDrawerProps = {
   isRequestingQuotes: boolean;
   variant?: "panel" | "compact" | "bar" | "workspace";
   onRemove: (lineId: number) => void;
+  onOpen?: () => void;
   onRequestQuotes: () => void;
   onUpdateTime: (
     lineId: number,
@@ -48,6 +49,7 @@ export function QuoteCartDrawer({
   isRequestingQuotes,
   variant = "panel",
   onRemove,
+  onOpen,
   onRequestQuotes,
   onUpdateTime,
 }: QuoteCartDrawerProps) {
@@ -88,6 +90,13 @@ export function QuoteCartDrawer({
                 isLoggedIn={isLoggedIn}
               />
             ) : null}
+            <button
+              type="button"
+              onClick={onOpen}
+              className="h-10 rounded-full border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-800"
+            >
+              View cart
+            </button>
             <button
               type="button"
               onClick={onRequestQuotes}

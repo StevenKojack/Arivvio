@@ -7,6 +7,7 @@ import type { ServiceName } from "@/app/data/marketplace";
 import type { EventRecognition, EventTaxonomyProfile } from "./types";
 import { buildEventIdentity } from "./identity";
 import { normalizeSearchText } from "./normalize";
+import { hasNegatedPhrase, hasPositivePhrase } from "./intent-text";
 
 export { normalizeSearchText } from "./normalize";
 
@@ -23,13 +24,14 @@ const synonymFamilies = [
 
 export function recognizeEventIntent(query: string): EventRecognition {
   const normalizedQuery = normalizeSearchText(query);
-  const matches = scoreProfiles(normalizedQuery);
+  const matches = scoreProfiles(query);
   const best = matches[0];
-  const profile = best?.profile ?? getDefaultProfile();
+  const confidentBest = best && best.score >= 0.48 ? best : undefined;
+  const profile = confidentBest?.profile ?? getDefaultProfile();
   const preservedSubtype = inferSubtype(query, profile);
   const identity = buildEventIdentity(query, profile, preservedSubtype);
-  const recommendedServices = getRecommendedServices(profile, normalizedQuery);
-  const excludedServices = getExcludedServices(profile, normalizedQuery);
+  const recommendedServices = getRecommendedServices(profile, query);
+  const excludedServices = getExcludedServices(profile, query);
   const tags = Array.from(
     new Set([
       profile.id,
@@ -47,9 +49,9 @@ export function recognizeEventIntent(query: string): EventRecognition {
   ).filter(Boolean);
 
   return {
-    confidence: best?.score ?? 0.35,
+    confidence: confidentBest?.score ?? 0.35,
     identity,
-    matchedAlias: best?.matchedAlias ?? profile.aliases[0],
+    matchedAlias: confidentBest?.matchedAlias ?? profile.aliases[0],
     normalizedQuery,
     recommendedServices,
     excludedServices,
@@ -74,7 +76,7 @@ export function searchEventIntents(query: string, limit = 7) {
     });
   }
 
-  const suggestions = scoreProfiles(normalizedQuery)
+  const suggestions = scoreProfiles(query)
     .filter((match) => match.score >= 0.45)
     .map((match) => {
       const label = getCompleteSuggestionLabel(match.profile, normalizedQuery);
@@ -88,8 +90,9 @@ export function searchEventIntents(query: string, limit = 7) {
   return uniqueSuggestions(suggestions).slice(0, limit);
 }
 
-function scoreProfiles(normalizedQuery: string) {
-  const forcedProfileId = detectForcedProfileId(normalizedQuery);
+function scoreProfiles(query: string) {
+  const normalizedQuery = normalizeSearchText(query);
+  const forcedProfileId = detectForcedProfileId(query);
 
   return eventTaxonomyProfiles
     .map((profile) => {
@@ -97,14 +100,18 @@ function scoreProfiles(normalizedQuery: string) {
         profile.primaryType,
         profile.subtype ?? "",
         ...profile.aliases,
-        ...profile.recommendedTags,
       ].map(normalizeSearchText);
       const bestAlias = aliases
         .map((alias) => ({
           alias,
-          score: scoreAlias(normalizedQuery, alias),
+          score: hasPositivePhrase(query, alias) || !hasNegatedPhrase(query, alias)
+            ? scoreAlias(normalizedQuery, alias)
+            : 0,
         }))
         .sort((a, b) => b.score - a.score)[0];
+      const tagScore = profile.recommendedTags.some((tag) => hasPositivePhrase(query, tag))
+        ? 0.44
+        : 0;
       const synonymScore = expandSynonyms(normalizedQuery).some((term) =>
         aliases.some((alias) => alias.includes(term) || term.includes(alias)),
       )
@@ -117,34 +124,38 @@ function scoreProfiles(normalizedQuery: string) {
         score:
           forcedProfileId === profile.id
             ? 1.1
-            : Math.max(bestAlias?.score ?? 0, synonymScore),
+            : Math.max(bestAlias?.score ?? 0, synonymScore, tagScore),
       };
     })
     .sort((a, b) => b.score - a.score);
 }
 
 function detectForcedProfileId(query: string) {
-  if (["funeral", "memorial", "wake", "repass", "celebration of life"].some((term) => query.includes(term))) {
+  if (hasPositivePhrase(query, "birthday")) return "birthday";
+  if (hasPositivePhrase(query, "wedding")) return "wedding";
+  if (hasPositivePhrase(query, "graduation")) return "graduation";
+
+  if (["funeral", "memorial", "wake", "repass", "celebration of life"].some((term) => hasPositivePhrase(query, term))) {
     return "funeral";
   }
 
-  if (query.includes("pool party") || query.includes("pool event")) {
+  if (hasPositivePhrase(query, "pool party") || hasPositivePhrase(query, "pool event")) {
     return "pool-party";
   }
 
-  if (query.includes("bachelor") || query.includes("bachelorette")) {
+  if (hasPositivePhrase(query, "bachelor") || hasPositivePhrase(query, "bachelorette")) {
     return "bachelor-party";
   }
 
-  if (query.includes("quince") || query.includes("sweet fifteen")) {
+  if (hasPositivePhrase(query, "quince") || hasPositivePhrase(query, "sweet fifteen")) {
     return "quinceanera";
   }
 
-  if (query.includes("mitzvah")) {
+  if (hasPositivePhrase(query, "mitzvah")) {
     return "mitzvah";
   }
 
-  if (query.includes("trade show") || query.includes("seminar") || query.includes("conference")) {
+  if (["trade show", "seminar", "conference"].some((term) => hasPositivePhrase(query, term))) {
     return "conference";
   }
 
@@ -207,8 +218,9 @@ function inferSubtype(query: string, profile: EventTaxonomyProfile) {
 
 function getRecommendedServices(
   profile: EventTaxonomyProfile,
-  normalizedQuery: string,
+  query: string,
 ) {
+  const normalizedQuery = normalizeSearchText(query);
   const services = new Set<ServiceName>([
     ...profile.requiredVendors,
     ...profile.recommendedVendors,
@@ -222,7 +234,7 @@ function getRecommendedServices(
   }
 
   return Array.from(services).filter(
-    (service) => !getExcludedServices(profile, normalizedQuery).includes(service),
+    (service) => !getExcludedServices(profile, query).includes(service),
   );
 }
 
@@ -269,14 +281,31 @@ function toTitleCase(value: string) {
 
 function getExcludedServices(
   profile: EventTaxonomyProfile,
-  normalizedQuery: string,
+  query: string,
 ) {
   const excluded = new Set<ServiceName>(profile.excludedServices ?? []);
+
+  const serviceTerms: Array<[ServiceName, string[]]> = [
+    ["DJ", ["dj", "disc jockey"]],
+    ["Live Music", ["live music", "live band", "band"]],
+    ["Catering", ["catering", "caterer", "food service"]],
+    ["Venue", ["venue", "event space", "hall"]],
+    ["Photography", ["photography", "photographer"]],
+    ["Photo Booth", ["photo booth", "photobooth"]],
+    ["Transportation", ["transportation", "shuttle"]],
+    ["Party Bus", ["party bus"]],
+    ["Rentals", ["rentals", "rental"]],
+    ["Florals", ["florals", "flowers"]],
+  ];
+
+  serviceTerms.forEach(([service, terms]) => {
+    if (terms.some((term) => hasNegatedPhrase(query, term))) excluded.add(service);
+  });
 
   if (
     profile.id === "funeral" ||
     ["funeral", "memorial", "wake", "repass"].some((term) =>
-      normalizedQuery.includes(term),
+      hasPositivePhrase(query, term),
     )
   ) {
     ["DJ", "Magic", "Character Performers", "Photo Booth"].forEach((service) =>

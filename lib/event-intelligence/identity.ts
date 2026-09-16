@@ -1,5 +1,6 @@
 import { normalizeSearchText } from "./normalize";
 import type { EventIdentity, EventTaxonomyProfile } from "./types";
+import { hasPositivePhrase } from "./intent-text";
 
 const concepts = [
   { id: "celebration-of-life", label: "Celebration of Life", terms: ["celebration of life"] },
@@ -40,9 +41,13 @@ export function buildEventIdentity(
 ): EventIdentity {
   const normalizedQuery = normalizeSearchText(query);
   const concept = concepts.find(({ terms }) =>
-    terms.some((term) => normalizedQuery.includes(normalizeSearchText(term))),
+    terms.some((term) => hasPositivePhrase(query, term)),
   );
-  const selectedDisplayEvent = concept?.label ?? cleanProfileLabel(profile);
+  const selectedDisplayEvent = concept?.label ?? (
+    profile.id === "private-party" && query.trim()
+      ? query.trim()
+      : cleanProfileLabel(profile)
+  );
 
   return {
     aliases: profile.aliases,

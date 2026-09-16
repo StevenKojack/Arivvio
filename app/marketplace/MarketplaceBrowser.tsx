@@ -31,6 +31,10 @@ import {
 import { getProfileByMarketplaceType } from "@/lib/event-intelligence/taxonomy";
 import { recognizeEventIntent } from "@/lib/event-intelligence/search";
 import { rankMarketplaceItems } from "@/lib/event-intelligence/recommendations";
+import { loadEventIntelligenceProfile } from "@/lib/event-intelligence/storage";
+import type { EventIntelligenceProfile } from "@/lib/event-intelligence/types";
+import { loadDemoCart, saveDemoCart } from "@/lib/event-intelligence/demo-session";
+import { getPlanMatchReason, rankMarketplaceItemsForPlan } from "@/lib/marketplace/plan-matching";
 import {
   derivePlanningContext,
   isMarketplaceItemCompatible,
@@ -105,10 +109,19 @@ function getEntryMode(value: string | null): MarketplaceEntryMode {
 }
 
 function getInitialCoordinates(searchParams: ReturnType<typeof useSearchParams>) {
-  const lat = Number(searchParams.get("lat"));
-  const lng = Number(searchParams.get("lng"));
+  const latValue = searchParams.get("lat");
+  const lngValue = searchParams.get("lng");
+  if (!latValue || !lngValue) return null;
+  const lat = Number(latValue);
+  const lng = Number(lngValue);
 
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    Math.abs(lat) > 90 ||
+    Math.abs(lng) > 180 ||
+    (Math.abs(lat) <= 0.0001 && Math.abs(lng) <= 0.0001)
+  ) {
     return null;
   }
 
@@ -182,12 +195,15 @@ export function MarketplaceBrowser() {
   const [isZoneEditorOpen, setIsZoneEditorOpen] = useState(false);
   const [locationStatus, setLocationStatus] = useState("");
   const [cart, setCart] = useState<CartLine[]>([]);
+  const [isCartRestored, setIsCartRestored] = useState(false);
+  const [eventIntelligence, setEventIntelligence] = useState<EventIntelligenceProfile | null>(null);
   const [cartMessage, setCartMessage] = useState("");
   const [activeRowId, setActiveRowId] = useState("best-matches");
   const [hoveredItemId, setHoveredItemId] = useState<number | null>(null);
   const hoverFrameRef = useRef<number | null>(null);
   const activeRowFrameRef = useRef<number | null>(null);
   const [isMobileMapOpen, setIsMobileMapOpen] = useState(false);
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
   const [pendingServiceItem, setPendingServiceItem] = useState<MarketplaceItem | null>(null);
   const [selectedMapItemId, setSelectedMapItemId] = useState<number | null>(null);
   const [isRequestingQuotes, setIsRequestingQuotes] = useState(false);
@@ -360,7 +376,10 @@ export function MarketplaceBrowser() {
     });
 
     if (selectedEvent === "All") {
-      return rankByPlanningContext(nextItems, planningContext);
+      const contextRanked = rankByPlanningContext(nextItems, planningContext);
+      return eventIntelligence
+        ? rankMarketplaceItemsForPlan(contextRanked, eventIntelligence)
+        : contextRanked;
     }
 
     const profile = getProfileByMarketplaceType(selectedEvent);
@@ -373,14 +392,18 @@ export function MarketplaceBrowser() {
       },
     );
 
-    return rankByPlanningContext(
+    const contextRanked = rankByPlanningContext(
       rankedItems.map((rankedItem) => rankedItem.item),
       planningContext,
     );
+    return eventIntelligence
+      ? rankMarketplaceItemsForPlan(contextRanked, eventIntelligence)
+      : contextRanked;
   }, [
     endTime,
     eventCoordinates,
     eventDate,
+    eventIntelligence,
     globalQuoteContext,
     normalizedQuery,
     providers,
@@ -393,6 +416,13 @@ export function MarketplaceBrowser() {
     selectedServices,
     startTime,
   ]);
+  const planMatchReasons = useMemo<Record<number, string>>(
+    () => Object.fromEntries(filteredItems.flatMap((item) => {
+      const reason = getPlanMatchReason(item, eventIntelligence);
+      return reason ? [[item.id, reason]] : [];
+    })),
+    [eventIntelligence, filteredItems],
+  );
   const isLoggedIn = Boolean(sessionUserId || profile);
   const canPersistCart = Boolean(profile && savedEvent);
   const cartedIds = useMemo(
@@ -446,9 +476,7 @@ export function MarketplaceBrowser() {
     });
 
     if (selectedMapItemId && !pinMap.has(selectedMapItemId)) {
-      const selectedItem =
-        filteredItems.find((item) => item.id === selectedMapItemId) ??
-        providers.find((item) => item.id === selectedMapItemId);
+      const selectedItem = filteredItems.find((item) => item.id === selectedMapItemId);
 
       if (selectedItem) {
         pinMap.set(selectedItem.id, {
@@ -467,9 +495,17 @@ export function MarketplaceBrowser() {
     cartedIds,
     cartedServiceNames,
     filteredItems,
-    providers,
     selectedMapItemId,
   ]);
+
+  useEffect(() => {
+    if (
+      selectedMapItemId !== null &&
+      !filteredItems.some((item) => item.id === selectedMapItemId)
+    ) {
+      queueMicrotask(() => setSelectedMapItemId(null));
+    }
+  }, [filteredItems, selectedMapItemId]);
 
   const setMapHoverItem = useCallback((itemId: number | null) => {
     if (hoverFrameRef.current) {
@@ -480,6 +516,29 @@ export function MarketplaceBrowser() {
       setHoveredItemId((current) => (current === itemId ? current : itemId));
     });
   }, []);
+
+  useEffect(() => {
+    const storedProfile = searchParams.get("eventProfile") === "session"
+      ? loadEventIntelligenceProfile()
+      : null;
+    const storedCart = loadDemoCart<CartLine[]>();
+    queueMicrotask(() => {
+      if (storedProfile) {
+        setEventIntelligence(storedProfile);
+        setExcludedServices(storedProfile.excludedServices);
+        setSelectedServices((current) => Array.from(new Set([
+          ...current,
+          ...storedProfile.requestedServices,
+        ])).filter((service) => !storedProfile.excludedServices.includes(service)));
+      }
+      if (storedCart?.length) setCart(storedCart);
+      setIsCartRestored(true);
+    });
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (isCartRestored) saveDemoCart(cart);
+  }, [cart, isCartRestored]);
 
   useEffect(() => {
     const profile = loadLocationProfile();
@@ -969,6 +1028,7 @@ export function MarketplaceBrowser() {
         isLoggedIn={isLoggedIn}
         isRequestingQuotes={isRequestingQuotes}
         variant={variant}
+        onOpen={() => setIsMobileCartOpen(true)}
         onRemove={removeFromCart}
         onRequestQuotes={requestQuotes}
         onUpdateTime={updateCartTime}
@@ -1156,6 +1216,7 @@ export function MarketplaceBrowser() {
                     title={row.title}
                     description={row.description}
                     items={row.items}
+                    matchReasons={planMatchReasons}
                     quoteContext={globalQuoteContext}
                     onAdd={addToCart}
                     onHoverItem={setMapHoverItem}
@@ -1240,6 +1301,32 @@ export function MarketplaceBrowser() {
               onHoverItem={setMapHoverItem}
               onSelectItem={selectMapItem}
             />
+          </div>
+        </div>
+      ) : null}
+
+      {isMobileCartOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end bg-[#0D1321]/35 px-3 py-4 backdrop-blur-sm xl:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Quote cart"
+          onClick={() => setIsMobileCartOpen(false)}
+        >
+          <div
+            className="mx-auto max-h-[88vh] w-full max-w-2xl overflow-y-auto"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-3 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsMobileCartOpen(false)}
+                className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-neutral-950 shadow-[0_16px_40px_rgba(13,19,33,0.18)]"
+              >
+                Back to marketplace
+              </button>
+            </div>
+            {renderQuoteCart("panel")}
           </div>
         </div>
       ) : null}

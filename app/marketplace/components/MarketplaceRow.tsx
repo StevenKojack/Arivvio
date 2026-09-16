@@ -9,6 +9,7 @@ type MarketplaceRowProps = {
   cartedIds?: number[];
   description?: string;
   items: MarketplaceItem[];
+  matchReasons?: Record<number, string>;
   quoteContext: QuoteContext;
   rowId: string;
   selectedServiceCountByVendor?: Map<number, number>;
@@ -23,6 +24,7 @@ export function MarketplaceRow({
   cartedIds = [],
   description,
   items,
+  matchReasons = {},
   onAdd,
   onHoverItem,
   onSelectItem,
@@ -77,7 +79,7 @@ export function MarketplaceRow({
               disableAdd={selectedServiceCount > 0 && !canAddMoreServices}
               item={item}
               matchLabel={cartedIds.includes(item.id) ? "Selected" : index < 3 ? "Top match" : "Match"}
-              matchReason={getMatchReason(title, item)}
+              matchReason={matchReasons[item.id] ?? getMatchReason(title, item)}
               quote={quoteItem(item, quoteContext)}
               onAdd={onAdd}
               onHover={onHoverItem}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   getHoursBetween,
@@ -15,6 +15,7 @@ import {
 } from "@/lib/event-intelligence/search";
 import { buildEventIntelligenceProfile } from "@/lib/event-intelligence/engine";
 import { saveEventIntelligenceProfile } from "@/lib/event-intelligence/storage";
+import { loadDemoPlannerSession, saveDemoPlannerSession } from "@/lib/event-intelligence/demo-session";
 import { getEssentialServices, formatNaturalList } from "@/lib/event-intelligence/service-plan";
 import type { AudienceProfile, EventIntelligenceProfile, EventRecognition, EventStage } from "@/lib/event-intelligence/types";
 import {
@@ -89,6 +90,27 @@ type EventLocation = {
   zones: MapZone[];
 };
 
+type DemoPlannerSessionState = {
+  audience: AudienceProfile;
+  budget: number;
+  contextPreferences: SelectedPlanningPreference[];
+  guestCount: number;
+  isMultiDay: boolean;
+  locations: EventLocation[];
+  planSelections: PlanSelection[];
+  query: string;
+  stages: EventStage[];
+  step: number;
+  timing: {
+    date: string;
+    endDate: string;
+    endTime: string;
+    setupTime: string;
+    startTime: string;
+    teardownTime: string;
+  };
+};
+
 const steps = ["What", "Confirm", "When", "Where", "Guests", "Review"] as const;
 
 export function EventWizard() {
@@ -99,6 +121,7 @@ export function EventWizard() {
     [initialQuery],
   );
   const initialStages = initialIntelligence.stages;
+  const sessionRestoredRef = useRef(false);
   const [step, setStep] = useState(initialQuery ? 1 : 0);
   const [query, setQuery] = useState(initialQuery);
   const [timing, setTiming] = useState({
@@ -223,6 +246,47 @@ export function EventWizard() {
     Boolean(timing.date && timing.startTime && timing.endTime) &&
     guestCount > 0 &&
     locations.some((location) => location.mode && (location.mode === "needs_venue" || Boolean(location.query.trim() || location.selectedAddress)));
+
+  useEffect(() => {
+    if (sessionRestoredRef.current) return;
+    sessionRestoredRef.current = true;
+
+    if (!initialQuery) {
+      const saved = loadDemoPlannerSession<DemoPlannerSessionState>();
+      if (saved?.query) {
+        queueMicrotask(() => {
+          setAudience(saved.audience);
+          setBudget(saved.budget);
+          setContextPreferences(saved.contextPreferences);
+          setGuestCount(saved.guestCount);
+          setIsMultiDay(saved.isMultiDay);
+          setLocations(saved.locations);
+          setPlanSelections(saved.planSelections);
+          setQuery(saved.query);
+          setStages(saved.stages);
+          setStep(Math.min(Math.max(saved.step, 0), steps.length - 1));
+          setTiming(saved.timing);
+        });
+      }
+    }
+  }, [initialQuery]);
+
+  useEffect(() => {
+    if (!sessionRestoredRef.current || !query.trim()) return;
+    saveDemoPlannerSession<DemoPlannerSessionState>({
+      audience,
+      budget,
+      contextPreferences,
+      guestCount,
+      isMultiDay,
+      locations,
+      planSelections,
+      query,
+      stages,
+      step,
+      timing,
+    });
+  }, [audience, budget, contextPreferences, guestCount, isMultiDay, locations, planSelections, query, stages, step, timing]);
 
   useEffect(() => {
     const profile = buildLocationProfile(locations[0]);
@@ -652,7 +716,8 @@ function createInitialPlanSelections(intelligence: EventIntelligenceProfile) {
     .filter((service) => !representedServices.has(service))
     .map((service) => createServiceSelection(service, "initial-suggestion"));
 
-  return [...serviceSelections, ...preferenceSelections].reduce<PlanSelection[]>(mergePlanSelection, []);
+  return [...intelligence.planSelections, ...serviceSelections, ...preferenceSelections]
+    .reduce<PlanSelection[]>(mergePlanSelection, []);
 }
 
 function isContextSelection(selection: PlanSelection) {

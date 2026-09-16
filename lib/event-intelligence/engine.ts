@@ -4,9 +4,11 @@ import { toSelectedPreference } from "@/lib/planning-taxonomy/search";
 import type { PlanningPreference, SelectedPlanningPreference } from "@/lib/planning-taxonomy/types";
 import { derivePlanningContext } from "./context";
 import { normalizeSearchText } from "./normalize";
+import { hasNegatedPhrase, hasPositivePhrase } from "./intent-text";
 import { recognizeEventIntent } from "./search";
 import { getContextualPlanningSuggestions } from "./suggestions";
 import { getInitialStages } from "./stages";
+import { inferServicePlanSelections } from "./service-intent";
 import type {
   AudienceProfile,
   EventIntelligenceProfile,
@@ -40,7 +42,11 @@ export function buildEventIntelligenceProfile(
   const inferredIds = new Set(preferences.filter((item) => item.selectionSource === "explicit-text").map((item) => item.id));
   const stages = input.stages ?? getInitialStages(recognition);
   const audience = mergeAudience(inferAudienceFromQuery(input.query, recognition.identity.canonicalEventType), input.audience);
-  const planSelections = input.planSelections ?? [];
+  const planSelections = input.planSelections ?? inferServicePlanSelections(
+    input.query,
+    preferences,
+    recognition.excludedServices,
+  );
   const rawRequestedServices = unique([
     ...(input.selectedServices ?? []),
     ...planSelections.flatMap((item) => item.matchingServices),
@@ -230,18 +236,17 @@ export function inferAudienceFromQuery(query: string, canonicalEventType?: strin
 }
 
 export function inferPlanningPreferences(query: string) {
-  const normalized = normalizeSearchText(query);
   const inferred = planningPreferenceCatalog.filter((item) =>
     [item.label, ...item.aliases]
       .map(normalizeSearchText)
       .filter((term) => term.length >= 3)
-      .some((term) => containsPhrase(normalized, term)),
+      .some((term) => hasPositivePhrase(query, term) && !hasNegatedPhrase(query, term)),
   );
 
-  if (containsPhrase(normalized, "arcade")) addByLabel(inferred, ["Arcade", "Arcade games"]);
-  if (containsPhrase(normalized, "backyard")) addByLabel(inferred, ["Backyard", "At home"]);
-  if (/\bdj\b/.test(normalized)) addByLabel(inferred, ["DJ"]);
-  if (containsPhrase(normalized, "church")) addByLabel(inferred, ["Church", "Religious ceremony"]);
+  if (hasPositivePhrase(query, "arcade")) addByLabel(inferred, ["Arcade", "Arcade games"]);
+  if (hasPositivePhrase(query, "backyard")) addByLabel(inferred, ["Backyard", "At home"]);
+  if (hasPositivePhrase(query, "dj")) addByLabel(inferred, ["DJ"]);
+  if (hasPositivePhrase(query, "church")) addByLabel(inferred, ["Church", "Religious ceremony"]);
 
   return uniquePreferences(inferred).map((item) => toSelectedPreference(item, "explicit-text"));
 }
@@ -251,10 +256,6 @@ function addByLabel(target: PlanningPreference[], labels: string[]) {
   planningPreferenceCatalog.forEach((item) => {
     if (labelSet.has(item.label.toLowerCase())) target.push(item);
   });
-}
-
-function containsPhrase(text: string, phrase: string) {
-  return ` ${text} `.includes(` ${phrase} `);
 }
 
 function getIndoorOutdoor(

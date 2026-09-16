@@ -100,6 +100,7 @@ export function MarketplaceMap({
   const pinsRef = useRef<MarketplaceMapPin[]>(pins);
   const searchZoneRef = useRef<PlanningZone | null | undefined>(searchZone);
   const viewportSignatureRef = useRef("");
+  const hasManualViewportRef = useRef(false);
   const isSheet = layout === "sheet";
   const isSticky = layout === "sticky";
   const pinsWithCoordinates = useMemo(
@@ -149,6 +150,12 @@ export function MarketplaceMap({
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
     map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left");
     const handleMapLoad = () => resizeMapSafely(map);
+    const handleManualDrag = () => {
+      hasManualViewportRef.current = true;
+    };
+    const handleManualZoom = () => {
+      hasManualViewportRef.current = true;
+    };
     const handleStyleLoad = () => {
       ensureZoneLayers(map);
       updateZoneSource(map, searchZoneRef.current);
@@ -156,13 +163,22 @@ export function MarketplaceMap({
     const resizeTimeoutId = window.setTimeout(() => resizeMapSafely(map), 0);
     map.on("load", handleMapLoad);
     map.on("style.load", handleStyleLoad);
+    map.on("dragstart", handleManualDrag);
+    map.on("zoomstart", handleManualZoom);
     mapRef.current = map;
     const markerStore = markerRefs.current;
+    const resizeObserver = typeof ResizeObserver === "undefined"
+      ? null
+      : new ResizeObserver(() => resizeMapSafely(map));
+    resizeObserver?.observe(mapContainerRef.current);
 
     return () => {
       window.clearTimeout(resizeTimeoutId);
       map.off("load", handleMapLoad);
       map.off("style.load", handleStyleLoad);
+      map.off("dragstart", handleManualDrag);
+      map.off("zoomstart", handleManualZoom);
+      resizeObserver?.disconnect();
       markerStore.forEach(({ marker }) => marker.remove());
       markerStore.clear();
       eventMarkerRef.current?.remove();
@@ -315,7 +331,8 @@ export function MarketplaceMap({
   }, [hasInteractiveMap, hoveredItemId, selectedItemId]);
 
   useEffect(() => {
-    if (!mapRef.current || !hasInteractiveMap || !selectedItemId) {
+    const map = mapRef.current;
+    if (!map || !hasInteractiveMap || !selectedItemId) {
       return;
     }
 
@@ -328,7 +345,15 @@ export function MarketplaceMap({
     popupRef.current
       ?.setLngLat([selectedPin.item.coordinates.lng, selectedPin.item.coordinates.lat])
       .setHTML(getPopupHtml(selectedPin.item))
-      .addTo(mapRef.current);
+      .addTo(map);
+    const point: [number, number] = [
+      selectedPin.item.coordinates.lng,
+      selectedPin.item.coordinates.lat,
+    ];
+    const currentBounds = map.getBounds();
+    if (!currentBounds || !currentBounds.contains(point)) {
+      map.easeTo({ center: point, duration: 260 });
+    }
   }, [hasInteractiveMap, pinsWithCoordinates, selectedItemId]);
 
   useEffect(() => {
@@ -379,6 +404,10 @@ export function MarketplaceMap({
     }
 
     viewportSignatureRef.current = viewportSignature;
+
+    if (hasManualViewportRef.current) {
+      return;
+    }
 
     if (!visiblePoints.length) {
       map.easeTo({
@@ -785,7 +814,8 @@ function isValidCoordinates(value?: Coordinates | null): value is Coordinates {
       Number.isFinite(value.lat) &&
       Number.isFinite(value.lng) &&
       Math.abs(value.lat) <= 90 &&
-      Math.abs(value.lng) <= 180,
+      Math.abs(value.lng) <= 180 &&
+      (Math.abs(value.lat) > 0.0001 || Math.abs(value.lng) > 0.0001),
   );
 }
 
