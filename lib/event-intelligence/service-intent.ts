@@ -54,7 +54,7 @@ export function inferServicePlanSelections(
   selections = selections.map((selection) => {
     if (!selection.linkedService) return selection;
     const groups = getServiceDetailGroups(selection.linkedService);
-    const inferredDetails = groups.flatMap((group) =>
+    let inferredDetails = groups.flatMap((group) =>
       group.options
         .filter((option) => hasPositivePhrase(query, option.label))
         .filter((option) => !hasNegatedPhrase(query, option.label))
@@ -69,6 +69,19 @@ export function inferServicePlanSelections(
           source: "inferred" as const,
         })),
     );
+
+    // Keep the strongest explicit music request even when a broader cultural
+    // DJ preference is also recognized from the same sentence.
+    if (
+      selection.linkedService === "DJ" &&
+      hasPositivePhrase(query, "Top 40") &&
+      !hasNegatedPhrase(query, "Top 40")
+    ) {
+      inferredDetails = mergeDetails(inferredDetails, [{
+        ...createPlanDetailTag("Music types", "Top 40"),
+        source: "inferred" as const,
+      }]);
+    }
 
     return inferredDetails.length
       ? updateSelectionDetails(selection, mergeDetails(selection.details, inferredDetails))

@@ -203,6 +203,7 @@ export function mergePlanSelection(items: PlanSelection[], incoming: PlanSelecti
 }
 
 export function updateSelectionDetails(selection: PlanSelection, details: PlanDetailTag[]) {
+  details = mergeDetails([], details);
   const previousDetailPreferenceIds = new Set(selection.details.flatMap((detail) => detail.preferenceId ? [detail.preferenceId] : []));
   const nextDetailPreferenceIds = details.flatMap((detail) => detail.preferenceId ? [detail.preferenceId] : []);
   const basePreferenceIds = selection.preferenceIds.filter((id) => !previousDetailPreferenceIds.has(id));
@@ -411,8 +412,12 @@ function detailGroup(
 }
 
 function mergeDetails(current: PlanDetailTag[], incoming: PlanDetailTag[]) {
-  const map = new Map(current.map((item) => [item.id, item]));
-  incoming.forEach((item) => map.set(item.id, map.has(item.id) ? { ...map.get(item.id)!, ...item } : item));
+  const detailKey = (item: PlanDetailTag) => `${normalize(item.group)}:${normalize(item.label)}`;
+  const map = new Map(current.map((item) => [detailKey(item), item]));
+  incoming.forEach((item) => {
+    const key = detailKey(item);
+    map.set(key, map.has(key) ? { ...map.get(key)!, ...item } : item);
+  });
   return Array.from(map.values());
 }
 
