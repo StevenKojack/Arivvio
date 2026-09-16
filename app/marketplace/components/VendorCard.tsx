@@ -1,6 +1,7 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
+import { ProviderProfile } from "./ProviderProfile";
 import Image from "next/image";
 import type { MarketplaceItem } from "@/app/data/marketplace";
 import { getVendorImage } from "@/lib/marketplace/vendorImages";
@@ -32,6 +33,7 @@ function VendorCardComponent({
   quote,
   onAdd,
 }: VendorCardProps) {
+  const [profileOpen, setProfileOpen] = useState(false);
   const imageUrl = item.photoUrl ?? getVendorImage(item);
   const isDemoProvider = item.databaseSource === false;
   const tags = [
@@ -41,9 +43,10 @@ function VendorCardComponent({
   ].slice(0, 3);
 
   return (
-    <article
+    <><article
       onClick={() => onSelect?.(item)}
       onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           onSelect?.(item);
@@ -144,8 +147,9 @@ function VendorCardComponent({
             {buttonLabel}
           </button>
         </div>
+        <button type="button" onClick={(event) => { event.stopPropagation(); setProfileOpen(true); }} className="mt-4 w-full rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold hover:bg-neutral-50">View profile</button>
       </div>
-    </article>
+    </article>{profileOpen ? <ProviderProfile item={item} quote={quote} matchReason={matchReason} selected={Boolean(disableAdd ?? isSelected)} onAdd={() => onAdd(item)} onClose={() => setProfileOpen(false)} /> : null}</>
   );
 }
 

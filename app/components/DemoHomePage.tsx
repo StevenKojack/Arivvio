@@ -1,12 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { CategorySection } from "./CategorySection";
 import { Footer } from "./Footer";
 import { EventDiscoverySearch } from "./EventDiscoverySearch";
 import { HowItWorks } from "./HowItWorks";
-import { MarketplacePreview } from "./MarketplacePreview";
 import { Navigation } from "./Navigation";
-import { TrustSection } from "./TrustSection";
 
 export function DemoHomePage() {
   return (
@@ -27,7 +24,7 @@ export function DemoHomePage() {
           <p className="w-fit rounded-full border border-[#D4AF37]/20 bg-white/82 px-4 py-2 text-sm font-semibold text-[#0D1321] shadow-[0_12px_30px_rgba(13,19,33,0.08)] backdrop-blur">
             Elevate every event
           </p>
-          <h1 className="mt-8 max-w-4xl text-5xl font-semibold tracking-tight text-neutral-950 sm:text-7xl lg:text-8xl">
+          <h1 className="mt-8 max-w-4xl text-4xl font-semibold tracking-tight text-neutral-950 sm:text-6xl">
             Your occasion. Everything it needs.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-neutral-700 sm:text-xl">
@@ -53,7 +50,7 @@ export function DemoHomePage() {
           </div>
         </div>
       </section>
-      <section className="mx-auto max-w-7xl px-6 py-12 sm:px-8">
+      <section id="categories" className="mx-auto max-w-7xl px-6 py-12 sm:px-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-[#8A6A16]">Find your starting point</p>
         <h2 className="mt-3 text-3xl font-semibold tracking-tight">Every kind of together.</h2>
         <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -71,9 +68,6 @@ export function DemoHomePage() {
         <p className="mt-4 text-xs text-neutral-500">Pre-beta preview. Listings and estimates are demonstration data, not confirmed offers or availability.</p>
       </section>
       <HowItWorks />
-      <CategorySection />
-      <MarketplacePreview />
-      <TrustSection />
       <section className="bg-white px-6 py-20 sm:px-8 lg:px-12">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 rounded-[30px] border border-[#D4AF37]/16 bg-[linear-gradient(135deg,#FFFCF7,#F6F3EA)] p-8 shadow-[0_22px_70px_rgba(13,19,33,0.06)] sm:p-10 lg:flex-row lg:items-center lg:justify-between">
           <div>
@@ -85,7 +79,7 @@ export function DemoHomePage() {
             </h2>
             <p className="mt-3 max-w-xl text-base leading-7 text-neutral-600">
               Venues, caterers, entertainers, rental teams, florists, and event
-              specialists can receive clearer quote requests from real plans.
+              specialists can prepare their business profiles for Arivvio. Live leads and bookings are not enabled yet.
             </p>
           </div>
           <Link
