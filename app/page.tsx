@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PreBetaGateway } from "./components/PreBetaGateway";
+import { DemoHomePage } from "./components/DemoHomePage";
 
 export const metadata: Metadata = {
   title: "Arivvio | Pre-Beta Event Planning Demo",
@@ -8,7 +9,8 @@ export const metadata: Metadata = {
     "Explore Arivvio, an early demonstration of a unified event planning marketplace for venues, vendors, quotes, maps, and event organization.",
 };
 
-export default function PreBetaGatewayPage() {
+export default async function PreBetaGatewayPage({ searchParams }: { searchParams: Promise<{ info?: string }> }) {
+  if ((await searchParams).info !== "1") return <DemoHomePage />;
   return (
     <Suspense fallback={<GatewayFallback />}>
       <PreBetaGateway />

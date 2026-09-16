@@ -8,12 +8,14 @@ import { upsertProfile } from "@/lib/repositories/profilesRepository";
 
 type AuthFormProps = {
   mode: "login" | "signup";
+  defaultNext?: string;
 };
 
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({ mode, defaultNext = "/account" }: AuthFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextPath = searchParams.get("next") ?? "/account";
+  const requestedNext = searchParams.get("next") ?? defaultNext;
+  const nextPath = requestedNext.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "/account";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -29,7 +31,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
     if (!hasSupabaseConfig()) {
       setError(
-        "Supabase is not configured yet. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local.",
+        "Account access is not available in this preview yet. You can still explore the demo without signing in.",
       );
       return;
     }
@@ -159,19 +161,12 @@ export function AuthForm({ mode }: AuthFormProps) {
       >
         {isSubmitting ? "Working..." : isSignup ? "Create account" : "Log in"}
       </button>
-      {!isSignup ? (
-        <Link
-          href="/auth/login"
-          className="text-center text-sm font-semibold text-neutral-500"
-        >
-          Forgot password?
-        </Link>
-      ) : null}
+      <Link href="/demo" className="text-center text-sm font-semibold text-neutral-500">Explore without an account</Link>
       <p className="text-center text-sm text-neutral-500">
         {isSignup ? "Already have an account?" : "New to Arivvio?"}{" "}
         <Link
           className="font-semibold text-[#8A6A16]"
-          href={isSignup ? "/auth/login" : "/auth/signup"}
+          href={`${isSignup ? "/auth/login" : "/auth/signup"}?next=${encodeURIComponent(nextPath.startsWith("/vendor") && !isSignup ? "/vendor/onboarding" : nextPath)}`}
         >
           {isSignup ? "Log in" : "Create an account"}
         </Link>

@@ -23,16 +23,16 @@ export function DemoHomePage() {
         />
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(247,244,236,0.97),rgba(247,244,236,0.84)_45%,rgba(247,244,236,0.42)),linear-gradient(180deg,rgba(255,252,247,0.4),rgba(247,244,236,0.96))]" />
         <div className="absolute bottom-0 left-0 right-0 -z-10 h-28 bg-[linear-gradient(180deg,transparent,#F7F4EC)]" />
-        <div className="relative mx-auto flex min-h-[calc(100vh-170px)] max-w-7xl flex-col justify-center">
+        <div className="relative mx-auto flex max-w-7xl flex-col justify-center">
           <p className="w-fit rounded-full border border-[#D4AF37]/20 bg-white/82 px-4 py-2 text-sm font-semibold text-[#0D1321] shadow-[0_12px_30px_rgba(13,19,33,0.08)] backdrop-blur">
             Elevate every event
           </p>
           <h1 className="mt-8 max-w-4xl text-5xl font-semibold tracking-tight text-neutral-950 sm:text-7xl lg:text-8xl">
-            What are you planning?
+            Your occasion. Everything it needs.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-neutral-700 sm:text-xl">
-            Describe the event in your own words. Arivvio turns it into a
-            planning profile, smart questions, and the right vendor stack.
+            Find the place, discover your team, and keep the details together.
+            Start with an idea. Build an event that feels like you.
           </p>
           <div className="mt-10 w-full max-w-3xl animate-[fadeUp_360ms_ease-out]">
             <EventDiscoverySearch />
@@ -53,6 +53,23 @@ export function DemoHomePage() {
           </div>
         </div>
       </section>
+      <section className="mx-auto max-w-7xl px-6 py-12 sm:px-8">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[#8A6A16]">Find your starting point</p>
+        <h2 className="mt-3 text-3xl font-semibold tracking-tight">Every kind of together.</h2>
+        <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            ["Birthdays", "Birthday", "Make their next chapter memorable", "bg-[#EDE7DA]"],
+            ["Weddings", "Wedding", "Your people. Your day. Your way.", "bg-[#E5ECE4]"],
+            ["Gatherings", "Private party", "Good company deserves a great setting", "bg-[#E6EAF0]"],
+            ["Company events", "Corporate dinner", "Bring the team together", "bg-[#EFE3DD]"],
+          ].map(([name, query, note, color], index) => <Link key={name} href={`/discover?query=${encodeURIComponent(query)}`} className={`${color} rounded-2xl p-6 transition hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4`}><span className="text-sm text-neutral-500">0{index + 1}</span><h3 className="mt-8 text-xl font-semibold">{name} ↗</h3><p className="mt-2 text-sm leading-6 text-neutral-600">{note}</p></Link>)}
+        </div>
+      </section>
+      <section className="mx-auto max-w-7xl px-6 py-12 sm:px-8">
+        <div className="flex flex-wrap items-end justify-between gap-4"><h2 className="text-3xl font-semibold tracking-tight">Build your event team.</h2><Link href="/marketplace?entryMode=browse" className="text-sm font-semibold underline underline-offset-4">Explore the marketplace →</Link></div>
+        <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">{["Venue", "Catering", "DJ", "Photography", "Rentals", "Transportation", "Florals", "Magic"].map((service) => <Link key={service} href={`/marketplace?entryMode=service&services=${encodeURIComponent(service)}`} className="rounded-2xl border border-neutral-200 bg-white p-5 font-semibold transition hover:border-[#B88A1D]">{service}<span className="float-right text-[#8A6A16]">↗</span></Link>)}</div>
+        <p className="mt-4 text-xs text-neutral-500">Pre-beta preview. Listings and estimates are demonstration data, not confirmed offers or availability.</p>
+      </section>
       <HowItWorks />
       <CategorySection />
       <MarketplacePreview />
@@ -72,10 +89,10 @@ export function DemoHomePage() {
             </p>
           </div>
           <Link
-            href="/vendor/onboarding"
+            href="/vendor/login"
             className="inline-flex h-12 w-fit items-center justify-center rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(13,19,33,0.2)] transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
           >
-            List your service
+            Explore the vendor portal
           </Link>
         </div>
       </section>

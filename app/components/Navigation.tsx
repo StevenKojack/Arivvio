@@ -18,7 +18,7 @@ type SessionNavState = {
 
 const centerLinks = [
   { href: "/plan", label: "Plan Your Event" },
-  { href: "/vendors", label: "Vendors" },
+  { href: "/marketplace?entryMode=browse", label: "Marketplace" },
 ];
 
 export function Navigation() {
@@ -125,10 +125,10 @@ export function Navigation() {
 
         <div className="flex items-center gap-2">
           <Link
-            href="/vendor/onboarding"
+            href="/vendor/login"
             className="hidden rounded-full px-4 py-2 text-sm font-semibold text-[#0D1321] transition hover:-translate-y-0.5 hover:bg-white/80 md:inline-flex"
           >
-            List your service
+            Become a vendor
           </Link>
           <div className="relative">
             <button
@@ -136,6 +136,7 @@ export function Navigation() {
               onClick={() => setMenuOpen((current) => !current)}
               className="inline-flex h-11 items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-white/92 px-4 text-sm font-semibold text-[#0D1321] shadow-[0_12px_30px_rgba(13,19,33,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(13,19,33,0.12)]"
               aria-expanded={menuOpen}
+              aria-label={navState.isLoggedIn ? "Account menu" : "Sign in and account menu"}
             >
               <span className="grid gap-1">
                 <span className="h-0.5 w-4 rounded-full bg-[#0D1321]" />
@@ -182,7 +183,9 @@ export function Navigation() {
         <div className="mx-auto grid max-w-7xl gap-2 border-t border-neutral-100 py-4 md:hidden">
           {[
             ...centerLinks,
-            { href: "/vendor/onboarding", label: "List your service" },
+            { href: "/vendor/login", label: "Become a vendor" },
+            { href: "/account", label: "My events" },
+            { href: "/auth/login", label: "Sign in" },
             { href: "/?info=1", label: "Pre-Beta information" },
             { href: "/support-project", label: "Contact Arivvio" },
           ]
