@@ -149,7 +149,7 @@ function VendorCardComponent({
         </div>
         <button type="button" onClick={(event) => { event.stopPropagation(); setProfileOpen(true); }} className="mt-4 w-full rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold hover:bg-neutral-50">View profile</button>
       </div>
-    </article>{profileOpen ? <ProviderProfile item={item} quote={quote} matchReason={matchReason} selected={Boolean(disableAdd ?? isSelected)} onAdd={() => onAdd(item)} onClose={() => setProfileOpen(false)} /> : null}</>
+    </article>{profileOpen ? <ProviderProfile item={item} quote={quote} matchReason={matchReason} selected={Boolean(disableAdd ?? isSelected)} onAdd={() => { setProfileOpen(false); onAdd(item); }} onClose={() => setProfileOpen(false)} /> : null}</>
   );
 }
 
