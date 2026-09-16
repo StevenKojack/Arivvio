@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl, {
   type LngLatBoundsLike,
   type Map as MapboxMap,
@@ -101,6 +101,7 @@ export function MarketplaceMap({
   const searchZoneRef = useRef<PlanningZone | null | undefined>(searchZone);
   const viewportSignatureRef = useRef("");
   const hasManualViewportRef = useRef(false);
+  const [mapFailed, setMapFailed] = useState(false);
   const isSheet = layout === "sheet";
   const isSticky = layout === "sticky";
   const pinsWithCoordinates = useMemo(
@@ -119,7 +120,7 @@ export function MarketplaceMap({
   const center = eventPoint ?? getCenter(visiblePoints);
   const initialCenterRef = useRef(center);
   const initialZoomRef = useRef(eventPoint ? 10 : 9);
-  const hasInteractiveMap = hasMapboxConfig();
+  const hasInteractiveMap = hasMapboxConfig() && !mapFailed;
 
   useEffect(() => {
     pinsRef.current = pinsWithCoordinates;
@@ -135,17 +136,24 @@ export function MarketplaceMap({
     }
 
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-    const map = new mapboxgl.Map({
-      attributionControl: false,
-      center: [initialCenterRef.current.lng, initialCenterRef.current.lat],
-      container: mapContainerRef.current,
-      cooperativeGestures: false,
-      dragRotate: false,
-      pitchWithRotate: false,
-      scrollZoom: true,
-      style: getMapboxStyleUrl(),
-      zoom: initialZoomRef.current,
-    });
+    let map: MapboxMap;
+
+    try {
+      map = new mapboxgl.Map({
+        attributionControl: false,
+        center: [initialCenterRef.current.lng, initialCenterRef.current.lat],
+        container: mapContainerRef.current,
+        cooperativeGestures: false,
+        dragRotate: false,
+        pitchWithRotate: false,
+        scrollZoom: true,
+        style: getMapboxStyleUrl(),
+        zoom: initialZoomRef.current,
+      });
+    } catch {
+      queueMicrotask(() => setMapFailed(true));
+      return;
+    }
 
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
     map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left");

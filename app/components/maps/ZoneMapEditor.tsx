@@ -78,7 +78,7 @@ export function ZoneMapEditor({
   const [statusMessage, setStatusMessage] = useState("");
   const [draftPoints, setDraftPoints] = useState<Coordinates[]>([]);
   const anchor = mapCenter ?? (zones[0] ? getZoneCenter(zones[0]) : getDefaultCenter());
-  const hasInteractiveMap = hasMapboxConfig();
+  const hasInteractiveMap = hasMapboxConfig() && mapState !== "error";
   const visibleZones = useMemo(
     () => (singleZone ? zones.slice(0, 1) : zones),
     [singleZone, zones],
@@ -116,17 +116,27 @@ export function ZoneMapEditor({
     setMapState("loading");
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-    const map = new mapboxgl.Map({
-      attributionControl: false,
-      center: [anchor.lng, anchor.lat],
-      container: mapContainerRef.current,
-      cooperativeGestures: false,
-      dragRotate: false,
-      pitchWithRotate: false,
-      scrollZoom: true,
-      style: getMapboxStyleUrl(),
-      zoom: mapZoom,
-    });
+    let map: MapboxMap;
+
+    try {
+      map = new mapboxgl.Map({
+        attributionControl: false,
+        center: [anchor.lng, anchor.lat],
+        container: mapContainerRef.current,
+        cooperativeGestures: false,
+        dragRotate: false,
+        pitchWithRotate: false,
+        scrollZoom: true,
+        style: getMapboxStyleUrl(),
+        zoom: mapZoom,
+      });
+    } catch {
+      queueMicrotask(() => {
+        setMapState("error");
+        setStatusMessage("Interactive maps are unavailable in this browser. A fallback area is ready instead.");
+      });
+      return;
+    }
 
     const handleLoad = () => {
       mapLoadedRef.current = true;
