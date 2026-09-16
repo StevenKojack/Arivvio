@@ -412,7 +412,9 @@ function detailGroup(
 }
 
 function mergeDetails(current: PlanDetailTag[], incoming: PlanDetailTag[]) {
-  const detailKey = (item: PlanDetailTag) => `${normalize(item.group)}:${normalize(item.label)}`;
+  // A user-visible detail should only appear once even if the taxonomy reaches
+  // it through both a specific service and a broader preference group.
+  const detailKey = (item: PlanDetailTag) => normalize(item.label);
   const map = new Map(current.map((item) => [detailKey(item), item]));
   incoming.forEach((item) => {
     const key = detailKey(item);
