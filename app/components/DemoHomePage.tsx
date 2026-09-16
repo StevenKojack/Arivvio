@@ -75,18 +75,17 @@ export function DemoHomePage() {
               Providers
             </p>
             <h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">
-              Bring your service into the Arivvio network.
+              Find new clients. Keep every event organized.
             </h2>
             <p className="mt-3 max-w-xl text-base leading-7 text-neutral-600">
-              Venues, caterers, entertainers, rental teams, florists, and event
-              specialists can prepare their business profiles for Arivvio. Live leads and bookings are not enabled yet.
+              Manage your calendar, services and outside bookings in one vendor workspace. Explore a fictional business account before signing up.
             </p>
           </div>
           <Link
-            href="/vendor/login"
+            href="/vendor/demo"
             className="inline-flex h-12 w-fit items-center justify-center rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(13,19,33,0.2)] transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
           >
-            Explore the vendor portal
+            Explore Vendor Demo
           </Link>
         </div>
       </section>

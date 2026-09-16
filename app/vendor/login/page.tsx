@@ -10,7 +10,8 @@ export default function VendorLoginPage() {
       <div className="mx-auto mt-12 max-w-xl lg:mt-20">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8A6A16]">Arivvio for vendors</p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight">Your business.<br />Their next great event.</h1>
-        <p className="mt-4 text-base leading-7 text-neutral-600">Sign in to manage your business profile, services and availability.</p>
+        <p className="mt-4 text-base leading-7 text-neutral-600">Find new clients and manage every event in one place.</p>
+        <div className="mt-6 rounded-2xl border border-[#D4AF37]/30 bg-white p-5"><Link href="/vendor/demo" className="inline-flex rounded-full bg-[#0D1321] px-5 py-3 text-sm font-semibold text-white">Explore Vendor Demo</Link><p className="mt-3 text-sm leading-6 text-neutral-600">Try events, calendar, availability and business setup. No account needed.</p></div>
         <Suspense fallback={<p className="mt-8">Loading sign in…</p>}><AuthForm mode="login" defaultNext="/vendor/dashboard" /></Suspense>
         <p className="mt-6 text-center text-sm text-neutral-500">Just looking for a service? <Link href="/vendors" className="font-semibold underline">Find vendors</Link></p>
       </div>
