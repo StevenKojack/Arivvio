@@ -82,6 +82,7 @@ export type MarketplaceServiceOption = {
 };
 
 export type MarketplaceItem = {
+  marketplaceRules?: import("@/lib/vendor-demo/model").MarketplaceRules;
   id: number;
   databaseSource?: boolean;
   name: string;

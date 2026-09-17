@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ThemeControl } from "./components/ThemeControl";
 
 export const metadata: Metadata = {
   title: "Arivvio | Plan any event in one place",
@@ -18,7 +19,7 @@ export default function RootLayout({
       className="h-full antialiased"
       data-build-commit={process.env.VERCEL_GIT_COMMIT_SHA ?? "local"}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">{children}<ThemeControl /></body>
     </html>
   );
 }

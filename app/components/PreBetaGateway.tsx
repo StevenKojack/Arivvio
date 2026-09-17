@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { SupportProjectForm } from "./SupportProjectForm";
 
 const demoFeatures = [
@@ -42,35 +42,7 @@ const supportAudiences = [
 
 export function PreBetaGateway() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [showSupport, setShowSupport] = useState(false);
-  const [isEntering, setIsEntering] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [hasEnteredSession, setHasEnteredSession] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      window.sessionStorage.getItem("arivvio-demo-entered") === "true",
-  );
-  const showInfo = searchParams.get("info") === "1";
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateMotionPreference = () => setPrefersReducedMotion(mediaQuery.matches);
-
-    updateMotionPreference();
-    mediaQuery.addEventListener("change", updateMotionPreference);
-
-    return () => mediaQuery.removeEventListener("change", updateMotionPreference);
-  }, []);
-
-  useEffect(() => {
-    const entered = window.sessionStorage.getItem("arivvio-demo-entered") === "true";
-
-    if (entered && !showInfo) {
-      router.replace("/demo");
-    }
-  }, [router, showInfo]);
-
   useEffect(() => {
     if (!showSupport) {
       return;
@@ -86,16 +58,9 @@ export function PreBetaGateway() {
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [showSupport]);
 
-  const enterDelay = useMemo(
-    () => (prefersReducedMotion ? 260 : 2100),
-    [prefersReducedMotion],
-  );
-
   function enterDemo() {
-    window.sessionStorage.setItem("arivvio-demo-entered", "true");
-    setHasEnteredSession(true);
-    setIsEntering(true);
-    window.setTimeout(() => router.push("/demo"), enterDelay);
+    try { window.sessionStorage.setItem("arivvio-demo-entered", "true"); } catch { /* The demo still opens if storage is unavailable. */ }
+    router.push("/demo");
   }
 
   return (
@@ -116,6 +81,7 @@ export function PreBetaGateway() {
             />
           </Link>
           <div className="flex items-center gap-2">
+            <Link href="/vendor/login" className="rounded-full border px-4 py-2 text-sm font-semibold">Become a vendor</Link>
             <Link
               href="/support-project"
               className="hidden rounded-full border border-[#D4AF37]/18 bg-white/78 px-4 py-2 text-sm font-semibold text-[#0D1321] shadow-[0_12px_30px_rgba(13,19,33,0.06)] transition hover:-translate-y-0.5 hover:border-[#D4AF37]/45 sm:inline-flex"
@@ -127,7 +93,7 @@ export function PreBetaGateway() {
               onClick={enterDemo}
               className="rounded-full bg-[#0D1321] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(13,19,33,0.18)] transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
             >
-              {hasEnteredSession ? "Continue Demo" : "Enter Demo"}
+              Enter Demo
             </button>
           </div>
         </nav>
@@ -337,7 +303,6 @@ export function PreBetaGateway() {
       {showSupport ? (
         <SupportModal onClose={() => setShowSupport(false)} />
       ) : null}
-      {isEntering ? <EnterDemoTransition reduced={prefersReducedMotion} /> : null}
     </main>
   );
 }
@@ -411,49 +376,6 @@ function SupportModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
         <SupportProjectForm />
-      </div>
-    </div>
-  );
-}
-
-function EnterDemoTransition({ reduced }: { reduced: boolean }) {
-  return (
-    <div
-      className={`fixed inset-0 z-[70] grid place-items-center bg-[#0D1321] text-white ${
-        reduced ? "animate-[gatewayFadeIn_220ms_ease-out]" : "animate-[gatewayFadeIn_280ms_ease-out]"
-      }`}
-      aria-live="polite"
-      aria-label="Entering the Arivvio demo"
-    >
-      <div className="grid justify-items-center px-6 text-center">
-        <Image
-          src="/logo-assets/web/arivvio-mark-dark.png"
-          alt=""
-          width={575}
-          height={570}
-          priority
-          className={`h-28 w-28 object-cover sm:h-36 sm:w-36 ${
-            reduced ? "" : "animate-[logoReveal_900ms_ease-out_forwards]"
-          }`}
-        />
-        <p className="mt-8 flex gap-2 text-2xl font-semibold tracking-[0.36em] sm:text-4xl">
-          {"ARIVVIO".split("").map((letter, index) => (
-            <span
-              key={`${letter}-${index}`}
-              className={reduced ? "" : "inline-block opacity-0 animate-[letterRise_520ms_ease-out_forwards]"}
-              style={{ animationDelay: `${520 + index * 72}ms` }}
-            >
-              {letter}
-            </span>
-          ))}
-        </p>
-        <p
-          className={`mt-4 text-sm font-semibold uppercase tracking-[0.32em] text-[#D4AF37] ${
-            reduced ? "" : "opacity-0 animate-[gatewayFadeIn_520ms_ease-out_1300ms_forwards]"
-          }`}
-        >
-          Elevate every event
-        </p>
       </div>
     </div>
   );

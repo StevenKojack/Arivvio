@@ -6,9 +6,17 @@ export type VendorEvent = {
   tasks: { title: string; done: boolean }[];
 };
 export type Hours = { enabled: boolean; start: string; end: string };
-export type DemoService = { id: string; name: string; category: string; details: string; price: string; active: boolean };
+export type DemoService = { id: string; name: string; category: string; details: string; price: string; active: boolean; pricingModel?: string; amount?: number; duration?: string; included?: string; addons?: string };
 export type Business = { name: string; location: string; description: string; contact: string; languages: string; specialties: string };
-export type HubState = { version: 1; events: VendorEvent[]; blocked: string[]; hours: Hours[]; business: Business; services: DemoService[] };
+export type MarketplaceRules = { headline: string; eventMode: "unspecified" | "selected"; served: string[]; excluded: string[]; audience: "unspecified" | "all" | "adults" | "kids" | "21plus"; tags: string[]; radius: number | null; region: string; travel: boolean; travelNotes: string };
+export type HubNotice = { id: string; title: string; body: string; at: string; read: boolean; eventId?: string; destination: "Calendar" | "Business Profile"; source: "Demo customer" | "Arivvio" | "Your activity" };
+export type HubState = { version: 1; events: VendorEvent[]; blocked: string[]; hours: Hours[]; business: Business; services: DemoService[]; rules?: MarketplaceRules; notices?: HubNotice[]; specialHours?: Record<string, Hours> };
+export function defaultRules(): MarketplaceRules { return { headline: "Music and hosting for your next celebration", eventMode: "unspecified", served: [], excluded: [], audience: "unspecified", tags: ["Bilingual", "Live mixing"], radius: null, region: "", travel: false, travelNotes: "" }; }
+export function hydrateHub(state: HubState): HubState { return { ...state, rules: { ...defaultRules(), ...state.rules }, specialHours: state.specialHours ?? {}, notices: state.notices ?? [
+  { id: "welcome", title: "Your calendar workspace is ready", body: "Manage outside bookings and sample Arivvio events together. This is a fictional demo account.", at: new Date().toISOString(), read: false, destination: "Calendar", source: "Arivvio" },
+  { id: "client-update", title: "Sample customer update", body: "Alex's family requested clean edits and a microphone for speeches. Review the sample event notes.", at: new Date().toISOString(), read: false, eventId: state.events.find(e => e.source === "ARIVVIO")?.id, destination: "Calendar", source: "Demo customer" },
+  { id: "setup", title: "Review your marketplace preferences", body: "Choose your event types, audience and travel area to make your profile more useful.", at: new Date().toISOString(), read: false, destination: "Business Profile", source: "Arivvio" },
+] }; }
 export const storageKey = "arivvio.vendor-demo.v1";
 export const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 export const serviceFields: Record<string, string> = {
@@ -36,7 +44,7 @@ export function seedHub(business: Business, now = new Date()): HubState {
 }
 export function daySchedule(state: HubState, date: string) {
   const events = state.events.filter(e => e.date === date).sort((a,b) => a.start.localeCompare(b.start));
-  const hours = state.hours[parseDate(date).getDay()];
+  const hours = state.specialHours?.[date] ?? state.hours[parseDate(date).getDay()];
   const blocked = state.blocked.includes(date);
   return { events, hours, blocked, label: blocked ? "Blocked" : !hours.enabled ? "Outside working hours" : events.length ? "Scheduled" : "Available" };
 }

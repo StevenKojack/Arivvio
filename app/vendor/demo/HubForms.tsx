@@ -1,5 +1,6 @@
 "use client";
 import { useState, type ReactNode } from "react";
+import { allServices } from "@/app/data/marketplace";
 import { days, serviceFields, scheduleWarnings, type VendorEvent, type HubState, type DemoService, type Business } from "@/lib/vendor-demo/model";
 
 export const inputClass = "mt-2 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-sm text-[#0D1321] focus:outline-2 focus:outline-[#8A6A16]";
@@ -8,7 +9,7 @@ export const secondaryClass = "rounded-full border border-neutral-300 bg-white p
 export function Field({ label, children }: { label: string; children: ReactNode }) { return <label className="block text-sm font-medium">{label}{children}</label>; }
 export function Panel({ title, children }: { title: string; children: ReactNode }) { return <section className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-7"><h2 className="mb-5 text-lg font-semibold">{title}</h2>{children}</section>; }
 
-export function EventForm({ event, state, onSave, onCancel }: { event: VendorEvent; state: HubState; onSave: (event: VendorEvent) => void; onCancel: () => void }) {
+export function EventForm({ event, state, onSave, onCancel, compact = false }: { event: VendorEvent; state: HubState; onSave: (event: VendorEvent) => void; onCancel: () => void; compact?: boolean }) {
   const [draft, setDraft] = useState(event);
   const [error, setError] = useState("");
   const [acknowledged, setAcknowledged] = useState(false);
@@ -28,7 +29,7 @@ export function EventForm({ event, state, onSave, onCancel }: { event: VendorEve
         <Field label="Service"><input required list="hub-services" maxLength={100} className={inputClass} value={draft.service} onChange={e => update("service", e.target.value)} /><datalist id="hub-services">{state.services.filter(s => s.active).map(s => <option key={s.id} value={s.name} />)}</datalist></Field>
         <Field label="Status"><select className={inputClass} value={draft.status} onChange={e => update("status", e.target.value)}>{["Confirmed", "Tentative", "Hold"].map(t => <option key={t}>{t}</option>)}</select></Field>
       </div>
-      <Field label="Notes and requirements"><textarea rows={3} maxLength={3000} className={inputClass} value={draft.notes} onChange={e => update("notes", e.target.value)} /></Field>
+      <details open={!compact}><summary className="cursor-pointer text-sm font-semibold">More details</summary><Field label="Notes and requirements"><textarea rows={3} maxLength={3000} className={inputClass} value={draft.notes} onChange={e => update("notes", e.target.value)} /></Field></details>
       {warnings.length > 0 && <div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-950"><p>{warnings.join(" ")}</p><label className="mt-3 flex items-center gap-3"><input type="checkbox" checked={acknowledged} onChange={e => setAcknowledged(e.target.checked)} />Save despite this scheduling conflict</label></div>}
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
       <div className="flex gap-3"><button className={buttonClass}>Save event</button><button type="button" onClick={onCancel} className={secondaryClass}>Cancel</button></div>
@@ -37,12 +38,15 @@ export function EventForm({ event, state, onSave, onCancel }: { event: VendorEve
 }
 
 export function ServiceForm({ service, onSave, onCancel }: { service: DemoService; onSave: (service: DemoService) => void; onCancel: () => void }) {
-  const [draft, setDraft] = useState(service);
-  return <Panel title="Service details"><form className="space-y-5" onSubmit={e => { e.preventDefault(); if (draft.name.trim() && draft.details.trim()) onSave(draft); }}>
+  const [draft, setDraft] = useState({ ...service, pricingModel: service.pricingModel ?? (service.price ? undefined : "Custom Quote") });
+  return <Panel title="Service details"><form className="space-y-5" onSubmit={e => { e.preventDefault(); if (draft.name.trim() && draft.details.trim()) onSave({ ...draft, price: !draft.pricingModel ? draft.price : draft.pricingModel === "Custom Quote" ? "Custom quote" : `${draft.pricingModel === "Starting At" ? "Starting at " : ""}$${(draft.amount ?? 0).toLocaleString()}${({"Per Hour":" / hour","Per Person":" / person","Per Event":" / event"} as Record<string,string>)[draft.pricingModel] ?? ""}` }); }}>
     <Field label="Service name"><input required className={inputClass} value={draft.name} onChange={e => setDraft({ ...draft, name: e.target.value })} /></Field>
-    <Field label="Service category"><select className={inputClass} value={draft.category} onChange={e => setDraft({ ...draft, category: e.target.value })}>{Object.keys(serviceFields).map(s => <option key={s}>{s}</option>)}</select></Field>
-    <Field label={serviceFields[draft.category]}><textarea required rows={4} className={inputClass} value={draft.details} onChange={e => setDraft({ ...draft, details: e.target.value })} /></Field>
-    <Field label="Pricing information"><input required className={inputClass} value={draft.price} onChange={e => setDraft({ ...draft, price: e.target.value })} /></Field>
+    <Field label="Service category"><select className={inputClass} value={draft.category} onChange={e => setDraft({ ...draft, category: e.target.value })}>{[...allServices, "Custom offering"].map(s => <option key={s}>{s}</option>)}</select></Field>
+    <Field label={serviceFields[draft.category] ?? "Capabilities, inclusions and requirements"}><textarea required rows={4} className={inputClass} value={draft.details} onChange={e => setDraft({ ...draft, details: e.target.value })} /></Field>
+    <div className="grid gap-4 sm:grid-cols-2"><Field label="Pricing model"><select className={inputClass} value={draft.pricingModel ?? "Custom Quote"} onChange={e=>setDraft({...draft,pricingModel:e.target.value})}>{["Fixed Price","Starting At","Per Hour","Per Person","Per Event","Custom Quote"].map(p=><option key={p}>{p}</option>)}</select></Field><Field label="Price in USD"><input type="number" min={0} max={1000000} step="0.01" disabled={!draft.pricingModel || draft.pricingModel === "Custom Quote"} required={Boolean(draft.pricingModel && draft.pricingModel !== "Custom Quote")} className={inputClass} value={draft.amount ?? ""} onChange={e=>setDraft({...draft,amount:e.target.value?Number(e.target.value):undefined})} /></Field></div>
+    <Field label="Duration or minimum"><input className={inputClass} placeholder="e.g. 4 hours or 30 guests" value={draft.duration ?? ""} onChange={e=>setDraft({...draft,duration:e.target.value})} /></Field>
+    <details><summary className="cursor-pointer text-sm font-semibold">Package inclusions and add-ons</summary><Field label="What is included"><textarea className={inputClass} value={draft.included ?? ""} onChange={e=>setDraft({...draft,included:e.target.value})} /></Field><Field label="Optional add-ons"><textarea className={inputClass} value={draft.addons ?? ""} onChange={e=>setDraft({...draft,addons:e.target.value})} /></Field></details>
+    {!draft.pricingModel && <Field label="Existing pricing description"><input required className={inputClass} value={draft.price} onChange={e => setDraft({ ...draft, price: e.target.value })} /></Field>}
     <div className="flex gap-3"><button className={buttonClass}>Save service</button><button type="button" className={secondaryClass} onClick={onCancel}>Cancel</button></div>
   </form></Panel>;
 }

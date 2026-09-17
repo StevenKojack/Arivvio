@@ -1,0 +1,10 @@
+"use client";
+import { useState } from "react";
+import type { HubNotice, HubState } from "@/lib/vendor-demo/model";
+import { WorkspacePanel } from "./WorkspacePanel";
+export function Notifications({ state, save, follow }: { state: HubState; save: (state: HubState, message?: string) => void; follow: (notice: HubNotice) => void }) {
+  const [open, setOpen] = useState(false);
+  const notices = state.notices ?? [];
+  const unread = notices.filter(n => !n.read).length;
+  return <><button className="hub-button" onClick={() => setOpen(true)} aria-label={`Notifications, ${unread} unread`}><span aria-hidden="true">🔔</span> Activity {unread > 0 && <span className="hub-counter">{unread}</span>}</button>{open && <WorkspacePanel title="Notifications" onClose={() => setOpen(false)}><p className="hub-muted mb-4 text-sm">Sample customer messages and your actual demo changes. No live messaging is connected.</p><button className="hub-button mb-4" disabled={!unread} onClick={() => save({ ...state, notices: notices.map(n => ({ ...n, read: true })) }, "All notifications marked read.")}>Mark all read</button><div className="space-y-3">{notices.map(n => <article key={n.id} className={`hub-card p-4 ${!n.read ? "notice-unread" : ""}`}><p className="hub-muted text-xs">{n.source} · {new Date(n.at).toLocaleString()}</p><h3 className="mt-2 font-semibold">{n.title}{!n.read && <span className="ml-2 text-xs">● Unread</span>}</h3><p className="hub-muted mt-2 text-sm leading-6">{n.body}</p><div className="mt-3 flex flex-wrap gap-2"><button className="hub-button" onClick={() => { save({ ...state, notices: notices.map(v => v.id === n.id ? { ...v, read: true } : v) }, ""); setOpen(false); follow(n); }}>{n.eventId ? "View event" : n.destination === "Calendar" ? "Review calendar" : "Edit profile"}</button><button className="hub-button" onClick={() => save({ ...state, notices: notices.map(v => v.id === n.id ? { ...v, read: !v.read } : v) }, "Notification updated.")}>{n.read ? "Mark unread" : "Mark read"}</button></div></article>)}</div></WorkspacePanel>}</>;
+}

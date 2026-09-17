@@ -2,6 +2,14 @@
 @import "mapbox-gl/dist/mapbox-gl.css";
 
 :root {
+  --hub-bg: #f7f6f2;
+  --hub-surface: #ffffff;
+  --hub-soft: #f0eee7;
+  --hub-text: #15211d;
+  --hub-muted: #5e6b64;
+  --hub-border: #dddeda;
+  --hub-accent: #235d49;
+  --hub-accent-text: #ffffff;
   --background: #ffffff;
   --foreground: #0D1321;
   --arivvio-navy: #0D1321;
@@ -11,6 +19,67 @@
   --arivvio-cream: #F7F4EC;
   --arivvio-paper: #FFFCF7;
 }
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #101713;
+  --foreground: #edf3ee;
+  --hub-bg: #101713;
+  --hub-surface: #19231e;
+  --hub-soft: #24322b;
+  --hub-text: #edf3ee;
+  --hub-muted: #b0bdb4;
+  --hub-border: #394a40;
+  --hub-accent: #8ad1af;
+  --hub-accent-text: #11241a;
+}
+.hub-card { background: var(--hub-surface); border: 1px solid var(--hub-border); border-radius: 18px; color: var(--hub-text); }
+.hub-muted { color: var(--hub-muted); }
+.hub-input { border: 1px solid var(--hub-border); border-radius: 10px; padding: 9px 12px; background: var(--hub-surface); color: var(--hub-text); max-width: 100%; }
+.hub-button, .hub-primary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 24px; border: 1px solid var(--hub-border); padding: 9px 14px; font-size: 13px; font-weight: 600; min-height: 40px; background: var(--hub-surface); color: var(--hub-text); }
+.hub-primary { background: var(--hub-accent); color: var(--hub-accent-text); border-color: transparent; }
+.hub-button:hover { background: var(--hub-soft); }
+.hub-button:disabled, .hub-primary:disabled { opacity: .5; cursor: default; }
+.hub-counter { background: var(--hub-accent); color: var(--hub-accent-text); border-radius: 50%; padding: 2px 6px; font-size: 11px; }
+.calendar-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
+.calendar-cell { min-height: 125px; min-width: 0; padding: 4px; border: 1px solid var(--hub-border); background: var(--hub-surface); }
+.calendar-unavailable, .calendar-cell.empty { background: var(--hub-soft); }
+.calendar-selected { outline: 2px solid var(--hub-accent); outline-offset: -2px; }
+.calendar-date { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; font-size: 12px; border-radius: 50%; }
+.calendar-today { background: var(--hub-accent); color: var(--hub-accent-text); }
+.calendar-event { display: block; width: 100%; padding: 6px; margin-top: 3px; border-radius: 7px; font-size: 11px; text-align: left; overflow: hidden; overflow-wrap: anywhere; }
+.event-confirmed { background: #dfefe5; color: #215239; }
+.event-tentative { background: #fff0cd; color: #765314; }
+.event-hold { background: #eee5fa; color: #61408a; }
+.calendar-add { width: 100%; min-height: 40px; color: var(--hub-muted); font-size: 20px; }
+.workspace-drawer { inset: 0 0 0 auto; margin: 0; height: 100dvh; max-height: 100dvh; width: min(480px, 100vw); max-width: 100vw; border: 0; border-left: 1px solid var(--hub-border); background: var(--hub-surface); color: var(--hub-text); overflow-y: auto; box-shadow: -20px 0 60px #0002; animation: workspace-in 180ms ease-out; }
+.workspace-drawer::backdrop { background: #0b1b142b; }
+.notice-unread { border-left: 3px solid var(--hub-accent); }
+.theme-control { position: fixed; right: 14px; bottom: 10px; z-index: 45; border: 1px solid var(--hub-border); border-radius: 18px; background: var(--hub-surface); color: var(--hub-text); padding: 7px 11px; font-size: 12px; box-shadow: 0 3px 15px #0001; }
+.theme-control select { margin-left: 6px; background: var(--hub-surface); color: var(--hub-text); }
+.context-reveal { animation: context-in 180ms ease-out; }
+.vendor-hub { padding-bottom: 45px; }
+@keyframes context-in { from { opacity: .3; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes workspace-in { from { opacity: .5; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+@media (max-width: 1200px) { .calendar-workspace { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 640px) { .calendar-cell { min-height: 95px; padding: 2px; } .calendar-event { font-size: 9px; padding: 3px; } .calendar-date { width: 28px; height: 32px; } .vendor-hub > aside { padding: 12px; } .vendor-hub > aside > div { margin-top: 8px; } .vendor-hub > main { padding: 16px 10px 50px; } }
+@media (prefers-reduced-motion: reduce) { .context-reveal, .workspace-drawer { animation: none; } html { scroll-behavior: auto; } }
+
+/* Central compatibility layer for existing Arivvio surfaces while they adopt tokens. */
+html[data-theme="dark"] :is(main,section,aside,article,dialog,div,header,footer,button,select,input,textarea,span,a)[class*="bg-white"],
+html[data-theme="dark"] :is(main,section,aside,article,dialog,div,header)[class*="bg-[#F"],
+html[data-theme="dark"] .vendor-hub { background-color: var(--hub-surface); color: var(--hub-text); }
+html[data-theme="dark"] :is(main,div,section)[class*="bg-[radial-gradient"],
+html[data-theme="dark"] :is(main,div,section)[class*="bg-[linear-gradient"] { background-image: none; background-color: var(--hub-soft); }
+html[data-theme="dark"] :is(p,h1,h2,h3,h4,span,div,main,section,button,a,select,input,textarea)[class*="text-neutral-9"],
+html[data-theme="dark"] [class*="text-[#0D1321]"] { color: var(--hub-text); }
+html[data-theme="dark"] [class*="text-neutral-5"], html[data-theme="dark"] [class*="text-neutral-6"], html[data-theme="dark"] [class*="text-neutral-7"] { color: var(--hub-muted); }
+html[data-theme="dark"] [class*="border-neutral"], html[data-theme="dark"] .vendor-hub :is(input,select,textarea) { border-color: var(--hub-border); }
+html[data-theme="dark"] [class*="bg-neutral-100"], html[data-theme="dark"] [class*="bg-[#EFEAE0]"] { background-color: var(--hub-soft); }
+html[data-theme="dark"] [class*="text-[#8A6A16]"] { color: #dcc77f; }
+html[data-theme="dark"] .event-confirmed { background: #193e2c; color: #b8ebcd; }
+html[data-theme="dark"] .event-tentative { background: #493a18; color: #f2dca0; }
+html[data-theme="dark"] .event-hold { background: #38264c; color: #e0c4fc; }
 
 @theme inline {
   --color-background: var(--background);
