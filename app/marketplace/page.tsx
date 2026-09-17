@@ -4,9 +4,9 @@ import { MarketplaceBrowser } from "./MarketplaceBrowser";
 
 export default function MarketplacePage() {
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#FFFCF7,#F7F4EC)] text-neutral-950">
+    <main className="min-h-screen ui-page">
       <Navigation />
-      <section className="w-full px-3 pb-4 pt-3 sm:px-4">
+      <section className="mx-auto max-w-[1600px] px-4 pb-4 pt-5 sm:px-8">
         <Suspense fallback={<MarketplaceLoading />}>
           <MarketplaceBrowser />
         </Suspense>

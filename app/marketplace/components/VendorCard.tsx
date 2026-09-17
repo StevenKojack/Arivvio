@@ -7,6 +7,7 @@ import type { MarketplaceItem } from "@/app/data/marketplace";
 import { getVendorImage } from "@/lib/marketplace/vendorImages";
 
 type VendorCardProps = {
+  preview?: boolean;
   buttonLabel?: string;
   disableAdd?: boolean;
   isHighlighted?: boolean;
@@ -21,6 +22,7 @@ type VendorCardProps = {
 };
 
 function VendorCardComponent({
+  preview = false,
   buttonLabel = "Add to quote",
   disableAdd,
   isHighlighted = false,
@@ -56,15 +58,11 @@ function VendorCardComponent({
       onMouseLeave={() => onHover?.(null)}
       role="button"
       tabIndex={0}
-      className={`w-full overflow-hidden rounded-[28px] border bg-white shadow-[0_14px_38px_rgba(13,19,33,0.055)] transition duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(13,19,33,0.11)] ${
-        isSelected
-          ? "border-[#D4AF37] ring-4 ring-[#D4AF37]/18"
-          : isHighlighted
-            ? "border-[#0D1321] ring-4 ring-[#0D1321]/10"
-            : "border-[#D4AF37]/14"
-      }`}
+      data-selected={isSelected}
+      className={`provider-card w-full overflow-hidden rounded-2xl transition hover:shadow-lg ${isHighlighted ? "outline outline-1" : ""}`}
+
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-[#f2f0ec]">
+      <div className="relative aspect-[16/10] overflow-hidden bg-[#f2f0ec]">
         <Image
           src={imageUrl}
           alt=""
@@ -76,17 +74,17 @@ function VendorCardComponent({
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_38%,rgba(13,19,33,0.62))]" />
         <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-          <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-neutral-900 backdrop-blur">
+          <span className="rounded-full ui-surface px-3 py-1 text-xs font-semibold ui-text backdrop-blur">
             {item.type}
           </span>
           <span
             className={`rounded-full px-3 py-1 text-xs font-semibold backdrop-blur ${
               isSelected
-                ? "bg-[#D4AF37] text-[#0D1321]"
-                : "bg-[#0D1321]/80 text-white"
+                ? "ui-primary"
+                : "bg-[#26334b] text-[#f1ede4]"
             }`}
           >
-            {matchLabel}
+            {matchLabel || (item.serviceRadiusMiles ? `${item.serviceRadiusMiles} mi service area` : item.type)}
           </span>
         </div>
       </div>
@@ -98,25 +96,23 @@ function VendorCardComponent({
         ) : null}
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] ui-muted">
               {item.location}
             </p>
-            <h3 className="mt-2 line-clamp-2 text-lg font-semibold tracking-tight text-neutral-950">
+            <h3 className="mt-2 line-clamp-2 text-lg font-semibold tracking-tight ui-text">
               {item.name}
             </h3>
           </div>
-          <span className="shrink-0 rounded-full bg-[#F6F3EA] px-2.5 py-1 text-xs font-semibold text-[#0D1321]">
-            {item.rating.toFixed(1)}
-          </span>
+
         </div>
-        <p className="mt-3 line-clamp-2 min-h-12 text-sm leading-6 text-neutral-600">
+        <p className="mt-3 line-clamp-2 min-h-12 text-sm leading-6 ui-muted">
           {matchReason}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full bg-[#F6F3EA] px-2.5 py-1 text-xs font-semibold text-neutral-600 ring-1 ring-[#D4AF37]/10"
+              className="rounded-full ui-soft px-2.5 py-1 text-xs font-semibold ui-muted ring-1 ring-[#D4AF37]/10"
             >
               {tag}
             </span>
@@ -124,11 +120,11 @@ function VendorCardComponent({
         </div>
         <div className="mt-4 flex items-end justify-between gap-3">
           <div>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs ui-muted">
               {isDemoProvider ? "Demo estimate" : "Estimated from"}
             </p>
-            <p className="text-lg font-semibold text-neutral-950">
-              ${quote.toLocaleString()}
+            <p className="text-lg font-semibold ui-text">
+              {preview ? item.serviceOptions?.[0]?.estimateLabel || "Request pricing" : `$${quote.toLocaleString()}`}
             </p>
           </div>
           <button
@@ -136,20 +132,20 @@ function VendorCardComponent({
             disabled={disableAdd ?? isSelected}
             onClick={(event) => {
               event.stopPropagation();
-              onAdd(item);
+              if (preview) setProfileOpen(true); else onAdd(item);
             }}
             className={`h-10 rounded-full px-4 text-sm font-semibold transition hover:-translate-y-0.5 disabled:cursor-default disabled:hover:translate-y-0 ${
               isSelected
-                ? "bg-[#FFF8E1] text-[#8A6A16]"
-                : "bg-[#0D1321] text-white shadow-[0_12px_26px_rgba(13,19,33,0.18)] hover:bg-[#111A2E]"
+                ? "ui-soft"
+                : "ui-primary shadow-[0_12px_26px_rgba(13,19,33,0.18)] hover:opacity-90"
             }`}
           >
             {buttonLabel}
           </button>
         </div>
-        <button type="button" onClick={(event) => { event.stopPropagation(); setProfileOpen(true); }} className="mt-4 w-full rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold hover:bg-neutral-50">View profile</button>
+        <button type="button" onClick={(event) => { event.stopPropagation(); setProfileOpen(true); }} className="mt-4 w-full rounded-full border ui-border px-4 py-2 text-sm font-semibold hover:opacity-80">View profile</button>
       </div>
-    </article>{profileOpen ? <ProviderProfile item={item} quote={quote} matchReason={matchReason} selected={Boolean(disableAdd ?? isSelected)} onAdd={() => { setProfileOpen(false); onAdd(item); }} onClose={() => setProfileOpen(false)} /> : null}</>
+    </article>{profileOpen ? <ProviderProfile preview={preview} item={item} quote={quote} matchReason={matchReason} selected={Boolean(disableAdd ?? isSelected)} onAdd={() => { setProfileOpen(false); if (!preview) onAdd(item); }} onClose={() => setProfileOpen(false)} /> : null}</>
   );
 }
 

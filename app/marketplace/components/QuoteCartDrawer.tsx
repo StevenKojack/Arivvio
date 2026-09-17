@@ -60,21 +60,21 @@ export function QuoteCartDrawer({
 
   if (isBar) {
     return (
-      <aside className="min-w-0 rounded-[24px] border border-[#D4AF37]/16 bg-white/95 p-3 shadow-[0_18px_56px_rgba(13,19,33,0.08)] backdrop-blur transition duration-200 ease-out">
+      <aside className="min-w-0 rounded-[24px] border border-[#D4AF37]/16 ui-surface p-3 shadow-[0_18px_56px_rgba(13,19,33,0.08)] backdrop-blur transition duration-200 ease-out">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] ui-muted">
               Quote cart
             </p>
             <div className="mt-1 flex flex-wrap items-end gap-x-3 gap-y-1">
               <h2 className="text-xl font-semibold tracking-tight">
                 {cart.length} selected
               </h2>
-              <p className="text-sm font-semibold text-neutral-600">
+              <p className="text-sm font-semibold ui-muted">
                 ${total.toLocaleString()} demo est.
               </p>
             </div>
-            <p className="mt-1 truncate text-xs font-semibold text-neutral-500">
+            <p className="mt-1 truncate text-xs font-semibold ui-muted">
               {cartMessage || eventSummary}
             </p>
             <p className="mt-1 text-xs font-semibold text-[#8A6A16]">
@@ -93,7 +93,7 @@ export function QuoteCartDrawer({
             <button
               type="button"
               onClick={onOpen}
-              className="h-10 rounded-full border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-800"
+              className="h-10 rounded-full border ui-border ui-surface px-4 text-sm font-semibold ui-text"
             >
               View cart
             </button>
@@ -101,7 +101,7 @@ export function QuoteCartDrawer({
               type="button"
               onClick={onRequestQuotes}
               disabled={isRequestingQuotes}
-              className="h-10 rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(13,19,33,0.18)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+              className="h-10 rounded-full ui-primary px-4 text-sm font-semibold shadow-[0_12px_26px_rgba(13,19,33,0.18)] transition duration-200 ease-out hover:-translate-y-0.5 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
             >
               {isRequestingQuotes ? "Requesting..." : "Request demo quotes"}
             </button>
@@ -113,7 +113,7 @@ export function QuoteCartDrawer({
 
   return (
     <aside
-      className={`min-w-0 rounded-[28px] border border-[#D4AF37]/16 bg-white/95 shadow-[0_22px_70px_rgba(13,19,33,0.08)] backdrop-blur transition duration-200 ease-out hover:shadow-[0_26px_82px_rgba(13,19,33,0.1)] ${
+      className={`min-w-0 rounded-[28px] border border-[#D4AF37]/16 ui-surface shadow-[0_22px_70px_rgba(13,19,33,0.08)] backdrop-blur transition duration-200 ease-out hover:shadow-[0_26px_82px_rgba(13,19,33,0.1)] ${
         isCompact
           ? "max-h-[52vh] overflow-y-auto p-4"
           : isWorkspace
@@ -123,7 +123,7 @@ export function QuoteCartDrawer({
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] ui-muted">
             Quote cart
           </p>
           <h2 className={`${isCompact ? "mt-1 text-xl" : "mt-2 text-2xl"} font-semibold tracking-tight`}>
@@ -135,7 +135,7 @@ export function QuoteCartDrawer({
         </span>
       </div>
 
-      <p className="mt-4 rounded-2xl bg-[#F6F3EA] px-4 py-3 text-sm text-neutral-600 ring-1 ring-[#D4AF37]/10">
+      <p className="mt-4 rounded-2xl ui-soft px-4 py-3 text-sm ui-muted ring-1 ring-[#D4AF37]/10">
         {eventSummary}
       </p>
       <p className="mt-3 rounded-2xl bg-[#FFF8E1] px-4 py-3 text-xs font-semibold leading-5 text-[#8A6A16]">
@@ -169,12 +169,12 @@ export function QuoteCartDrawer({
             />
           ))
         ) : (
-          <div className="rounded-2xl border border-dashed border-neutral-300 p-4 text-sm leading-6 text-neutral-500">
+          <div className="rounded-2xl border border-dashed ui-border p-4 text-sm leading-6 ui-muted">
             Add vendors from the rows to build a clean quote estimate.
           </div>
         )}
         {isCompact && cart.length > 3 ? (
-          <p className="px-1 text-xs font-semibold text-neutral-500">
+          <p className="px-1 text-xs font-semibold ui-muted">
             +{cart.length - 3} more selected
           </p>
         ) : null}
@@ -182,7 +182,7 @@ export function QuoteCartDrawer({
 
       <div className={`${isCompact ? "mt-4 pt-4" : "mt-5 pt-5"} border-t border-neutral-100`}>
         <div className="flex items-end justify-between">
-          <p className="text-sm text-neutral-500">Demo estimated total</p>
+          <p className="text-sm ui-muted">Demo estimated total</p>
           <p className={`${isCompact ? "text-2xl" : "text-3xl"} font-semibold`}>
             ${total.toLocaleString()}
           </p>
@@ -191,7 +191,7 @@ export function QuoteCartDrawer({
           type="button"
           onClick={onRequestQuotes}
           disabled={isRequestingQuotes}
-          className="mt-5 h-12 w-full rounded-full bg-[#0D1321] text-sm font-semibold text-white shadow-[0_14px_30px_rgba(13,19,33,0.18)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+          className="mt-5 h-12 w-full rounded-full ui-primary text-sm font-semibold shadow-[0_14px_30px_rgba(13,19,33,0.18)] transition duration-200 ease-out hover:-translate-y-0.5 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
         >
           {isRequestingQuotes ? "Requesting..." : "Request demo quotes"}
         </button>
@@ -214,8 +214,8 @@ function CartPrompt({
       <p
         className={
           compact
-            ? "hidden rounded-full border border-neutral-200 px-3 py-2 text-xs font-semibold text-neutral-600 sm:inline-flex"
-            : "mt-4 rounded-2xl border border-neutral-200 px-4 py-3 text-sm font-semibold text-neutral-600"
+            ? "hidden rounded-full border ui-border px-3 py-2 text-xs font-semibold ui-muted sm:inline-flex"
+            : "mt-4 rounded-2xl border ui-border px-4 py-3 text-sm font-semibold ui-muted"
         }
       >
         Checking account...
@@ -229,8 +229,8 @@ function CartPrompt({
         href="/auth/login"
         className={
           compact
-            ? "hidden rounded-full border border-neutral-200 px-3 py-2 text-xs font-semibold text-neutral-700 transition hover:-translate-y-0.5 hover:border-[#0D1321] sm:inline-flex"
-            : "mt-4 block rounded-2xl border border-neutral-200 px-4 py-3 text-sm font-semibold text-neutral-700 transition hover:border-[#0D1321]"
+            ? "hidden rounded-full border ui-border px-3 py-2 text-xs font-semibold ui-muted transition hover:-translate-y-0.5 hover:border-[#0D1321] sm:inline-flex"
+            : "mt-4 block rounded-2xl border ui-border px-4 py-3 text-sm font-semibold ui-muted transition hover:border-[#0D1321]"
         }
       >
         {compact ? "Log in to save" : "Log in to save your quote cart."}
@@ -242,8 +242,8 @@ function CartPrompt({
     <p
       className={
         compact
-          ? "hidden rounded-full border border-neutral-200 px-3 py-2 text-xs font-semibold text-neutral-600 sm:inline-flex"
-          : "mt-4 rounded-2xl border border-neutral-200 px-4 py-3 text-sm font-semibold text-neutral-600"
+          ? "hidden rounded-full border ui-border px-3 py-2 text-xs font-semibold ui-muted sm:inline-flex"
+          : "mt-4 rounded-2xl border ui-border px-4 py-3 text-sm font-semibold ui-muted"
       }
     >
       {compact ? "Save event to sync" : "Save this event to sync your quote cart."}
@@ -276,18 +276,18 @@ function CartLineCard({
   );
 
   return (
-    <div className="rounded-2xl border border-[#D4AF37]/14 bg-[#FFFCF7] p-4">
+    <div className="rounded-2xl border border-[#D4AF37]/14 ui-soft p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-semibold text-neutral-950">{line.item.name}</p>
-          <p className="mt-1 text-xs font-medium text-neutral-500">
+          <p className="font-semibold ui-text">{line.item.name}</p>
+          <p className="mt-1 text-xs font-medium ui-muted">
             {line.serviceTitle} - {line.item.pricing.label}
           </p>
         </div>
         <button
           type="button"
           onClick={() => onRemove(line.id)}
-          className="text-xs font-semibold text-neutral-500 transition hover:text-neutral-950"
+          className="text-xs font-semibold ui-muted transition hover:text-neutral-950"
         >
           Remove
         </button>
@@ -330,12 +330,12 @@ function CartTimeField({
   value: string;
 }) {
   return (
-    <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500">
+    <label className="text-[11px] font-semibold uppercase tracking-[0.12em] ui-muted">
       {label}
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1 h-9 w-full rounded-xl border border-neutral-200 bg-white px-2 text-sm text-neutral-950"
+        className="mt-1 h-9 w-full rounded-xl border ui-border ui-surface px-2 text-sm ui-text"
       >
         {timeOptions.map((option) => (
           <option key={option.value} value={option.value}>

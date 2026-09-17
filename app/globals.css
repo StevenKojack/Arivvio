@@ -5,10 +5,10 @@
   --hub-bg: #f7f6f2;
   --hub-surface: #ffffff;
   --hub-soft: #f0eee7;
-  --hub-text: #15211d;
-  --hub-muted: #5e6b64;
+  --hub-text: #202b3d;
+  --hub-muted: #626a78;
   --hub-border: #dddeda;
-  --hub-accent: #235d49;
+  --hub-accent: #23334e;
   --hub-accent-text: #ffffff;
   --background: #ffffff;
   --foreground: #0D1321;
@@ -22,17 +22,38 @@
 
 html[data-theme="dark"] {
   color-scheme: dark;
-  --background: #101713;
-  --foreground: #edf3ee;
-  --hub-bg: #101713;
-  --hub-surface: #19231e;
-  --hub-soft: #24322b;
-  --hub-text: #edf3ee;
-  --hub-muted: #b0bdb4;
-  --hub-border: #394a40;
-  --hub-accent: #8ad1af;
-  --hub-accent-text: #11241a;
+  --background: #181e29;
+  --foreground: #e9e6df;
+  --hub-bg: #181e29;
+  --hub-surface: #222a38;
+  --hub-soft: #2b3545;
+  --hub-text: #e9e6df;
+  --hub-muted: #adb5c3;
+  --hub-border: #414b5d;
+  --hub-accent: #c5ad72;
+  --hub-accent-text: #222a38;
 }
+.ui-page { background: var(--hub-bg); color: var(--hub-text); }
+.ui-surface { background: var(--hub-surface); color: var(--hub-text); border-color: var(--hub-border); }
+.ui-soft { background: var(--hub-soft); color: var(--hub-text); }
+.ui-text { color: var(--hub-text); }
+.ui-muted { color: var(--hub-muted); }
+.ui-primary { background: var(--hub-accent); color: var(--hub-accent-text); }
+.ui-border { border-color: var(--hub-border); }
+:focus-visible { outline: 2px solid var(--arivvio-gold); outline-offset: 3px; }
+.brand-dark { display: none; }
+html[data-theme="dark"] .brand-light { display: none; }
+html[data-theme="dark"] .brand-dark { display: block; }
+.brand-logo { border-radius: 50%; object-fit: cover; }
+.demo-entry { position: fixed; inset: 0; z-index: 100; display: grid; place-content: center; justify-items: center; gap: 18px; background: var(--hub-bg); color: var(--hub-text); animation: context-in 180ms ease-out; }
+.demo-entry strong { font-size: 28px; letter-spacing: .12em; }
+.lobby-backdrop { background: radial-gradient(circle at 76% 16%, #c5ad721c, transparent 45%); }
+.provider-card { height: 100%; background: var(--hub-surface); border: 1px solid var(--hub-border); color: var(--hub-text); }
+.provider-card[data-selected="true"] { border-color: var(--arivvio-gold); }
+.listing-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(min(100%,260px),1fr)); gap: 20px; }
+.calendar-menu { position: fixed; z-index: 50; width: 210px; padding: 8px; box-shadow: 0 12px 40px #0004; }
+.calendar-menu button { display: block; width: 100%; padding: 10px; text-align: left; border-radius: 8px; }
+.calendar-menu button:hover { background: var(--hub-soft); }
 .hub-card { background: var(--hub-surface); border: 1px solid var(--hub-border); border-radius: 18px; color: var(--hub-text); }
 .hub-muted { color: var(--hub-muted); }
 .hub-input { border: 1px solid var(--hub-border); border-radius: 10px; padding: 9px 12px; background: var(--hub-surface); color: var(--hub-text); max-width: 100%; }
@@ -58,7 +79,8 @@ html[data-theme="dark"] {
 .theme-control { position: fixed; right: 14px; bottom: 10px; z-index: 45; border: 1px solid var(--hub-border); border-radius: 18px; background: var(--hub-surface); color: var(--hub-text); padding: 7px 11px; font-size: 12px; box-shadow: 0 3px 15px #0001; }
 .theme-control select { margin-left: 6px; background: var(--hub-surface); color: var(--hub-text); }
 .context-reveal { animation: context-in 180ms ease-out; }
-.vendor-hub { padding-bottom: 45px; }
+.vendor-hub { padding-bottom: 45px; background: var(--hub-bg); }
+.vendor-hub nav[aria-label="Vendor workspace"] button[aria-current="page"] { background: var(--hub-accent); color: var(--hub-accent-text); }
 @keyframes context-in { from { opacity: .3; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @keyframes workspace-in { from { opacity: .5; transform: translateX(12px); } to { opacity: 1; transform: none; } }
 @media (max-width: 1200px) { .calendar-workspace { grid-template-columns: minmax(0,1fr); } }
@@ -67,15 +89,15 @@ html[data-theme="dark"] {
 
 /* Central compatibility layer for existing Arivvio surfaces while they adopt tokens. */
 html[data-theme="dark"] :is(main,section,aside,article,dialog,div,header,footer,button,select,input,textarea,span,a)[class*="bg-white"],
-html[data-theme="dark"] :is(main,section,aside,article,dialog,div,header)[class*="bg-[#F"],
-html[data-theme="dark"] .vendor-hub { background-color: var(--hub-surface); color: var(--hub-text); }
+html[data-theme="dark"] :is(main,section,aside,article,dialog,div,header)[class*="bg-[#F"] { background-color: var(--hub-surface); color: var(--hub-text); }
+html[data-theme="dark"] .vendor-hub { background-color: var(--hub-bg); }
 html[data-theme="dark"] :is(main,div,section)[class*="bg-[radial-gradient"],
 html[data-theme="dark"] :is(main,div,section)[class*="bg-[linear-gradient"] { background-image: none; background-color: var(--hub-soft); }
 html[data-theme="dark"] :is(p,h1,h2,h3,h4,span,div,main,section,button,a,select,input,textarea)[class*="text-neutral-9"],
 html[data-theme="dark"] [class*="text-[#0D1321]"] { color: var(--hub-text); }
 html[data-theme="dark"] [class*="text-neutral-5"], html[data-theme="dark"] [class*="text-neutral-6"], html[data-theme="dark"] [class*="text-neutral-7"] { color: var(--hub-muted); }
 html[data-theme="dark"] [class*="border-neutral"], html[data-theme="dark"] .vendor-hub :is(input,select,textarea) { border-color: var(--hub-border); }
-html[data-theme="dark"] [class*="bg-neutral-100"], html[data-theme="dark"] [class*="bg-[#EFEAE0]"] { background-color: var(--hub-soft); }
+html[data-theme="dark"] [class~="bg-neutral-100"], html[data-theme="dark"] [class*="bg-[#EFEAE0]"] { background-color: var(--hub-soft); }
 html[data-theme="dark"] [class*="text-[#8A6A16]"] { color: #dcc77f; }
 html[data-theme="dark"] .event-confirmed { background: #193e2c; color: #b8ebcd; }
 html[data-theme="dark"] .event-tentative { background: #493a18; color: #f2dca0; }

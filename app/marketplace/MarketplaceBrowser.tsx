@@ -64,7 +64,7 @@ import { formatTime } from "@/lib/utils/format";
 import { ZoneMapEditor } from "@/app/components/maps/ZoneMapEditor";
 import { FilterDrawer } from "./components/FilterDrawer";
 import { MarketplaceMap, type MarketplaceMapPin } from "./components/MarketplaceMap";
-import { MemoizedMarketplaceRow as MarketplaceRow } from "./components/MarketplaceRow";
+import { VendorCard } from "./components/VendorCard";
 import { QuoteCartDrawer } from "./components/QuoteCartDrawer";
 
 type MarketplaceFilter = (typeof marketplaceTypes)[number];
@@ -173,6 +173,10 @@ export function MarketplaceBrowser() {
   );
   const [excludedServices, setExcludedServices] = useState<ServiceName[]>([]);
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("Recommended");
+  const [language,setLanguage]=useState("");
+  const [specialty,setSpecialty]=useState("");
+  const [maxEstimate,setMaxEstimate]=useState("");
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [eventDate, setEventDate] = useState(searchParams.get("date") ?? "");
   const [startTime, setStartTime] = useState(searchParams.get("time") ?? "14:00");
@@ -204,6 +208,7 @@ export function MarketplaceBrowser() {
   const activeRowFrameRef = useRef<number | null>(null);
   const [isMobileMapOpen, setIsMobileMapOpen] = useState(false);
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+  useEffect(()=>{if(!isMobileMapOpen && !isMobileCartOpen) return; const close=(event:KeyboardEvent)=>{if(event.key === "Escape"){setIsMobileMapOpen(false);setIsMobileCartOpen(false);}};window.addEventListener("keydown",close);return()=>window.removeEventListener("keydown",close);},[isMobileMapOpen,isMobileCartOpen]);
   const [pendingServiceItem, setPendingServiceItem] = useState<MarketplaceItem | null>(null);
   const [selectedMapItemId, setSelectedMapItemId] = useState<number | null>(null);
   const [isRequestingQuotes, setIsRequestingQuotes] = useState(false);
@@ -362,6 +367,9 @@ export function MarketplaceBrowser() {
       );
 
       return (
+        (!language || item.languages?.includes(language)) &&
+        (!specialty || item.tags?.includes(specialty)) &&
+        (!maxEstimate || quoteItem(item,globalQuoteContext) <= Number(maxEstimate)) &&
         matchesEvent &&
         matchesServices &&
         !isExcluded &&
@@ -406,6 +414,7 @@ export function MarketplaceBrowser() {
     eventIntelligence,
     globalQuoteContext,
     normalizedQuery,
+    language, specialty, maxEstimate,
     providers,
     initialSearchRadiusMiles,
     planningContext,
@@ -416,6 +425,9 @@ export function MarketplaceBrowser() {
     selectedServices,
     startTime,
   ]);
+  const filterProviders = providers.filter(item=>!selectedServices.length || itemMatchesServices(item,selectedServices));
+  const availableLanguages=[...new Set(filterProviders.flatMap(item=>item.languages ?? []))].sort();
+  const availableSpecialties=[...new Set(filterProviders.flatMap(item=>item.tags ?? []))].sort();
   const planMatchReasons = useMemo<Record<number, string>>(
     () => Object.fromEntries(filteredItems.flatMap((item) => {
       const reason = getPlanMatchReason(item, eventIntelligence);
@@ -433,15 +445,6 @@ export function MarketplaceBrowser() {
     () => Array.from(new Set(cart.map((line) => line.serviceName))),
     [cart],
   );
-  const selectedServiceCountByVendor = useMemo(() => {
-    const counts = new Map<number, number>();
-
-    cart.forEach((line) => {
-      counts.set(line.item.id, (counts.get(line.item.id) ?? 0) + 1);
-    });
-
-    return counts;
-  }, [cart]);
   const marketplaceRows = useMemo(
     () => buildMarketplaceRows(filteredItems, entryMode === "browse" || entryMode === "category" ? [] : selectedServices),
     [entryMode, filteredItems, selectedServices],
@@ -1132,7 +1135,7 @@ export function MarketplaceBrowser() {
   return (
     <>
       <div className="relative min-h-[calc(100vh-5rem)] w-full overflow-x-clip">
-        <EventContextPanel
+        <details className="hub-card mb-4 p-4"><summary className="cursor-pointer text-sm font-semibold">Your event · {serviceSummary || planSummary || "Browse providers"} · Edit context</summary><div className="mt-3"><EventContextPanel
           entryMode={entryMode}
           eventDate={eventDate}
           eventLocationLabel={eventLocationLabel}
@@ -1156,10 +1159,10 @@ export function MarketplaceBrowser() {
           onSelectAddressSuggestion={selectAddressSuggestion}
           onToggleHomeVenue={() => setUseHomeVenue((current) => !current)}
           onUseCurrentLocation={useCurrentLocation}
-        />
+        /></div></details>
 
         {isZoneEditorOpen ? (
-          <div className="mt-3 rounded-[30px] border border-[#D4AF37]/16 bg-white p-3 shadow-[0_18px_56px_rgba(13,19,33,0.055)]">
+          <div className="mt-3 rounded-[30px] border border-[#D4AF37]/16 ui-surface p-3 shadow-[0_18px_56px_rgba(13,19,33,0.055)]">
             <ZoneMapEditor
               defaultLabel="Marketplace search area"
               heightClassName="h-[52vh] min-h-[480px]"
@@ -1186,7 +1189,7 @@ export function MarketplaceBrowser() {
           </div>
         ) : null}
 
-        <div className="mt-3 grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(430px,44vw)_minmax(280px,320px)] 2xl:grid-cols-[minmax(0,1fr)_minmax(560px,46vw)_320px]">
+        <div className="mt-5 grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
           <section
             className="min-w-0 space-y-4 pb-28 xl:pb-4"
             aria-label="Vendor discovery"
@@ -1195,7 +1198,7 @@ export function MarketplaceBrowser() {
             <button
               type="button"
               onClick={() => setIsMobileMapOpen(true)}
-              className="fixed bottom-5 right-5 z-40 rounded-full bg-[#0D1321] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_48px_rgba(13,19,33,0.28)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#111A2E]"
+              className="fixed bottom-5 right-5 z-40 rounded-full ui-primary px-5 py-3 text-sm font-semibold shadow-[0_18px_48px_rgba(13,19,33,0.28)] transition duration-200 hover:-translate-y-0.5 hover:opacity-90"
             >
               Map
             </button>
@@ -1204,59 +1207,12 @@ export function MarketplaceBrowser() {
             </div>
           </div>
 
-          {marketplaceRows.length ? (
-            <div className="space-y-6 animate-[fadeUp_280ms_ease-out]">
-              {marketplaceRows.map((row) => (
-                <div key={row.id} data-marketplace-row={row.id}>
-                  <MarketplaceRow
-                    activeItemId={selectedMapItemId}
-                    cartedIds={cartedIds}
-                    selectedServiceCountByVendor={selectedServiceCountByVendor}
-                    rowId={row.id}
-                    title={row.title}
-                    description={row.description}
-                    items={row.items}
-                    matchReasons={planMatchReasons}
-                    quoteContext={globalQuoteContext}
-                    onAdd={addToCart}
-                    onHoverItem={setMapHoverItem}
-                    onSelectItem={selectMapItem}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-[28px] border border-dashed border-neutral-300 bg-white p-8 text-center">
-              <h2 className="text-2xl font-semibold tracking-tight text-neutral-950">
-                No close matches yet
-              </h2>
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-neutral-600">
-                Try opening filters or adjusting the location context.
-              </p>
-            </div>
-          )}
-        </section>
+          <header className="flex flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-semibold">Find your event team</h1><p className="hub-muted mt-1 text-sm">{filteredItems.length} providers found · Demo pricing and availability</p></div><div className="flex gap-2"><button className="hub-button" onClick={()=>setIsFilterDrawerOpen(true)}>Filters</button><button className="hub-button" onClick={()=>setIsMobileMapOpen(true)}>Show map</button></div></header>
+          <div className="hub-card flex flex-wrap items-center gap-3 p-3"><input aria-label="Search providers" className="hub-input min-w-0 flex-1" placeholder="Name, location or specialty" value={query} onChange={e=>setQuery(e.target.value)} /><select aria-label="Sort providers" className="hub-input" value={sort} onChange={e=>setSort(e.target.value)}><option>Recommended</option><option>Price: low to high</option><option>Name</option></select><span className="hub-muted text-xs">{selectedServices.length ? selectedServices.join(", ") : "All services"}</span></div>
+          <div className="flex flex-wrap gap-3"><select aria-label="Language filter" className="hub-input text-sm" value={language} onChange={e=>setLanguage(e.target.value)}><option value="">Any language</option>{availableLanguages.map(value=><option key={value}>{value}</option>)}</select><select aria-label="Specialty filter" className="hub-input max-w-full text-sm" value={specialty} onChange={e=>setSpecialty(e.target.value)}><option value="">Any specialty</option>{availableSpecialties.map(value=><option key={value}>{value}</option>)}</select><input aria-label="Maximum demo estimate" type="number" min={0} className="hub-input w-48 text-sm" placeholder="Max demo estimate ($)" value={maxEstimate} onChange={e=>setMaxEstimate(e.target.value)} />{(language || specialty || maxEstimate || query) && <button className="hub-button" onClick={()=>{setLanguage("");setSpecialty("");setMaxEstimate("");setQuery("");}}>Clear search filters</button>}</div>
+          {filteredItems.length ? <div className="listing-grid" data-marketplace-row="best-matches">{[...filteredItems].sort((a,b)=>sort === "Price: low to high" ? quoteItem(a,globalQuoteContext)-quoteItem(b,globalQuoteContext) : sort === "Name" ? a.name.localeCompare(b.name) : 0).map(item=><div key={item.id} data-vendor-id={item.id} data-row-id="best-matches" id={`vendor-card-best-matches-${item.id}`}><VendorCard item={item} quote={quoteItem(item,globalQuoteContext)} isSelected={cartedIds.includes(item.id)} disableAdd={cart.filter(line=>line.item.id===item.id).length >= (item.serviceOptions?.length ?? item.services.length)} buttonLabel={cartedIds.includes(item.id)?"Added ✓":"Add to quote"} matchLabel={cartedIds.includes(item.id)?"Added":""} matchReason={planMatchReasons[item.id] ?? item.description} onAdd={addToCart} onSelect={selectMapItem} onHover={setMapHoverItem} /></div>)}</div> : <div className="hub-card p-8 text-center"><h2 className="text-xl font-semibold">No matching providers</h2><p className="hub-muted mt-2">Try adjusting your filters or search.</p></div>}
 
-        <aside
-          className="relative hidden min-w-0 self-stretch xl:block"
-          aria-label="Interactive map workspace"
-        >
-          <div className="sticky top-3">
-            <MarketplaceMap
-              activeCategory={activeRow?.title ?? "Best matches"}
-              cartedIds={cartedIds}
-              eventCoordinates={eventCoordinates}
-              hoveredItemId={hoveredItemId}
-              layout="sticky"
-              pins={mapPins}
-              searchZone={searchZone}
-              selectedItemId={selectedMapItemId}
-              onAddItem={addToCart}
-              onHoverItem={setMapHoverItem}
-              onSelectItem={selectMapItem}
-            />
-          </div>
-        </aside>
+        </section>
 
         <aside
           className="relative hidden min-w-0 self-stretch xl:block"
@@ -1269,7 +1225,7 @@ export function MarketplaceBrowser() {
 
       {isMobileMapOpen ? (
         <div
-          className="fixed inset-0 z-50 flex items-end bg-[#0D1321]/35 px-3 py-4 backdrop-blur-sm xl:hidden"
+          className="fixed inset-0 z-50 flex items-end bg-[#0D1321]/35 px-3 py-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-label="Marketplace map"
@@ -1283,7 +1239,7 @@ export function MarketplaceBrowser() {
               <button
                 type="button"
                 onClick={() => setIsMobileMapOpen(false)}
-                className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-neutral-950 shadow-[0_16px_40px_rgba(13,19,33,0.18)] transition hover:-translate-y-0.5"
+                className="rounded-full ui-surface px-4 py-2 text-sm font-semibold ui-text shadow-[0_16px_40px_rgba(13,19,33,0.18)] transition hover:-translate-y-0.5"
               >
                 Close
               </button>
@@ -1321,7 +1277,7 @@ export function MarketplaceBrowser() {
               <button
                 type="button"
                 onClick={() => setIsMobileCartOpen(false)}
-                className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-neutral-950 shadow-[0_16px_40px_rgba(13,19,33,0.18)]"
+                className="rounded-full ui-surface px-4 py-2 text-sm font-semibold ui-text shadow-[0_16px_40px_rgba(13,19,33,0.18)]"
               >
                 Back to marketplace
               </button>
@@ -1429,12 +1385,12 @@ function ServiceSelectionDialog({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl rounded-[30px] bg-white p-5 shadow-[0_34px_120px_rgba(13,19,33,0.22)]"
+        className="w-full max-w-2xl rounded-[30px] ui-surface p-5 shadow-[0_34px_120px_rgba(13,19,33,0.22)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] ui-muted">
               {item.name}
             </p>
             <h2 className="mt-1 text-2xl font-semibold tracking-tight">
@@ -1444,7 +1400,7 @@ function ServiceSelectionDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-[#0D1321]"
+            className="rounded-full border ui-border px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-[#0D1321]"
           >
             Close
           </button>
@@ -1463,8 +1419,8 @@ function ServiceSelectionDialog({
                 onClick={() => toggleService(option.service)}
                 className={`rounded-3xl border p-4 text-left transition hover:-translate-y-0.5 disabled:cursor-default disabled:opacity-60 disabled:hover:translate-y-0 ${
                   isSelected
-                    ? "border-[#0D1321] bg-[#0D1321] text-white"
-                    : "border-neutral-200 bg-[#FFFCF7] text-neutral-950 hover:border-neutral-400"
+                    ? "border-[#0D1321] ui-primary"
+                    : "ui-border ui-soft ui-text hover:border-neutral-400"
                 }`}
               >
                 <span className="flex items-start justify-between gap-4">
@@ -1474,7 +1430,7 @@ function ServiceSelectionDialog({
                     </span>
                     <span
                       className={`mt-1 block text-xs font-semibold ${
-                        isSelected ? "text-neutral-300" : "text-neutral-500"
+                        isSelected ? "text-neutral-300" : "ui-muted"
                       }`}
                     >
                       {option.service}
@@ -1483,8 +1439,8 @@ function ServiceSelectionDialog({
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${
                       isSelected
-                        ? "bg-white text-neutral-950"
-                        : "bg-white text-neutral-700"
+                        ? "ui-surface ui-text"
+                        : "ui-surface ui-muted"
                     }`}
                   >
                     {isAlreadyInCart
@@ -1494,7 +1450,7 @@ function ServiceSelectionDialog({
                 </span>
                 <span
                   className={`mt-3 block text-sm leading-6 ${
-                    isSelected ? "text-neutral-200" : "text-neutral-600"
+                    isSelected ? "text-neutral-200" : "ui-muted"
                   }`}
                 >
                   {option.description}
@@ -1505,7 +1461,7 @@ function ServiceSelectionDialog({
         </div>
 
         <div className="mt-5 flex flex-col gap-3 border-t border-neutral-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-semibold text-neutral-600">
+          <p className="text-sm font-semibold ui-muted">
             {selectedOptions.length
               ? `${selectedOptions.length} service${selectedOptions.length === 1 ? "" : "s"} selected`
               : "Select at least one service to add."}
@@ -1514,7 +1470,7 @@ function ServiceSelectionDialog({
             type="button"
             disabled={!selectedOptions.length}
             onClick={() => onConfirm(selectedOptions)}
-            className="h-12 rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+            className="h-12 rounded-full ui-primary px-6 text-sm font-semibold transition hover:-translate-y-0.5 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
           >
             Add selected services
           </button>
@@ -1599,18 +1555,18 @@ function EventContextPanel({
   onUseCurrentLocation: () => void;
 }) {
   return (
-    <section className="rounded-[24px] border border-[#D4AF37]/16 bg-white/92 p-3 shadow-[0_14px_44px_rgba(13,19,33,0.055)] backdrop-blur sm:p-4">
+    <section className="rounded-[24px] border border-[#D4AF37]/16 ui-surface p-3 shadow-[0_14px_44px_rgba(13,19,33,0.055)] backdrop-blur sm:p-4">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] ui-muted">
             {getEntryModeLabel(entryMode)}
           </p>
-          <h2 className="mt-1 truncate text-xl font-semibold tracking-tight text-neutral-950">
+          <h2 className="mt-1 truncate text-xl font-semibold tracking-tight ui-text">
             {entryMode === "service"
               ? serviceSummary
               : planSummary || "Vendor marketplace"}
           </h2>
-          <p className="mt-1 line-clamp-1 text-sm text-neutral-600">
+          <p className="mt-1 line-clamp-1 text-sm ui-muted">
             {marketplaceMessage}
           </p>
         </div>
@@ -1629,8 +1585,8 @@ function EventContextPanel({
             onClick={onToggleHomeVenue}
             className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 ${
               useHomeVenue
-                ? "bg-[#0D1321] text-white shadow-[0_12px_26px_rgba(13,19,33,0.16)]"
-                : "border border-[#D4AF37]/20 bg-white text-neutral-800"
+                ? "ui-primary shadow-[0_12px_26px_rgba(13,19,33,0.16)]"
+                : "border border-[#D4AF37]/20 ui-surface ui-text"
             }`}
           >
             {useHomeVenue ? "Using address" : "Use address"}
@@ -1638,14 +1594,14 @@ function EventContextPanel({
           <button
             type="button"
             onClick={onEditArea}
-            className="shrink-0 rounded-full border border-[#D4AF37]/20 bg-white px-4 py-2 text-sm font-semibold text-neutral-950 transition hover:-translate-y-0.5 hover:border-[#D4AF37]/60"
+            className="shrink-0 rounded-full border border-[#D4AF37]/20 ui-surface px-4 py-2 text-sm font-semibold ui-text transition hover:-translate-y-0.5 hover:border-[#D4AF37]/60"
           >
             Edit area
           </button>
           <button
             type="button"
             onClick={onOpenFilters}
-            className="shrink-0 rounded-full border border-[#D4AF37]/20 bg-white px-4 py-2 text-sm font-semibold text-neutral-950 transition hover:-translate-y-0.5 hover:border-[#D4AF37]/60"
+            className="shrink-0 rounded-full border border-[#D4AF37]/20 ui-surface px-4 py-2 text-sm font-semibold ui-text transition hover:-translate-y-0.5 hover:border-[#D4AF37]/60"
           >
             Refine
           </button>
@@ -1653,30 +1609,30 @@ function EventContextPanel({
       </div>
 
       {initialNotes ? (
-        <p className="mt-3 rounded-2xl bg-[#F6F3EA] px-4 py-2 text-sm font-semibold text-neutral-700 ring-1 ring-[#D4AF37]/10">
+        <p className="mt-3 rounded-2xl ui-soft px-4 py-2 text-sm font-semibold ui-muted ring-1 ring-[#D4AF37]/10">
           Added details: {initialNotes}
         </p>
       ) : null}
 
       {useHomeVenue ? (
-          <div className="mt-3 grid gap-3 rounded-2xl border border-[#D4AF37]/14 bg-[#FFFCF7] p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className="mt-3 grid gap-3 rounded-2xl border border-[#D4AF37]/14 ui-soft p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
             <input
               value={homeAddress}
               onChange={(event) => onHomeAddressChange(event.target.value)}
               placeholder="Home or event address"
-              className="h-11 rounded-2xl border border-[#D4AF37]/20 px-3 text-sm font-semibold text-neutral-900 outline-none focus:border-[#D4AF37]"
+              className="h-11 rounded-2xl border border-[#D4AF37]/20 px-3 text-sm font-semibold ui-text outline-none focus:border-[#D4AF37]"
             />
             <button
               type="button"
               onClick={onUseCurrentLocation}
-              className="h-11 rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(13,19,33,0.16)] transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
+              className="h-11 rounded-full ui-primary px-4 text-sm font-semibold shadow-[0_12px_26px_rgba(13,19,33,0.16)] transition hover:-translate-y-0.5 hover:opacity-90"
             >
               Use current location
             </button>
             {isSearchingAddress || addressSuggestions.length ? (
-              <div className="overflow-hidden rounded-2xl border border-[#D4AF37]/14 bg-white sm:col-span-2">
+              <div className="overflow-hidden rounded-2xl border border-[#D4AF37]/14 ui-surface sm:col-span-2">
                 {isSearchingAddress ? (
-                  <p className="px-4 py-3 text-xs font-semibold text-neutral-500">
+                  <p className="px-4 py-3 text-xs font-semibold ui-muted">
                     Searching nearby matches...
                   </p>
                 ) : null}
@@ -1688,10 +1644,10 @@ function EventContextPanel({
                     className="flex w-full items-start justify-between gap-3 border-t border-neutral-100 px-4 py-3 text-left transition hover:bg-[#FFF8E1]"
                   >
                     <span>
-                      <span className="block text-sm font-semibold text-neutral-900">
+                      <span className="block text-sm font-semibold ui-text">
                         {suggestion.label}
                       </span>
-                      <span className="mt-1 block text-xs font-semibold text-neutral-500">
+                      <span className="mt-1 block text-xs font-semibold ui-muted">
                         {getSuggestionLabel(suggestion)}
                       </span>
                     </span>
@@ -1703,7 +1659,7 @@ function EventContextPanel({
               </div>
             ) : null}
             {locationStatus ? (
-              <p className="text-xs font-semibold text-neutral-600 sm:col-span-2">
+              <p className="text-xs font-semibold ui-muted sm:col-span-2">
                 {locationStatus}
               </p>
             ) : null}
@@ -1729,11 +1685,11 @@ function getSuggestionLabel(suggestion: AddressSuggestion) {
 
 function SummaryPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-w-fit rounded-full bg-[#F6F3EA] px-3 py-2 ring-1 ring-[#D4AF37]/10">
+    <div className="min-w-fit rounded-full ui-soft px-3 py-2 ring-1 ring-[#D4AF37]/10">
       <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8A6A16]/70">
         {label}
       </p>
-      <p className="truncate text-xs font-semibold text-neutral-800">{value}</p>
+      <p className="truncate text-xs font-semibold ui-text">{value}</p>
     </div>
   );
 }

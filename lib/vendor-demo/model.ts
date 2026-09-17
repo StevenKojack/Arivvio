@@ -6,11 +6,13 @@ export type VendorEvent = {
   tasks: { title: string; done: boolean }[];
 };
 export type Hours = { enabled: boolean; start: string; end: string };
+export type ListingMedia = { cover?: string; profile?: string; gallery: string[] };
+export type SchedulingPolicy = { mode: "single" | "capacity" | "manual"; simultaneous: number; dailyLimit: number | null };
 export type DemoService = { id: string; name: string; category: string; details: string; price: string; active: boolean; pricingModel?: string; amount?: number; duration?: string; included?: string; addons?: string };
 export type Business = { name: string; location: string; description: string; contact: string; languages: string; specialties: string };
 export type MarketplaceRules = { headline: string; eventMode: "unspecified" | "selected"; served: string[]; excluded: string[]; audience: "unspecified" | "all" | "adults" | "kids" | "21plus"; tags: string[]; radius: number | null; region: string; travel: boolean; travelNotes: string };
 export type HubNotice = { id: string; title: string; body: string; at: string; read: boolean; eventId?: string; destination: "Calendar" | "Business Profile"; source: "Demo customer" | "Arivvio" | "Your activity" };
-export type HubState = { version: 1; events: VendorEvent[]; blocked: string[]; hours: Hours[]; business: Business; services: DemoService[]; rules?: MarketplaceRules; notices?: HubNotice[]; specialHours?: Record<string, Hours> };
+export type HubState = { version: 1; events: VendorEvent[]; blocked: string[]; hours: Hours[]; business: Business; services: DemoService[]; rules?: MarketplaceRules; notices?: HubNotice[]; specialHours?: Record<string, Hours>; media?: ListingMedia; scheduling?: SchedulingPolicy };
 export function defaultRules(): MarketplaceRules { return { headline: "Music and hosting for your next celebration", eventMode: "unspecified", served: [], excluded: [], audience: "unspecified", tags: ["Bilingual", "Live mixing"], radius: null, region: "", travel: false, travelNotes: "" }; }
 export function hydrateHub(state: HubState): HubState { return { ...state, rules: { ...defaultRules(), ...state.rules }, specialHours: state.specialHours ?? {}, notices: state.notices ?? [
   { id: "welcome", title: "Your calendar workspace is ready", body: "Manage outside bookings and sample Arivvio events together. This is a fictional demo account.", at: new Date().toISOString(), read: false, destination: "Calendar", source: "Arivvio" },
@@ -46,7 +48,8 @@ export function daySchedule(state: HubState, date: string) {
   const events = state.events.filter(e => e.date === date).sort((a,b) => a.start.localeCompare(b.start));
   const hours = state.specialHours?.[date] ?? state.hours[parseDate(date).getDay()];
   const blocked = state.blocked.includes(date);
-  return { events, hours, blocked, label: blocked ? "Blocked" : !hours.enabled ? "Outside working hours" : events.length ? "Scheduled" : "Available" };
+  const atDailyLimit = Boolean(state.scheduling?.dailyLimit && events.length >= state.scheduling.dailyLimit);
+  return { events, hours, blocked, label: blocked ? "Blocked" : !hours.enabled ? "Outside working hours" : atDailyLimit ? "Daily capacity reached" : events.length ? "Scheduled" : "Available" };
 }
 export function scheduleWarnings(state: HubState, event: VendorEvent): string[] {
   if (!event.date || Number.isNaN(parseDate(event.date).getTime())) return [];
@@ -54,6 +57,15 @@ export function scheduleWarnings(state: HubState, event: VendorEvent): string[] 
   const warnings: string[] = [];
   if (blocked) warnings.push("This date is blocked.");
   if (!hours.enabled || event.start < hours.start || event.end > hours.end) warnings.push("This event falls outside your working hours.");
-  if (state.events.some(e => e.id !== event.id && e.date === event.date && e.start < event.end && event.start < e.end)) warnings.push("This time overlaps another event or hold.");
+  const others = state.events.filter(e => e.id !== event.id && e.date === event.date);
+  const policy = state.scheduling ?? { mode: "single", simultaneous: 1, dailyLimit: null };
+  if (policy.dailyLimit && others.length >= policy.dailyLimit) warnings.push("This date has reached your daily event limit.");
+  if (policy.mode !== "manual") {
+    const capacity = policy.mode === "single" ? 1 : Math.max(1, policy.simultaneous);
+    // Sweep clipped intervals. End points sort first, so adjacent bookings do not overlap.
+    const points = others.filter(e => e.start < event.end && event.start < e.end).flatMap(e => [{time:e.start < event.start ? event.start : e.start,delta:1},{time:e.end > event.end ? event.end : e.end,delta:-1}]).sort((a,b)=>a.time.localeCompare(b.time) || a.delta-b.delta);
+    let concurrent = 0;
+    if (points.some(p => { concurrent += p.delta; return concurrent >= capacity; })) warnings.push(`This time overlaps bookings beyond your capacity of ${capacity} simultaneous event${capacity === 1 ? "" : "s"}.`);
+  }
   return warnings;
 }

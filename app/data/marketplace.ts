@@ -89,6 +89,8 @@ export type MarketplaceItem = {
   type: ServiceName;
   location: string;
   photoUrl?: string | null;
+  profileImageUrl?: string;
+  galleryUrls?: string[];
   address: string;
   coordinates: Coordinates;
   price: string;

@@ -3,11 +3,11 @@ import { useState, type ReactNode } from "react";
 import { allServices } from "@/app/data/marketplace";
 import { days, serviceFields, scheduleWarnings, type VendorEvent, type HubState, type DemoService, type Business } from "@/lib/vendor-demo/model";
 
-export const inputClass = "mt-2 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-sm text-[#0D1321] focus:outline-2 focus:outline-[#8A6A16]";
-export const buttonClass = "rounded-full bg-[#0D1321] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50";
-export const secondaryClass = "rounded-full border border-neutral-300 bg-white px-4 py-2.5 text-sm font-semibold text-[#0D1321]";
+export const inputClass = "hub-input mt-2 w-full text-sm";
+export const buttonClass = "hub-primary";
+export const secondaryClass = "hub-button";
 export function Field({ label, children }: { label: string; children: ReactNode }) { return <label className="block text-sm font-medium">{label}{children}</label>; }
-export function Panel({ title, children }: { title: string; children: ReactNode }) { return <section className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-7"><h2 className="mb-5 text-lg font-semibold">{title}</h2>{children}</section>; }
+export function Panel({ title, children }: { title: string; children: ReactNode }) { return <section className="rounded-2xl border ui-border ui-surface p-5 sm:p-7"><h2 className="mb-5 text-lg font-semibold">{title}</h2>{children}</section>; }
 
 export function EventForm({ event, state, onSave, onCancel, compact = false }: { event: VendorEvent; state: HubState; onSave: (event: VendorEvent) => void; onCancel: () => void; compact?: boolean }) {
   const [draft, setDraft] = useState(event);
@@ -16,7 +16,7 @@ export function EventForm({ event, state, onSave, onCancel, compact = false }: {
   const warnings = scheduleWarnings(state, draft);
   function update(key: keyof VendorEvent, value: string) { setDraft({ ...draft, [key]: value }); setAcknowledged(false); setError(""); }
   return <Panel title={state.events.some(e => e.id === event.id) ? "Edit event" : "Add an external booking"}>
-    <p className="mb-6 text-sm text-neutral-600">Keep every event here, wherever your client found you. Times use your business location&apos;s local time. Use a separate entry for each day of a multi-day event.</p>
+    <p className="mb-6 text-sm ui-muted">Keep every event here, wherever your client found you. Times use your business location&apos;s local time. Use a separate entry for each day of a multi-day event.</p>
     <form onSubmit={e => { e.preventDefault(); if (draft.end <= draft.start) { setError("End time must be after start time on the same day."); return; } if (!draft.name.trim() || !draft.client.trim()) { setError("Enter an event and client name."); return; } if (warnings.length && !acknowledged) { setError("Review the scheduling notice and confirm before saving."); return; } onSave(draft); }} className="space-y-5">
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Event name"><input required maxLength={100} className={inputClass} value={draft.name} onChange={e => update("name", e.target.value)} /></Field>
@@ -54,7 +54,7 @@ export function ServiceForm({ service, onSave, onCancel }: { service: DemoServic
 export function BusinessForm({ business, onSave }: { business: Business; onSave: (business: Business) => void }) {
   const [draft, setDraft] = useState(business);
   return <Panel title="Business profile"><form className="space-y-5" onSubmit={e => { e.preventDefault(); if (draft.name.trim()) onSave(draft); }}>
-    <p className="text-sm text-neutral-600">Return here anytime. Saved fields feed your customer profile preview. Demo edits are not published to the public marketplace.</p>
+    <p className="text-sm ui-muted">Return here anytime. Saved fields feed your customer profile preview. Demo edits are not published to the public marketplace.</p>
     {([["name", "Business name"], ["location", "Service area"], ["contact", "Business email"], ["languages", "Languages"], ["specialties", "Event specialties"]] as const).map(([key, label]) => <Field key={key} label={label}><input required={key === "name" || key === "location"} type={key === "contact" ? "email" : "text"} className={inputClass} value={draft[key]} onChange={e => setDraft({ ...draft, [key]: e.target.value })} /></Field>)}
     <Field label="Business description"><textarea rows={4} className={inputClass} value={draft.description} onChange={e => setDraft({ ...draft, description: e.target.value })} /></Field>
     <button className={buttonClass}>Save profile</button>
@@ -65,8 +65,8 @@ export function WorkingHours({ state, onSave }: { state: HubState; onSave: (hour
   const [hours, setHours] = useState(state.hours);
   const [error, setError] = useState("");
   return <Panel title="Normal working schedule"><form onSubmit={e => { e.preventDefault(); if (hours.some(h => h.enabled && h.end <= h.start)) { setError("Each closing time must be after its opening time."); return; } setError(""); onSave(hours); }} className="space-y-4">
-    <p className="text-sm text-neutral-600">Local business time. Events reserve their time range. Tentative events and holds also flag conflicts. Blocked dates override these hours.</p>
-    {hours.map((h, i) => <div key={days[i]} className="flex flex-wrap items-center gap-3 border-b pb-3"><label className="flex w-32 items-center gap-2 text-sm"><input type="checkbox" checked={h.enabled} onChange={e => setHours(hours.map((v,j) => j === i ? { ...v, enabled: e.target.checked } : v))} />{days[i]}</label>{h.enabled ? <><input aria-label={`${days[i]} opening time`} required type="time" className="rounded-lg border p-2 text-sm" value={h.start} onChange={e => setHours(hours.map((v,j) => j === i ? { ...v, start: e.target.value } : v))} /><span>to</span><input aria-label={`${days[i]} closing time`} required type="time" className="rounded-lg border p-2 text-sm" value={h.end} onChange={e => setHours(hours.map((v,j) => j === i ? { ...v, end: e.target.value } : v))} /></> : <span className="text-sm text-neutral-500">Unavailable</span>}</div>)}
+    <p className="text-sm ui-muted">Local business time. Events reserve their time range. Tentative events and holds also flag conflicts. Blocked dates override these hours.</p>
+    {hours.map((h, i) => <div key={days[i]} className="flex flex-wrap items-center gap-3 border-b pb-3"><label className="flex w-32 items-center gap-2 text-sm"><input type="checkbox" checked={h.enabled} onChange={e => setHours(hours.map((v,j) => j === i ? { ...v, enabled: e.target.checked } : v))} />{days[i]}</label>{h.enabled ? <><input aria-label={`${days[i]} opening time`} required type="time" className="rounded-lg border p-2 text-sm" value={h.start} onChange={e => setHours(hours.map((v,j) => j === i ? { ...v, start: e.target.value } : v))} /><span>to</span><input aria-label={`${days[i]} closing time`} required type="time" className="rounded-lg border p-2 text-sm" value={h.end} onChange={e => setHours(hours.map((v,j) => j === i ? { ...v, end: e.target.value } : v))} /></> : <span className="text-sm ui-muted">Unavailable</span>}</div>)}
     {error && <p role="alert" className="text-red-700">{error}</p>}<button className={buttonClass}>Save working hours</button>
   </form></Panel>;
 }
