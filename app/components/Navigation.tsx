@@ -107,7 +107,7 @@ export function Navigation() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-full px-5 py-2 transition hover:-translate-y-0.5 hover:bg-[#FFF8E1] hover:text-[#0D1321]"
+              className="rounded-full px-5 py-2 transition hover:-translate-y-0.5 hover:opacity-80"
             >
               {item.label}
             </Link>
@@ -117,7 +117,7 @@ export function Navigation() {
         {isInternalDemoRoute ? (
           <Link
             href="/?info=1"
-            className="hidden rounded-full border border-[#D4AF37]/18 bg-[#FFF8E1] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8A6A16] transition hover:-translate-y-0.5 hover:border-[#D4AF37]/50 lg:inline-flex"
+            className="hidden rounded-full border border-[#D4AF37]/18 ui-soft px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8A6A16] transition hover:-translate-y-0.5 hover:border-[#D4AF37]/50 lg:inline-flex"
           >
             Pre-Beta Demo
           </Link>
@@ -126,7 +126,7 @@ export function Navigation() {
         <div className="flex items-center gap-2">
           <Link
             href="/vendor/login"
-            className="hidden rounded-full px-4 py-2 text-sm font-semibold ui-text transition hover:-translate-y-0.5 hover:bg-white/80 md:inline-flex"
+            className="hidden rounded-full px-4 py-2 text-sm font-semibold ui-text transition hover:-translate-y-0.5 hover:opacity-80 md:inline-flex"
           >
             Become a vendor
           </Link>
@@ -161,7 +161,7 @@ export function Navigation() {
                       key={`${item.href}-${item.label}`}
                       href={item.href}
                       onClick={() => setMenuOpen(false)}
-                      className="block px-4 py-3 text-sm font-semibold ui-muted transition hover:bg-[#FFF8E1] hover:text-[#0D1321]"
+                      className="block px-4 py-3 text-sm font-semibold ui-muted transition hover:opacity-80"
                     >
                       {item.label}
                     </Link>

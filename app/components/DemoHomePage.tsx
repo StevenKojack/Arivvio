@@ -18,8 +18,8 @@ export function DemoHomePage() {
           sizes="100vw"
           className="absolute inset-0 -z-20 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(247,244,236,0.97),rgba(247,244,236,0.84)_45%,rgba(247,244,236,0.42)),linear-gradient(180deg,rgba(255,252,247,0.4),rgba(247,244,236,0.96))]" />
-        <div className="absolute bottom-0 left-0 right-0 -z-10 h-28 bg-[linear-gradient(180deg,transparent,#F7F4EC)]" />
+        <div className="demo-hero-shade absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(247,244,236,0.97),rgba(247,244,236,0.84)_45%,rgba(247,244,236,0.42)),linear-gradient(180deg,rgba(255,252,247,0.4),rgba(247,244,236,0.96))]" />
+        <div className="demo-hero-base absolute bottom-0 left-0 right-0 -z-10 h-28 bg-[linear-gradient(180deg,transparent,#F7F4EC)]" />
         <div className="relative mx-auto flex max-w-7xl flex-col justify-center">
           <p className="w-fit rounded-full border border-[#D4AF37]/20 ui-surface px-4 py-2 text-sm font-semibold ui-text shadow-[0_12px_30px_rgba(13,19,33,0.08)] backdrop-blur">
             Elevate every event

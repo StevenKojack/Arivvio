@@ -16,7 +16,7 @@ export default function VendorLoginPage() {
         <p className="mt-6 text-center text-sm ui-muted">Just looking for a service? <Link href="/vendors" className="font-semibold underline">Find vendors</Link></p>
       </div>
     </section>
-    <aside className="flex flex-col justify-center ui-primary px-8 py-12 sm:px-16 lg:min-h-screen">
+    <aside className="flex flex-col justify-center ui-brand-panel px-8 py-12 sm:px-16 lg:min-h-screen">
       <p className="text-xs uppercase tracking-[0.2em] text-[#D4AF37]">Made for the people behind the occasion</p>
       <h2 className="mt-6 max-w-lg text-3xl font-semibold leading-tight sm:text-5xl">More than a listing.<br />A home for your event business.</h2>
       <div className="mt-10 space-y-7">{[["01", "Tell your story", "Build a profile around your services and specialties."], ["02", "Keep dates organized", "Manage availability through your vendor workspace."], ["03", "Prepare for what is next", "Quotes, bookings and payments are still in development."]].map(([n,title,body]) => <div key={n} className="flex gap-5 border-t border-white/15 pt-6"><span className="text-[#D4AF37]">{n}</span><div><h3 className="font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-neutral-300">{body}</p></div></div>)}</div>

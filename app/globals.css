@@ -38,6 +38,7 @@ html[data-theme="dark"] {
 .ui-soft { background: var(--hub-soft); color: var(--hub-text); }
 .ui-text { color: var(--hub-text); }
 .ui-muted { color: var(--hub-muted); }
+.ui-brand-panel { background: #202d43; color: #e9e6df; }
 .ui-primary { background: var(--hub-accent); color: var(--hub-accent-text); }
 .ui-border { border-color: var(--hub-border); }
 :focus-visible { outline: 2px solid var(--arivvio-gold); outline-offset: 3px; }
@@ -91,8 +92,8 @@ html[data-theme="dark"] .brand-dark { display: block; }
 html[data-theme="dark"] :is(main,section,aside,article,dialog,div,header,footer,button,select,input,textarea,span,a)[class*="bg-white"],
 html[data-theme="dark"] :is(main,section,aside,article,dialog,div,header)[class*="bg-[#F"] { background-color: var(--hub-surface); color: var(--hub-text); }
 html[data-theme="dark"] .vendor-hub { background-color: var(--hub-bg); }
-html[data-theme="dark"] :is(main,div,section)[class*="bg-[radial-gradient"],
-html[data-theme="dark"] :is(main,div,section)[class*="bg-[linear-gradient"] { background-image: none; background-color: var(--hub-soft); }
+html[data-theme="dark"] .demo-hero-shade { background: linear-gradient(90deg,#181e29f5,#181e29d9 50%,#181e2966); }
+html[data-theme="dark"] .demo-hero-base { background: linear-gradient(180deg,transparent,#181e29); }
 html[data-theme="dark"] :is(p,h1,h2,h3,h4,span,div,main,section,button,a,select,input,textarea)[class*="text-neutral-9"],
 html[data-theme="dark"] [class*="text-[#0D1321]"] { color: var(--hub-text); }
 html[data-theme="dark"] [class*="text-neutral-5"], html[data-theme="dark"] [class*="text-neutral-6"], html[data-theme="dark"] [class*="text-neutral-7"] { color: var(--hub-muted); }

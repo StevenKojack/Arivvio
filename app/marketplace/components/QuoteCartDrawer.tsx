@@ -130,7 +130,7 @@ export function QuoteCartDrawer({
             {cart.length} selected
           </h2>
         </div>
-        <span className="rounded-full bg-[#FFF8E1] px-3 py-1 text-sm font-semibold text-[#8A6A16]">
+        <span className="rounded-full ui-soft px-3 py-1 text-sm font-semibold text-[#8A6A16]">
           ${total.toLocaleString()}
         </span>
       </div>
@@ -138,7 +138,7 @@ export function QuoteCartDrawer({
       <p className="mt-4 rounded-2xl ui-soft px-4 py-3 text-sm ui-muted ring-1 ring-[#D4AF37]/10">
         {eventSummary}
       </p>
-      <p className="mt-3 rounded-2xl bg-[#FFF8E1] px-4 py-3 text-xs font-semibold leading-5 text-[#8A6A16]">
+      <p className="mt-3 rounded-2xl ui-soft px-4 py-3 text-xs font-semibold leading-5 text-[#8A6A16]">
         Pre-Beta demo. Prices are estimates and quote requests are not
         guaranteed real vendor commitments.
       </p>
@@ -151,7 +151,7 @@ export function QuoteCartDrawer({
       ) : null}
 
       {cartMessage ? (
-        <p className="mt-4 rounded-2xl bg-[#FFF8E1] px-4 py-3 text-sm font-semibold text-[#8A6A16]">
+        <p className="mt-4 rounded-2xl ui-soft px-4 py-3 text-sm font-semibold text-[#8A6A16]">
           {cartMessage}
         </p>
       ) : null}

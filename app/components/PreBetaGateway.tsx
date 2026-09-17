@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -144,7 +143,7 @@ export function PreBetaGateway() {
 
           <div className="relative">
             <div className="overflow-hidden rounded-[34px] border border-[#D4AF37]/16 ui-surface p-4 shadow-[0_30px_110px_rgba(13,19,33,0.16)] backdrop-blur">
-              <div className="rounded-[28px] ui-primary p-5">
+              <div className="rounded-[28px] ui-brand-panel p-5">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#D4AF37]">
                     Event workspace
@@ -153,14 +152,7 @@ export function PreBetaGateway() {
                     Demo only
                   </span>
                 </div>
-                <Image
-                  src="/logo-assets/web/arivvio-full-logo-dark.png"
-                  alt=""
-                  width={965}
-                  height={830}
-                  priority
-                  className="mx-auto mt-6 h-40 w-auto object-contain opacity-95 sm:h-48"
-                />
+                <div className="flex h-44 flex-col items-center justify-center gap-4"><BrandMark inverted /><p className="text-xs uppercase tracking-[.2em] text-[#D4AF37]">Elevate every event</p></div>
               </div>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-[1.1fr_0.9fr]">
@@ -231,7 +223,7 @@ export function PreBetaGateway() {
 
       <section className="px-5 py-12 sm:px-8 lg:px-12">
         <div className="mx-auto grid max-w-7xl gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-[30px] border border-[#D4AF37]/16 ui-primary p-7 shadow-[0_24px_80px_rgba(13,19,33,0.14)]">
+          <div className="rounded-[30px] border border-[#D4AF37]/16 ui-brand-panel p-7 shadow-[0_24px_80px_rgba(13,19,33,0.14)]">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#D4AF37]">
               Current account behavior
             </p>

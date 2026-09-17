@@ -90,11 +90,12 @@ function VendorCardComponent({
       </div>
       <div className="p-4">
         {isDemoProvider ? (
-          <p className="mb-3 w-fit rounded-full bg-[#FFF8E1] px-3 py-1 text-xs font-semibold text-[#8A6A16] ring-1 ring-[#D4AF37]/18">
+          <p className="mb-3 w-fit rounded-full ui-soft px-3 py-1 text-xs font-semibold text-[#8A6A16] ring-1 ring-[#D4AF37]/18">
             Demo provider
           </p>
         ) : null}
         <div className="flex items-start justify-between gap-3">
+          {item.profileImageUrl && <Image src={item.profileImageUrl} alt={`${item.name} logo`} width={44} height={44} unoptimized className="shrink-0 rounded-lg object-contain" />}
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] ui-muted">
               {item.location}
