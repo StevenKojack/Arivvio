@@ -48,7 +48,8 @@ import {
   updateCartItemTime,
 } from "@/lib/repositories/cartRepository";
 import { ensureCurrentProfile } from "@/lib/repositories/profilesRepository";
-import { requestQuotesFromCart } from "@/lib/services/quoteService";
+import { loadDemoQuoteRequests, type DemoQuoteRequest } from "@/lib/event-intelligence/demo-quotes";
+import { DemoQuoteJourney } from "./components/DemoQuoteJourney";
 import {
   searchAddressSuggestions,
   type AddressSuggestion,
@@ -64,7 +65,7 @@ import {
 } from "@/lib/maps/zones";
 import { formatTime } from "@/lib/utils/format";
 import { ZoneMapEditor } from "@/app/components/maps/ZoneMapEditor";
-import { FilterDrawer } from "./components/FilterDrawer";
+import { FilterDrawer, MarketplaceFilters } from "./components/FilterDrawer";
 import { MarketplaceMap, type MarketplaceMapPin } from "./components/MarketplaceMap";
 import { VendorCard } from "./components/VendorCard";
 import { QuoteCartDrawer } from "./components/QuoteCartDrawer";
@@ -210,10 +211,52 @@ export function MarketplaceBrowser() {
   const activeRowFrameRef = useRef<number | null>(null);
   const [isMobileMapOpen, setIsMobileMapOpen] = useState(false);
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+  function applyLocationProfile(profile: LocationProfile, message?: string) {
+    setLocationProfile(profile);
+    setSearchZone(profile.zone ?? null);
+
+    if (profile.coordinates) {
+      setSelectedAddressCoordinates(profile.coordinates);
+      setLiveCoordinates(null);
+      const nearestArea = homeAreas
+        .map((area) => ({
+          area,
+          distance: getDistanceMiles(profile.coordinates as Coordinates, area.coordinates),
+        }))
+        .sort((a, b) => a.distance - b.distance)[0]?.area;
+
+      if (nearestArea) {
+        setHomeAreaName(nearestArea.name);
+      }
+
+      if (profile.locationMode !== "needs_venue") {
+        setUseHomeVenue(true);
+        setHomeAddress(profile.formattedAddress || profile.label || "Selected event address");
+      }
+    }
+
+    if (message) {
+      setLocationStatus(message);
+    }
+  }
+
+
+  function chooseEventType(nextEvent: EventType | "All") {
+    setSelectedEvent(nextEvent);
+    setQuery("");
+    setExcludedServices([]);
+    setSelectedServices(
+      nextEvent === "All" ? [] : eventPlanPresets[nextEvent].recommended,
+    );
+  }
+
+
   useEffect(()=>{if(!isMobileMapOpen && !isMobileCartOpen) return; const close=(event:KeyboardEvent)=>{if(event.key === "Escape"){setIsMobileMapOpen(false);setIsMobileCartOpen(false);}};window.addEventListener("keydown",close);return()=>window.removeEventListener("keydown",close);},[isMobileMapOpen,isMobileCartOpen]);
   const [pendingServiceItem, setPendingServiceItem] = useState<MarketplaceItem | null>(null);
   const [selectedMapItemId, setSelectedMapItemId] = useState<number | null>(null);
-  const [isRequestingQuotes, setIsRequestingQuotes] = useState(false);
+  const [quoteReview, setQuoteReview] = useState<DemoQuoteRequest | null>(null);
+  const [lastRequest, setLastRequest] = useState<DemoQuoteRequest | null>(null);
+  useEffect(() => { queueMicrotask(() => setLastRequest(loadDemoQuoteRequests()[0] ?? null)); }, []);
   const durationHours = getHoursBetween(startTime, endTime);
 
   const globalQuoteContext: QuoteContext = useMemo(
@@ -240,9 +283,8 @@ export function MarketplaceBrowser() {
             : undefined,
     [
       homeCoordinates,
-      locationProfile?.coordinates,
-      savedEvent?.latitude,
-      savedEvent?.longitude,
+      locationProfile,
+      savedEvent,
       useHomeVenue,
     ],
   );
@@ -266,16 +308,6 @@ export function MarketplaceBrowser() {
             .sort((a, b) => a.driveMinutes - b.driveMinutes)
         : [],
     [eventCoordinates, providers],
-  );
-  const visibleMarketplaceTypes = useMemo(
-    () =>
-      [
-        ...(selectedEvent === "All" ? allServices : eventPlanPresets[selectedEvent].recommended),
-        ...selectedServices,
-        ...excludedServices,
-        ...curatedFilterServices,
-      ].filter((service, index, services) => services.indexOf(service) === index),
-    [excludedServices, selectedEvent, selectedServices],
   );
   const planSummary = [
     initialEventLabel,
@@ -420,7 +452,7 @@ export function MarketplaceBrowser() {
     providers,
     initialSearchRadiusMiles,
     planningContext,
-    savedEvent?.city,
+    savedEvent,
     searchZone,
     selectedEvent,
     excludedServices,
@@ -549,7 +581,7 @@ export function MarketplaceBrowser() {
     const profile = loadLocationProfile();
 
     if (profile) {
-      applyLocationProfile(profile, "Planning location restored.");
+      queueMicrotask(() => applyLocationProfile(profile, "Planning location restored."));
     }
   }, []);
 
@@ -626,35 +658,6 @@ export function MarketplaceBrowser() {
     // The initial URL params should seed the browser once when the route loads.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
-
-  function applyLocationProfile(profile: LocationProfile, message?: string) {
-    setLocationProfile(profile);
-    setSearchZone(profile.zone ?? null);
-
-    if (profile.coordinates) {
-      setSelectedAddressCoordinates(profile.coordinates);
-      setLiveCoordinates(null);
-      const nearestArea = homeAreas
-        .map((area) => ({
-          area,
-          distance: getDistanceMiles(profile.coordinates as Coordinates, area.coordinates),
-        }))
-        .sort((a, b) => a.distance - b.distance)[0]?.area;
-
-      if (nearestArea) {
-        setHomeAreaName(nearestArea.name);
-      }
-
-      if (profile.locationMode !== "needs_venue") {
-        setUseHomeVenue(true);
-        setHomeAddress(profile.formattedAddress || profile.label || "Selected event address");
-      }
-    }
-
-    if (message) {
-      setLocationStatus(message);
-    }
-  }
 
   useEffect(() => {
     if (!hasSupabaseConfig()) {
@@ -787,15 +790,6 @@ export function MarketplaceBrowser() {
       current.includes(service)
         ? current.filter((item) => item !== service)
         : [...current, service],
-    );
-  }
-
-  function chooseEventType(nextEvent: EventType | "All") {
-    setSelectedEvent(nextEvent);
-    setQuery("");
-    setExcludedServices([]);
-    setSelectedServices(
-      nextEvent === "All" ? [] : eventPlanPresets[nextEvent].recommended,
     );
   }
 
@@ -1031,7 +1025,7 @@ export function MarketplaceBrowser() {
         getLineQuote={getLineQuote}
         isAuthLoading={isAuthLoading}
         isLoggedIn={isLoggedIn}
-        isRequestingQuotes={isRequestingQuotes}
+        isRequestingQuotes={false}
         variant={variant}
         onOpen={() => setIsMobileCartOpen(true)}
         onRemove={removeFromCart}
@@ -1080,63 +1074,30 @@ export function MarketplaceBrowser() {
     }
   }
 
-  async function requestQuotes() {
-    setCartMessage("");
-
-    if (!cart.length) {
-      setCartMessage("Add providers before requesting quotes.");
-      return;
-    }
-
-    if (!profile || !savedEvent) {
-      setCartMessage(getCartAuthMessage(isAuthLoading, isLoggedIn, Boolean(savedEvent)));
-      return;
-    }
-
-    const persistedDatabaseLines = cart.filter(
-      (line) => line.persisted && line.cartItemId && line.item.databaseSource,
-    );
-
-    if (!persistedDatabaseLines.length) {
-      setCartMessage("Only saved database providers can receive quote requests.");
-      return;
-    }
-
-    setIsRequestingQuotes(true);
-
-    try {
-      const supabase = createBrowserSupabaseClient();
-      const requests = await requestQuotesFromCart(supabase, {
-        cartItems: persistedDatabaseLines.map((line) => ({
-          end_time: line.serviceEnd,
-          estimated_price: getLineQuote(line),
-          event_id: savedEvent.id,
-          id: line.cartItemId ?? String(line.id),
-          service_id: line.serviceId ?? line.item.serviceId ?? null,
-          start_time: line.serviceStart,
-          vendor_id: line.item.vendorId ?? null,
-          venue_id: line.item.venueId ?? null,
-        })),
-        event: savedEvent,
-        message: "Quote requested from Arivvio marketplace cart.",
-        plannerId: profile.id,
-      });
-
-      setCartMessage(
-        `${requests.length} quote request${requests.length === 1 ? "" : "s"} sent. Status starts as pending.`,
-      );
-    } catch (error) {
-      setCartMessage(
-        error instanceof Error ? error.message : "Unable to request quotes.",
-      );
-    } finally {
-      setIsRequestingQuotes(false);
-    }
+  function requestQuotes() {
+    if (!cart.length) { setCartMessage("Add providers before requesting quotes."); return; }
+    const id = crypto.randomUUID();
+    setIsMobileCartOpen(false);
+    setQuoteReview({ id, version: 1, source: "ARIVVIO_DEMO", status: "demo-created", createdAt: new Date().toISOString(), eventId: savedEvent?.id,
+      event: { name: eventIntelligence?.recognition.identity.selectedDisplayEvent ?? initialEventLabel ?? "Your event", date: eventDate, startTime, endTime, location: eventLocationLabel, guestCount, budget: eventIntelligence?.planning?.budget ?? Number(initialBudget || 0), requirements: initialNotes, profile: eventIntelligence },
+      opportunities: cart.map((line) => ({ id: `${id}:${line.id}`, providerId: String(line.item.vendorId ?? line.item.id), providerName: line.item.name, service: line.serviceTitle, startTime: line.serviceStart, endTime: line.serviceEnd, estimate: getLineQuote(line), stageIds: eventIntelligence?.stages.filter((part) => part.services?.includes(line.serviceName)).map((part) => part.id) ?? [], status: "demo-not-sent" })), message: "",
+    });
   }
+
+  const filterProps = {
+    eventTypes, query, selectedEvent, selectedServices, excludedServices, serviceOptions: allServices,
+    language, specialty, maxEstimate, sort, languages: availableLanguages, specialties: availableSpecialties,
+    location: eventLocationLabel, onEventChange: setSelectedEvent, onQueryChange: setQuery,
+    onToggleExcludedService: toggleExcludedService, onToggleService: toggleService,
+    onLanguageChange: setLanguage, onSpecialtyChange: setSpecialty, onMaxEstimateChange: setMaxEstimate, onSortChange: setSort,
+    onClear: () => { setSelectedEvent("All"); setSelectedServices([]); setExcludedServices([]); setLanguage(""); setSpecialty(""); setMaxEstimate(""); setQuery(""); setSort("Recommended"); },
+  };
 
   return (
     <>
+      {quoteReview && <DemoQuoteJourney key={quoteReview.id} request={quoteReview} alreadySubmitted={quoteReview.id === lastRequest?.id} onClose={() => setQuoteReview(null)} onSubmitted={setLastRequest} />}
       <div className="relative min-h-[calc(100vh-5rem)] w-full overflow-x-clip">
+        {lastRequest && <button className="hub-button mb-3" onClick={() => setQuoteReview(lastRequest)}>View latest demo request</button>}
         <details className="hub-card mb-4 p-4"><summary className="cursor-pointer text-sm font-semibold">Your event · {serviceSummary || planSummary || "Browse providers"} · Edit context</summary><div className="mt-3"><EventContextPanel
           entryMode={entryMode}
           eventDate={eventDate}
@@ -1193,12 +1154,13 @@ export function MarketplaceBrowser() {
           </div>
         ) : null}
 
-        <div className="mt-5 grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="mt-5 grid min-w-0 gap-6 lg:grid-cols-[230px_minmax(0,1fr)]">
+          <aside className="hidden lg:block" aria-label="Marketplace filters"><div className="sticky top-4 max-h-[calc(100dvh-2rem)] overflow-y-auto"><MarketplaceFilters {...filterProps} /></div></aside>
           <section
-            className="min-w-0 space-y-4 pb-28 xl:pb-4"
+            className="min-w-0 space-y-4 pb-28"
             aria-label="Vendor discovery"
           >
-          <div className="xl:hidden">
+          <div>
             <button
               type="button"
               onClick={() => setIsMobileMapOpen(true)}
@@ -1211,19 +1173,14 @@ export function MarketplaceBrowser() {
             </div>
           </div>
 
-          <header className="flex flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-semibold">Find your event team</h1><p className="hub-muted mt-1 text-sm">{filteredItems.length} providers found · Demo pricing and availability</p></div><div className="flex gap-2"><button className="hub-button" onClick={()=>setIsFilterDrawerOpen(true)}>Filters</button><button className="hub-button" onClick={()=>setIsMobileMapOpen(true)}>Show map</button></div></header>
-          <div className="hub-card flex flex-wrap items-center gap-3 p-3"><input aria-label="Search providers" className="hub-input min-w-0 flex-1" placeholder="Name, location or specialty" value={query} onChange={e=>setQuery(e.target.value)} /><select aria-label="Sort providers" className="hub-input" value={sort} onChange={e=>setSort(e.target.value)}><option>Recommended</option><option>Price: low to high</option><option>Name</option></select><span className="hub-muted text-xs">{selectedServices.length ? selectedServices.join(", ") : "All services"}</span></div>
-          <div className="flex flex-wrap gap-3"><select aria-label="Language filter" className="hub-input text-sm" value={language} onChange={e=>setLanguage(e.target.value)}><option value="">Any language</option>{availableLanguages.map(value=><option key={value}>{value}</option>)}</select><select aria-label="Specialty filter" className="hub-input max-w-full text-sm" value={specialty} onChange={e=>setSpecialty(e.target.value)}><option value="">Any specialty</option>{availableSpecialties.map(value=><option key={value}>{value}</option>)}</select><input aria-label="Maximum demo estimate" type="number" min={0} className="hub-input w-48 text-sm" placeholder="Max demo estimate ($)" value={maxEstimate} onChange={e=>setMaxEstimate(e.target.value)} />{(language || specialty || maxEstimate || query) && <button className="hub-button" onClick={()=>{setLanguage("");setSpecialty("");setMaxEstimate("");setQuery("");}}>Clear search filters</button>}</div>
+          <header className="flex flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-semibold">Find your event team</h1><p className="hub-muted mt-1 text-sm">{filteredItems.length} providers found · Demo pricing and availability</p></div><div className="flex gap-2"><button className="hub-button lg:hidden" onClick={()=>setIsFilterDrawerOpen(true)}>Filters</button><button className="hub-button" onClick={()=>setIsMobileMapOpen(true)}>Show map</button></div></header>
+          <div className="hub-card flex flex-wrap items-center gap-3 p-3"><input aria-label="Search providers" className="hub-input min-w-0 flex-1" placeholder="Name, location or specialty" value={query} onChange={e=>setQuery(e.target.value)} /><span className="hub-muted text-xs">{selectedServices.length ? selectedServices.join(", ") : "All services"}</span></div>
+
           {filteredItems.length ? <div className="listing-grid" data-marketplace-row="best-matches">{[...filteredItems].sort((a,b)=>sort === "Price: low to high" ? quoteItem(a,globalQuoteContext)-quoteItem(b,globalQuoteContext) : sort === "Name" ? a.name.localeCompare(b.name) : 0).map(item=><div key={item.id} data-vendor-id={item.id} data-row-id="best-matches" id={`vendor-card-best-matches-${item.id}`}><VendorCard item={item} quote={quoteItem(item,globalQuoteContext)} isSelected={cartedIds.includes(item.id)} disableAdd={cart.filter(line=>line.item.id===item.id).length >= (item.serviceOptions?.length ?? item.services.length)} buttonLabel={cartedIds.includes(item.id)?"Added ✓":"Add to quote"} matchLabel={cartedIds.includes(item.id)?"Added":""} matchReason={planMatchReasons[item.id] ?? item.description} onAdd={addToCart} onSelect={selectMapItem} onHover={setMapHoverItem} /></div>)}</div> : <div className="hub-card p-8 text-center"><h2 className="text-xl font-semibold">No matching providers</h2><p className="hub-muted mt-2">Try adjusting your filters or search.</p></div>}
 
         </section>
 
-        <aside
-          className="relative hidden min-w-0 self-stretch xl:block"
-          aria-label="Quote cart workspace"
-        >
-          <div className="sticky top-3">{renderQuoteCart("workspace")}</div>
-        </aside>
+
         </div>
       </div>
 
@@ -1267,7 +1224,7 @@ export function MarketplaceBrowser() {
 
       {isMobileCartOpen ? (
         <div
-          className="fixed inset-0 z-50 flex items-end bg-[#0D1321]/35 px-3 py-4 backdrop-blur-sm xl:hidden"
+          className="fixed inset-0 z-50 flex items-end bg-[#0D1321]/35 px-3 py-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-label="Quote cart"
@@ -1291,20 +1248,7 @@ export function MarketplaceBrowser() {
         </div>
       ) : null}
 
-      <FilterDrawer
-        eventTypes={eventTypes}
-        isOpen={isFilterDrawerOpen}
-        query={query}
-        selectedEvent={selectedEvent}
-        excludedServices={excludedServices}
-        selectedServices={selectedServices}
-        serviceOptions={visibleMarketplaceTypes}
-        onClose={() => setIsFilterDrawerOpen(false)}
-        onEventChange={chooseEventType}
-        onQueryChange={setQuery}
-        onToggleExcludedService={toggleExcludedService}
-        onToggleService={toggleService}
-      />
+      <FilterDrawer {...filterProps} isOpen={isFilterDrawerOpen} onClose={() => setIsFilterDrawerOpen(false)} />
 
       {pendingServiceItem ? (
         <ServiceSelectionDialog
@@ -1330,22 +1274,6 @@ type MarketplaceRowGroup = {
   serviceNames: ServiceName[];
   title: string;
 };
-
-const curatedFilterServices: ServiceName[] = [
-  "Venue",
-  "Catering",
-  "DJ",
-  "Photography",
-  "Florals",
-  "Rentals",
-  "Security",
-  "Transportation",
-  "Magic",
-  "Character Performers",
-  "Bounce Houses",
-  "Bartending",
-  "Cleaning",
-];
 
 function ServiceSelectionDialog({
   item,
@@ -1840,11 +1768,11 @@ function getCartAuthMessage(
   }
 
   if (!isLoggedIn) {
-    return "Log in to save your quote cart.";
+    return "Demo cart saved in this browser. No account needed to request demo pricing.";
   }
 
   if (!hasSavedEvent) {
-    return "Save this event before syncing cart items or requesting quotes.";
+    return "Demo cart saved in this browser. You can review and submit a demo request.";
   }
 
   return "This quote cart is ready to save.";

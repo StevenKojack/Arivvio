@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { isAvailableAt, type MarketplaceItem, type ServiceName } from "@/app/data/marketplace";
 import { getTimeOptions } from "@/lib/utils/format";
 
@@ -78,8 +77,7 @@ export function QuoteCartDrawer({
               {cartMessage || eventSummary}
             </p>
             <p className="mt-1 text-xs font-semibold text-[#8A6A16]">
-              Pre-Beta demo. Quote requests are not guaranteed real vendor
-              commitments.
+              Demo only. No vendors will be contacted.
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -139,8 +137,7 @@ export function QuoteCartDrawer({
         {eventSummary}
       </p>
       <p className="mt-3 rounded-2xl ui-soft px-4 py-3 text-xs font-semibold leading-5 text-[#8A6A16]">
-        Pre-Beta demo. Prices are estimates and quote requests are not
-        guaranteed real vendor commitments.
+        Demo only. Prices are estimates. No vendors will be contacted.
       </p>
 
       {!canPersistCart ? (
@@ -200,55 +197,8 @@ export function QuoteCartDrawer({
   );
 }
 
-function CartPrompt({
-  compact = false,
-  isAuthLoading,
-  isLoggedIn,
-}: {
-  compact?: boolean;
-  isAuthLoading: boolean;
-  isLoggedIn: boolean;
-}) {
-  if (isAuthLoading) {
-    return (
-      <p
-        className={
-          compact
-            ? "hidden rounded-full border ui-border px-3 py-2 text-xs font-semibold ui-muted sm:inline-flex"
-            : "mt-4 rounded-2xl border ui-border px-4 py-3 text-sm font-semibold ui-muted"
-        }
-      >
-        Checking account...
-      </p>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return (
-      <Link
-        href="/auth/login"
-        className={
-          compact
-            ? "hidden rounded-full border ui-border px-3 py-2 text-xs font-semibold ui-muted transition hover:-translate-y-0.5 hover:border-[#0D1321] sm:inline-flex"
-            : "mt-4 block rounded-2xl border ui-border px-4 py-3 text-sm font-semibold ui-muted transition hover:border-[#0D1321]"
-        }
-      >
-        {compact ? "Log in to save" : "Log in to save your quote cart."}
-      </Link>
-    );
-  }
-
-  return (
-    <p
-      className={
-        compact
-          ? "hidden rounded-full border ui-border px-3 py-2 text-xs font-semibold ui-muted sm:inline-flex"
-          : "mt-4 rounded-2xl border ui-border px-4 py-3 text-sm font-semibold ui-muted"
-      }
-    >
-      {compact ? "Save event to sync" : "Save this event to sync your quote cart."}
-    </p>
-  );
+function CartPrompt({ compact = false }: { compact?: boolean; isAuthLoading: boolean; isLoggedIn: boolean }) {
+  return compact ? null : <p className="mt-4 text-sm ui-muted">Saved in this browser. No account needed for a demo request.</p>;
 }
 
 function CartLineCard({
