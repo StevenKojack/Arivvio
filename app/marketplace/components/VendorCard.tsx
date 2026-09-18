@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useState } from "react";
+import { ListingImage } from "./ListingImage";
 import { ProviderProfile } from "./ProviderProfile";
 import Image from "next/image";
 import type { MarketplaceItem } from "@/app/data/marketplace";
@@ -63,13 +64,10 @@ function VendorCardComponent({
 
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-[#f2f0ec]">
-        <Image
+        <ListingImage
           src={imageUrl}
-          alt=""
-          fill
-          loading="lazy"
+          alt={`${item.type} illustrative image`}
           sizes="(max-width: 768px) 74vw, 326px"
-          unoptimized
           className="object-cover transition duration-500 hover:scale-105"
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_38%,rgba(13,19,33,0.62))]" />

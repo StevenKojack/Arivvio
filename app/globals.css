@@ -70,6 +70,7 @@ html[data-theme="dark"] .brand-dark { display: block; }
 .calendar-date { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; font-size: 12px; border-radius: 50%; }
 .calendar-today { background: var(--hub-accent); color: var(--hub-accent-text); }
 .calendar-event { display: block; width: 100%; padding: 6px; margin-top: 3px; border-radius: 7px; font-size: 11px; text-align: left; overflow: hidden; overflow-wrap: anywhere; }
+.calendar-cell .calendar-event span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
 .event-confirmed { background: #dfefe5; color: #215239; }
 .event-tentative { background: #fff0cd; color: #765314; }
 .event-hold { background: #eee5fa; color: #61408a; }

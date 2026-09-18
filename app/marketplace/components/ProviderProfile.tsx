@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+import { ListingImage } from "./ListingImage";
 import type { MarketplaceItem } from "@/app/data/marketplace";
 import { getVendorImage } from "@/lib/marketplace/vendorImages";
 
@@ -17,7 +18,7 @@ export function ProviderProfile({ item, quote, matchReason, selected, onAdd, onC
   }, []);
   return <dialog ref={dialog} onCancel={onClose} aria-labelledby={`provider-title-${item.id}`} className="context-reveal fixed inset-0 m-auto max-h-[94dvh] w-[min(960px,96vw)] overflow-y-auto rounded-3xl ui-soft p-0 ui-text shadow-2xl backdrop:bg-black/50">
     <header className="sticky top-0 z-10 flex items-center justify-between border-b ui-border ui-surface px-5 py-4"><button onClick={onClose} className="rounded-full border px-4 py-2 text-sm font-semibold">{preview ? "Close preview" : "← Back to marketplace"}</button><span className="text-xs ui-muted">Provider details</span></header>
-    <div className="relative h-48 sm:h-72"><Image src={item.photoUrl || getVendorImage(item)} alt={item.photoUrl ? `${item.name} cover` : `${item.type} category illustration`} fill unoptimized sizes="960px" className="object-cover" /><span className="absolute bottom-4 left-5 rounded-full ui-surface px-3 py-1 text-xs">{item.photoUrl ? "Business cover" : "Illustrative image"}</span></div>
+    <div className="relative h-48 sm:h-72"><ListingImage src={item.photoUrl || getVendorImage(item)} alt={item.photoUrl ? `${item.name} cover` : `${item.type} category illustration`} sizes="960px" className="object-cover" /><span className="absolute bottom-4 left-5 rounded-full ui-surface px-3 py-1 text-xs">{item.photoUrl ? "Business cover" : "Illustrative image"}</span></div>
     <div className="grid gap-8 p-6 sm:p-8 md:grid-cols-[1fr_280px]">
       <div>{item.profileImageUrl && <Image src={item.profileImageUrl} alt={`${item.name} business image`} width={88} height={88} unoptimized className="mb-4 rounded-xl object-contain" />}<p className="text-xs font-semibold uppercase tracking-widest text-[#8A6A16]">{item.type} · {item.location}</p><h2 id={`provider-title-${item.id}`} className="mt-3 text-3xl font-semibold tracking-tight">{item.name}</h2>
         <p className="mt-3 rounded-xl ui-soft p-3 text-xs leading-5">{demo ? "Demo listing. Pricing, capabilities and scheduling shown here are illustrative, not a verified business offer." : "Contact the provider to confirm pricing and availability."}</p>
