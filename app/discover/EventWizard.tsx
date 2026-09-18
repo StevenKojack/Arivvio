@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { EventPartsEditor, EventPartsSummary } from "./components/EventParts";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -122,6 +123,7 @@ export function EventWizard() {
   );
   const initialStages = initialIntelligence.stages;
   const sessionRestoredRef = useRef(false);
+  const [sessionReady, setSessionReady] = useState(false);
   const [step, setStep] = useState(initialQuery ? 1 : 0);
   const [query, setQuery] = useState(initialQuery);
   const [timing, setTiming] = useState({
@@ -154,7 +156,7 @@ export function EventWizard() {
     ...contextPreferences,
   ].map((preference) => [preference.id, preference])).values()), [contextPreferences, planSelections]);
   const eventIntelligence = useMemo(
-    () => buildEventIntelligenceProfile({
+    () => ({ ...buildEventIntelligenceProfile({
       audience,
       guestSize: guestCount,
       inferPreferencesFromQuery: false,
@@ -164,8 +166,8 @@ export function EventWizard() {
       query: query || "Private party",
       selectedServices,
       stages,
-    }),
-    [audience, guestCount, locations, planSelections, preferences, query, selectedServices, stages],
+    }), planning: { ...timing, guestCount, budget, location: getLocationSummary(locations) } }),
+    [audience, guestCount, budget, timing, locations, planSelections, preferences, query, selectedServices, stages],
   );
   const recognition = eventIntelligence.recognition;
   const planningNotes = useMemo(
@@ -245,15 +247,15 @@ export function EventWizard() {
   const canOpenMarketplace =
     Boolean(timing.date && timing.startTime && timing.endTime) &&
     guestCount > 0 &&
-    locations.some((location) => location.mode && (location.mode === "needs_venue" || Boolean(location.query.trim() || location.selectedAddress)));
+    (locations.some((location) => location.mode && (location.mode === "needs_venue" || Boolean(location.query.trim() || location.selectedAddress))) || (stages.length > 0 && stages.every((stage) => stage.location?.trim())));
 
   useEffect(() => {
     if (sessionRestoredRef.current) return;
     sessionRestoredRef.current = true;
 
-    if (!initialQuery) {
+    {
       const saved = loadDemoPlannerSession<DemoPlannerSessionState>();
-      if (saved?.query) {
+      if (saved?.query && (!initialQuery || saved.query === initialQuery)) {
         queueMicrotask(() => {
           setAudience(saved.audience);
           setBudget(saved.budget);
@@ -266,13 +268,14 @@ export function EventWizard() {
           setStages(saved.stages);
           setStep(Math.min(Math.max(saved.step, 0), steps.length - 1));
           setTiming(saved.timing);
+          setSessionReady(true);
         });
-      }
+      } else { queueMicrotask(() => setSessionReady(true)); }
     }
   }, [initialQuery]);
 
   useEffect(() => {
-    if (!sessionRestoredRef.current || !query.trim()) return;
+    if (!sessionReady || !query.trim()) return;
     saveDemoPlannerSession<DemoPlannerSessionState>({
       audience,
       budget,
@@ -286,7 +289,7 @@ export function EventWizard() {
       step,
       timing,
     });
-  }, [audience, budget, contextPreferences, guestCount, isMultiDay, locations, planSelections, query, stages, step, timing]);
+  }, [sessionReady, audience, budget, contextPreferences, guestCount, isMultiDay, locations, planSelections, query, stages, step, timing]);
 
   useEffect(() => {
     const profile = buildLocationProfile(locations[0]);
@@ -297,8 +300,8 @@ export function EventWizard() {
   }, [locations]);
 
   useEffect(() => {
-    saveEventIntelligenceProfile(eventIntelligence);
-  }, [eventIntelligence]);
+    if (sessionReady) saveEventIntelligenceProfile(eventIntelligence);
+  }, [eventIntelligence, sessionReady]);
 
   function continueFromSearch(nextQuery = query) {
     const cleanQuery = nextQuery.trim();
@@ -463,6 +466,7 @@ export function EventWizard() {
                 recognition={recognition}
                 stages={stages}
               />
+              <EventPartsEditor stages={stages} onChange={setStages} defaults={eventIntelligence.planning} section="structure" services={visibleServices} />
             </StepCard>
           ) : null}
 
@@ -490,6 +494,7 @@ export function EventWizard() {
                   }
                 />
               </div>
+              <EventPartsEditor stages={stages} onChange={setStages} defaults={eventIntelligence.planning} section="timing" />
               <button
                 type="button"
                 onClick={() => setShowAdvancedTiming((current) => !current)}
@@ -546,6 +551,7 @@ export function EventWizard() {
               layout="wide"
               action={<PrimaryButton label="Continue" onClick={() => setStep(4)} />}
             >
+              <EventPartsEditor stages={stages} onChange={setStages} defaults={eventIntelligence.planning} section="location" />
               <LocationStep
                 eventLabel={
                   recognition.identity.selectedDisplayEvent
@@ -593,6 +599,7 @@ export function EventWizard() {
               body="A simple range is enough. Arivvio will use it to keep matches realistic."
               action={<PrimaryButton label="Review plan" onClick={() => setStep(5)} />}
             >
+              <EventPartsEditor stages={stages} onChange={setStages} defaults={eventIntelligence.planning} section="allocation" />
               <div className="grid gap-5">
                 <div className="grid gap-4 md:grid-cols-2">
                   <TimingField
@@ -1207,18 +1214,7 @@ function FinalReview({
         <PlainDetail label="Guests" value={guestCount.toLocaleString()} />
         <PlainDetail label="Budget" value={`$${budget.toLocaleString()}`} />
       </div>
-      {stages.length ? (
-        <div className="rounded-[30px] border border-neutral-200 bg-white p-5">
-          <p className="text-sm font-semibold text-neutral-950">Event parts</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {stages.map((stage) => (
-              <span key={stage.id} className="rounded-full bg-[#F7F4EC] px-3 py-2 text-xs font-semibold text-neutral-700">
-                {stage.order}. {stage.label}
-              </span>
-            ))}
-          </div>
-        </div>
-      ) : null}
+      <EventPartsSummary stages={stages} defaults={{ ...timing, budget, guestCount, location: getLocationSummary(locations) }} />
       <div className="rounded-[30px] border border-neutral-200 bg-white p-5">
         <p className="text-sm font-semibold text-neutral-950">Locations</p>
         <div className="mt-3 space-y-2">

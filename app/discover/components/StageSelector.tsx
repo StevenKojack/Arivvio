@@ -37,7 +37,7 @@ export function StageSelector({
                   if (!value.length) onChange([]);
                 } else {
                   setShowCustom(false);
-                  onChange(resolveStages(configuration, option.stageIds));
+                  onChange(resolveStages(configuration, option.stageIds).map((stage) => value.find((existing) => existing.id === stage.id) ?? stage));
                 }
               }}
               className={`min-h-14 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition hover:-translate-y-0.5 ${selected ? "border-[#0D1321] bg-[#0D1321] text-white shadow-[0_12px_30px_rgba(13,19,33,0.14)]" : "border-neutral-200 bg-[#FFFCF7] text-neutral-700 hover:border-[#D4AF37]"}`}
@@ -56,7 +56,7 @@ export function StageSelector({
               return (
                 <button key={stage.id} type="button" aria-pressed={selected} onClick={() => {
                   const nextIds = selected ? selectedIds.filter((id) => id !== stage.id) : [...selectedIds, stage.id];
-                  onChange(resolveStages(configuration, nextIds));
+                  onChange([...resolveStages(configuration, nextIds).map((stage) => value.find((existing) => existing.id === stage.id) ?? stage), ...value.filter((stage) => !configuration.availableStages.some((option) => option.id === stage.id))]);
                 }} className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${selected ? "border-[#0D1321] bg-white text-[#0D1321]" : "border-transparent bg-[#0D1321]/6 text-neutral-600 hover:border-[#D4AF37]"}`}>
                   {selected ? "Selected: " : "Add: "}{stage.label}
                 </button>

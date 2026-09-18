@@ -82,7 +82,7 @@ export function getStageConfiguration(recognition: EventRecognition) {
   return configurations[recognition.identity.canonicalEventType];
 }
 
-export function getInitialStages(recognition: EventRecognition): EventStage[] {
+export function getInitialStages(recognition: EventRecognition, rawQuery = recognition.normalizedQuery): EventStage[] {
   const configuration = getStageConfiguration(recognition);
   if (!configuration) return [];
   const query = recognition.normalizedQuery;
@@ -102,7 +102,7 @@ export function getInitialStages(recognition: EventRecognition): EventStage[] {
     explicitStageIds.push("reception");
   }
 
-  return resolveStages(configuration, Array.from(new Set(explicitStageIds)));
+  return inferStageDetails(resolveStages(configuration, Array.from(new Set(explicitStageIds))), rawQuery);
 }
 
 export function resolveStages(configuration: StageConfiguration, stageIds: string[]) {
@@ -157,4 +157,25 @@ function destinationConfiguration(): StageConfiguration {
       { id: "custom", label: "Plan the full route", stageIds: [] },
     ],
   };
+}
+
+// Each explicit part owns its following clause. Keep unspecified details optional.
+export function inferStageDetails(stages: EventStage[], query: string): EventStage[] {
+  const text = query.toLowerCase();
+  const mentions = stages.map((item) => {
+    const terms = [item.id.replaceAll("-", " "), ...item.label.toLowerCase().split(" or ")];
+    if (item.id === "ceremony") terms.push("church");
+    if (item.id === "reception") terms.push("banquet hall");
+    const positions = terms.map((term) => text.indexOf(term)).filter((position) => position >= 0);
+    return { item, position: positions.length ? Math.min(...positions) : -1 };
+  }).filter((entry) => entry.position >= 0).sort((a, b) => a.position - b.position);
+  return stages.map((item) => {
+    const index = mentions.findIndex((entry) => entry.item.id === item.id);
+    if (index < 0) return item;
+    const clause = text.slice(mentions[index].position, mentions[index + 1]?.position ?? text.length);
+    const times = [...clause.matchAll(/\b(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*(am|pm)\b/g)].map((match) =>
+      `${String(Number(match[1]) % 12 + (match[3] === "pm" ? 12 : 0)).padStart(2, "0")}:${match[2] ?? "00"}`);
+    const location = clause.match(/\b(church|banquet hall|reception hall|hotel|restaurant|office|home|park)\b/)?.[0];
+    return { ...item, ...(times[0] ? { startTime: times[0] } : {}), ...(times[1] ? { endTime: times[1] } : {}), ...(location ? { location } : {}) };
+  });
 }

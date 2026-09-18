@@ -1,5 +1,7 @@
 "use client";
 
+import { EventPartsSummary } from "@/app/discover/components/EventParts";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -1160,6 +1162,8 @@ export function MarketplaceBrowser() {
           onToggleHomeVenue={() => setUseHomeVenue((current) => !current)}
           onUseCurrentLocation={useCurrentLocation}
         /></div></details>
+
+        {eventIntelligence?.planning && <div className="mb-4"><EventPartsSummary stages={eventIntelligence.stages} defaults={eventIntelligence.planning} /></div>}
 
         {isZoneEditorOpen ? (
           <div className="mt-3 rounded-[30px] border border-[#D4AF37]/16 ui-surface p-3 shadow-[0_18px_56px_rgba(13,19,33,0.055)]">

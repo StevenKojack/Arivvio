@@ -40,7 +40,7 @@ export function buildEventIntelligenceProfile(
     : inferPlanningPreferences(input.query);
   const preferences = mergePreferences(input.preferences ?? [], inferredPreferences);
   const inferredIds = new Set(preferences.filter((item) => item.selectionSource === "explicit-text").map((item) => item.id));
-  const stages = input.stages ?? getInitialStages(recognition);
+  const stages = input.stages ?? getInitialStages(recognition, input.query);
   const audience = mergeAudience(inferAudienceFromQuery(input.query, recognition.identity.canonicalEventType), input.audience);
   const planSelections = input.planSelections ?? inferServicePlanSelections(
     input.query,

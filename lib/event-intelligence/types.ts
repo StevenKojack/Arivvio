@@ -69,6 +69,14 @@ export type EventStage = {
   id: string;
   label: string;
   order: number;
+  date?: string;
+  startTime?: string;
+  endTime?: string;
+  location?: string;
+  guestCount?: number;
+  budget?: number;
+  services?: ServiceName[];
+  notes?: string;
 };
 
 export type AudienceType =
@@ -162,6 +170,7 @@ export type EventIntelligenceProfile = {
   religiousContext: string[];
   requestedServices: ServiceName[];
   stages: EventStage[];
+  planning?: { date: string; startTime: string; endTime: string; location: string; guestCount: number; budget: number };
   subtype?: IntelligenceValue<string>;
   transportationNeeds: string[];
   travelRequired: boolean;
