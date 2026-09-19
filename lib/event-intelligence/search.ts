@@ -1,5 +1,6 @@
 import {
   eventExamples,
+  eventDiscoveryFamilies,
   eventTaxonomyProfiles,
   getDefaultProfile,
 } from "./taxonomy";
@@ -24,7 +25,7 @@ const synonymFamilies = [
 
 export function recognizeEventIntent(query: string): EventRecognition {
   const normalizedQuery = normalizeSearchText(query);
-  const matches = scoreProfiles(query);
+  const matches = getDiscoveryFamily(query) ? [] : scoreProfiles(query);
   const best = matches[0];
   const confidentBest = best && best.score >= 0.48 ? best : undefined;
   const profile = confidentBest?.profile ?? getDefaultProfile();
@@ -76,6 +77,13 @@ export function searchEventIntents(query: string, limit = 7) {
     });
   }
 
+  const family = getDiscoveryFamily(query);
+  if (family) {
+    return eventTaxonomyProfiles.filter((profile) => profile.eventFamily === family.family)
+      .map((profile) => ({ label: profile.subtype ?? profile.primaryType, recognition: recognizeEventIntent(profile.subtype ?? profile.primaryType) }))
+      .slice(0, limit);
+  }
+
   const suggestions = scoreProfiles(query)
     .filter((match) => match.score >= 0.45)
     .map((match) => {
@@ -90,6 +98,11 @@ export function searchEventIntents(query: string, limit = 7) {
   return uniqueSuggestions(suggestions).slice(0, limit);
 }
 
+export function getDiscoveryFamily(query: string) {
+  const normalized = normalizeSearchText(query);
+  return eventDiscoveryFamilies.find((family) => family.aliases.some((alias) => normalizeSearchText(alias) === normalized));
+}
+
 function scoreProfiles(query: string) {
   const normalizedQuery = normalizeSearchText(query);
   const forcedProfileId = detectForcedProfileId(query);
@@ -97,7 +110,7 @@ function scoreProfiles(query: string) {
   return eventTaxonomyProfiles
     .map((profile) => {
       const aliases = [
-        profile.primaryType,
+        ...(profile.eventFamily === "holiday gathering" ? [] : [profile.primaryType]),
         profile.subtype ?? "",
         ...profile.aliases,
       ].map(normalizeSearchText);
@@ -171,11 +184,15 @@ function scoreAlias(query: string, alias: string) {
     return 1;
   }
 
-  if (query.includes(alias) || alias.includes(query)) {
+  if (!alias) return 0;
+
+  if ((` ${query} `).includes(` ${alias} `) || alias.startsWith(query)) {
     return 0.9;
   }
 
-  const queryWords = new Set(query.split(" "));
+  const generic = new Set(["party", "event", "events", "gathering", "celebration", "day", "planning", "a", "the", "for"]);
+  const queryWords = new Set(query.split(" ").filter((word) => !generic.has(word)));
+  if (!alias.split(" ").some((word) => !generic.has(word) && queryWords.has(word))) return 0;
   const aliasWords = alias.split(" ");
   const overlap = aliasWords.filter((word) => queryWords.has(word)).length;
   const overlapScore = overlap / Math.max(aliasWords.length, 1);

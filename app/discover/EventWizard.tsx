@@ -13,6 +13,7 @@ import {
 } from "../data/marketplace";
 import {
   searchEventIntents,
+  getDiscoveryFamily,
 } from "@/lib/event-intelligence/search";
 import { buildEventIntelligenceProfile } from "@/lib/event-intelligence/engine";
 import { saveEventIntelligenceProfile } from "@/lib/event-intelligence/storage";
@@ -54,6 +55,7 @@ import {
   type LocationProfile,
 } from "@/lib/maps/zones";
 import { CalendarPicker } from "./components/CalendarPicker";
+import { EventMoment } from "../components/EventMoment";
 import { StepCard } from "./components/StepCard";
 import { StepTwoConfirmation } from "./components/StepTwoConfirmation";
 import { TimeDurationPicker } from "./components/TimeDurationPicker";
@@ -124,7 +126,7 @@ export function EventWizard() {
   const initialStages = initialIntelligence.stages;
   const sessionRestoredRef = useRef(false);
   const [sessionReady, setSessionReady] = useState(false);
-  const [step, setStep] = useState(initialQuery ? 1 : 0);
+  const [step, setStep] = useState(initialQuery && !getDiscoveryFamily(initialQuery) ? 1 : 0);
   const [query, setQuery] = useState(initialQuery);
   const [timing, setTiming] = useState({
     date: "",
@@ -180,7 +182,7 @@ export function EventWizard() {
         .join(", "),
     [planSelections, preferences],
   );
-  const suggestions = useMemo(() => searchEventIntents(query, 5), [query]);
+  const suggestions = useMemo(() => searchEventIntents(query, getDiscoveryFamily(query) ? 30 : 5), [query]);
   const visibleServices = selectedServices.filter(
     (service) => !recognition.excludedServices.includes(service),
   );
@@ -311,6 +313,7 @@ export function EventWizard() {
     }
 
     setQuery(cleanQuery);
+    if (getDiscoveryFamily(cleanQuery)) { setStep(0); return; }
     const nextIntelligence = buildEventIntelligenceProfile({ query: cleanQuery });
     setStages(nextIntelligence.stages);
     setAudience(nextIntelligence.audience);
@@ -404,7 +407,8 @@ export function EventWizard() {
   }
 
   return (
-    <section className="px-6 py-10 sm:px-8 lg:px-12">
+    <section className="relative px-4 py-8 sm:px-8 lg:px-12">
+      <EventMoment recognition={recognition} active={step === 1} />
       <div
         className={`mx-auto min-w-0 transition-[max-width] duration-300 ${
           step === 3 ? "max-w-[1600px]" : step === 1 ? "max-w-6xl" : "max-w-5xl"

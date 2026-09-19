@@ -57,8 +57,15 @@ const holidayTaxonomyProfiles: EventTaxonomyProfile[] = [
   holidayProfile("eid", "Eid", ["eid al fitr", "eid al adha", "eid celebration"], "seasonal", "joyful, communal, family-centered", ["muslim", "halal", "family"], ["Catering", "Rentals", "Photography"]),
 ];
 
+// Parent discovery concepts reference the same family metadata used by profiles.
+export const eventDiscoveryFamilies = [
+  { aliases: ["holiday", "holidays", "holiday party", "holiday gathering"], family: "holiday gathering" },
+  { aliases: ["social", "social events", "social party"], family: "social party" },
+];
+
 export const eventExamples = [
   "Birthday party",
+  "Divorce Party",
   "Quinceañera",
   "Pool party",
   "Bar mitzvah",
@@ -496,13 +503,17 @@ export const eventTaxonomyProfiles: EventTaxonomyProfile[] = [
       "private party",
       "pool party",
       "block party",
-      "holiday party",
       "bbq",
       "barbecue",
       "cookout",
       "housewarming",
       "family reunion",
       "retirement party",
+      "divorce party",
+      "going away party",
+      "launch party",
+      "watch party",
+      "proposal",
       "festival",
       "church event",
       "school carnival",

@@ -3,7 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { eventExamples } from "@/lib/event-intelligence/taxonomy";
-import { searchEventIntents } from "@/lib/event-intelligence/search";
+import { getDiscoveryFamily, searchEventIntents } from "@/lib/event-intelligence/search";
 import { SearchLogoMark } from "./SearchLogoMark";
 
 const loopExamples = [...eventExamples.slice(0, 18), ...eventExamples.slice(0, 18)];
@@ -32,6 +32,7 @@ export function EventDiscoverySearch() {
 
   function submitSearch(nextQuery = query) {
     const cleanQuery = nextQuery.trim() || placeholder;
+    if (getDiscoveryFamily(cleanQuery)) { setFocused(true); return; }
     const params = new URLSearchParams({ query: cleanQuery });
 
     router.push(`/discover?${params.toString()}`);
@@ -46,7 +47,7 @@ export function EventDiscoverySearch() {
         }}
         className="relative"
       >
-        <div className="flex min-h-[72px] items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-white/94 px-4 py-3 shadow-[0_24px_80px_rgba(13,19,33,0.13)] transition focus-within:border-[#D4AF37]/55 focus-within:shadow-[0_28px_90px_rgba(13,19,33,0.17)] sm:px-5">
+        <div className="event-search-bar flex min-h-[72px] items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-white/94 px-4 py-3 shadow-[0_24px_80px_rgba(13,19,33,0.13)] transition focus-within:border-[#D4AF37]/55 focus-within:shadow-[0_28px_90px_rgba(13,19,33,0.17)] sm:px-5">
           <SearchLogoMark />
           <input
             role="combobox"
@@ -89,6 +90,7 @@ export function EventDiscoverySearch() {
 
         {focused ? (
           <div id={listboxId} role="listbox" className="absolute left-0 right-0 top-[84px] z-20 max-h-[min(420px,56vh)] touch-pan-y scroll-py-2 overflow-y-auto overscroll-contain scroll-smooth rounded-[28px] border border-[#D4AF37]/18 bg-white p-2 shadow-[0_28px_90px_rgba(13,19,33,0.16)]">
+            {getDiscoveryFamily(query) && <p className="px-4 py-2 text-xs ui-muted">Choose the occasion you have in mind.</p>}
             {suggestions.map((suggestion, index) => (
               <button
                 key={`${suggestion.label}-${suggestion.recognition.profile.id}`}
@@ -115,6 +117,7 @@ export function EventDiscoverySearch() {
                 </span>
               </button>
             ))}
+            {query.trim() && !getDiscoveryFamily(query) && <button type="button" className="w-full rounded-xl p-4 text-left text-sm ui-muted" onMouseDown={(event) => event.preventDefault()} onClick={() => submitSearch()}>Plan “{query.trim()}” as my own event →</button>}
           </div>
         ) : null}
       </form>

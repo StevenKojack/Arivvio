@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { EventAtmosphere } from "./EventAtmosphere";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
@@ -8,25 +9,16 @@ import { SupportProjectForm } from "./SupportProjectForm";
 import { BrandMark } from "./Logo";
 
 const demoFeatures = [
-  "Planning intake",
-  "Event recommendations",
-  "Vendor marketplace",
-  "Interactive maps",
-  "Quote cart concepts",
-  "Vendor onboarding concepts",
-  "Account and event dashboards",
+  "Connected event planning, including multi-part occasions",
+  "Marketplace discovery and full vendor listings",
+  "Quote review, demo submission, and saved request status",
+  "Vendor Demo with calendar, availability, and business tools",
 ];
 
 const notReadyItems = [
-  "Real bookings",
-  "Live vendor availability",
-  "Confirmed vendor pricing",
-  "Payments or payouts",
-  "Production messaging",
-  "Email or SMS notifications",
-  "Complete marketplace data",
-  "Full support operations",
-  "Final security and compliance review",
+  "Real bookings, payments, or payouts",
+  "Confirmed prices or live vendor availability",
+  "Real vendor messages, email, or SMS",
 ];
 
 const supportAudiences = [
@@ -65,22 +57,22 @@ export function PreBetaGateway() {
     try { window.sessionStorage.setItem("arivvio-demo-entered", "true"); } catch { /* The demo still opens if storage is unavailable. */ }
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { router.push("/demo"); return; }
     setEntering(true);
-    window.setTimeout(() => router.push("/demo"), 450);
+    window.setTimeout(() => router.push("/demo"), 220);
   }
 
   return (
-    <main className="ui-page min-h-screen overflow-x-hidden">
-      {entering && <div className="demo-entry" role="status" aria-label="Entering Arivvio demo"><BrandMark /><p className="hub-muted text-sm">Your event starts here.</p></div>}
+    <main className={`customer-experience ui-page min-h-screen overflow-x-hidden ${entering ? "lobby-entering" : ""}`}>
+      {entering && <div className="demo-entry" role="status" aria-label="Entering Arivvio demo"><p className="text-sm font-medium">Your occasion. Everything it needs.</p></div>}
       <section className="relative isolate min-h-screen overflow-hidden px-5 pb-16 pt-5 sm:px-8 lg:px-12">
         <div className="lobby-backdrop absolute inset-0 -z-20" />
         <div className="absolute left-1/2 top-24 -z-10 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full border border-[#D4AF37]/16 ui-surface blur-3xl" />
 
-        <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+        <nav className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
           <Link href="/" className="inline-flex items-center" aria-label="Arivvio">
             <BrandMark />
           </Link>
           <div className="flex items-center gap-2">
-            <Link href="/vendor/login" className="rounded-full border px-4 py-2 text-sm font-semibold">Become a vendor</Link>
+            <Link href="/vendor/login" className="hidden rounded-full border px-4 py-2 text-sm font-semibold sm:block">Become a vendor</Link>
             <Link
               href="/support-project"
               className="hidden rounded-full border border-[#D4AF37]/18 ui-surface px-4 py-2 text-sm font-semibold ui-text shadow-[0_12px_30px_rgba(13,19,33,0.06)] transition hover:-translate-y-0.5 hover:border-[#D4AF37]/45 sm:inline-flex"
@@ -102,17 +94,14 @@ export function PreBetaGateway() {
             <p className="w-fit rounded-full border border-[#D4AF37]/22 ui-surface px-4 py-2 text-sm font-semibold uppercase tracking-[0.16em] text-[#8A6A16] shadow-[0_12px_30px_rgba(13,19,33,0.07)] backdrop-blur">
               Pre-Beta Demo
             </p>
-            <h1 className="mt-8 max-w-4xl text-5xl font-semibold tracking-tight ui-text sm:text-7xl lg:text-8xl">
-              Plan an entire event in one place.
+            <h1 className="mt-8 max-w-4xl text-5xl font-semibold tracking-tight ui-text sm:text-6xl lg:text-7xl">
+              Bring your people together.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 ui-muted sm:text-xl">
-              Arivvio is building a smarter way to discover venues and vendors,
-              organize every detail, request quotes, and bring an event together
-              from one connected workspace.
+              From an intimate dinner to a once-in-a-lifetime day. Find the setting, meet your event team, and bring every part of your occasion into one plan.
             </p>
             <p className="mt-5 max-w-2xl rounded-[24px] border border-[#D4AF37]/18 ui-surface px-5 py-4 text-base font-semibold leading-7 ui-text shadow-[0_18px_50px_rgba(13,19,33,0.07)] backdrop-blur">
-              Arivvio is currently under active development. You are viewing an
-              early product demonstration, not a finished marketplace.
+              Explore connected planning, vendor discovery, and demo quote requests. Try the Vendor Demo for calendars and business tools. No account needed to explore.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -132,65 +121,17 @@ export function PreBetaGateway() {
               </button>
             </div>
             <p className="mt-3 max-w-2xl text-sm leading-6 ui-muted">
-              I would like to invest, fund, collaborate, contribute, or contact
-              the Arivvio team.
+              Have something to bring to the table? Invest, collaborate, or contact the team.
             </p>
             <p className="mt-4 max-w-2xl text-xs font-semibold leading-5 ui-muted">
-              By entering, you understand that this is unfinished demonstration
-              software.
+              Pre-beta demo. Requests stay in your browser; no vendors are contacted and no bookings are made.
             </p>
           </div>
 
-          <div className="relative">
-            <div className="overflow-hidden rounded-[34px] border border-[#D4AF37]/16 ui-surface p-4 shadow-[0_30px_110px_rgba(13,19,33,0.16)] backdrop-blur">
-              <div className="rounded-[28px] ui-brand-panel p-5">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#D4AF37]">
-                    Event workspace
-                  </p>
-                  <span className="rounded-full ui-surface px-3 py-1 text-xs font-semibold text-white">
-                    Demo only
-                  </span>
-                </div>
-                <div className="flex h-44 flex-col items-center justify-center gap-4"><BrandMark inverted /><p className="text-xs uppercase tracking-[.2em] text-[#D4AF37]">Elevate every event</p></div>
-              </div>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-[1.1fr_0.9fr]">
-                <div className="rounded-[24px] border border-[#D4AF37]/14 ui-soft p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8A6A16]">
-                    Vendor discovery
-                  </p>
-                  <div className="mt-4 space-y-3">
-                    {["Venues", "Food and catering", "Music and DJs"].map(
-                      (item, index) => (
-                        <div key={item} className="flex items-center gap-3">
-                          <span className="h-14 w-16 rounded-2xl bg-[linear-gradient(135deg,#0D1321,#22324F)]" />
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-sm font-semibold ui-text">
-                              {item}
-                            </span>
-                            <span className="mt-2 block h-2 rounded-full bg-[#D4AF37]/20" />
-                          </span>
-                          <span className="rounded-full ui-surface px-2 py-1 text-xs font-semibold ui-muted">
-                            {index + 3}
-                          </span>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                </div>
-                <div className="rounded-[24px] border border-[#D4AF37]/14 ui-soft p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8A6A16]">
-                    Map and quote concepts
-                  </p>
-                  <div className="mt-4 h-40 rounded-[22px] bg-[radial-gradient(circle_at_38%_44%,rgba(212,175,55,0.38),transparent_8%),radial-gradient(circle_at_68%_30%,rgba(13,19,33,0.2),transparent_7%),linear-gradient(135deg,#FFFFFF,#E9ECF2)] ring-1 ring-[#D4AF37]/10" />
-                  <div className="mt-3 rounded-2xl ui-surface px-4 py-3 text-sm font-semibold ui-muted">
-                    Estimated quote cart
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <figure className="event-photo-frame relative self-center overflow-hidden rounded-[32px]">
+            <EventAtmosphere priority />
+            <figcaption className="event-photo-caption"><p className="text-xs uppercase tracking-[.2em]">Make room for the moments</p><p className="mt-3 text-3xl font-medium">Big occasions.<br />Small details. All together.</p></figcaption>
+          </figure>
         </div>
       </section>
 
@@ -214,7 +155,7 @@ export function PreBetaGateway() {
           <InfoPanel title="What Arivvio is">
             Arivvio aims to become a unified marketplace and planning workspace
             for events, helping planners move from idea to discovery, quotes,
-            maps, organization, and coordination in one calmer place.
+            organization, and coordination in one calmer place.
           </InfoPanel>
           <ChecklistPanel title="What the demo includes" items={demoFeatures} />
           <ChecklistPanel title="What is not ready" items={notReadyItems} />

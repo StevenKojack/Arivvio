@@ -5,7 +5,7 @@ import { EventWizard } from "./EventWizard";
 
 export default function DiscoverPage() {
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#FFFCF7,#F6F3EA)] text-neutral-950">
+    <main className="customer-experience min-h-screen ui-page ui-text">
       <Navigation />
       <Suspense fallback={<DiscoveryLoading />}>
         <EventWizard />

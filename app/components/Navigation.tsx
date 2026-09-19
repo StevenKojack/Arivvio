@@ -98,7 +98,7 @@ export function Navigation() {
   }, [isInternalDemoRoute]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[#D4AF37]/10 ui-soft/86 px-5 shadow-[0_10px_40px_rgba(13,19,33,0.055)] backdrop-blur-xl sm:px-8 lg:px-12">
+    <header className="sticky top-0 z-30 border-b border-[#D4AF37]/10 ui-surface px-5 shadow-[0_10px_40px_rgba(13,19,33,0.055)] backdrop-blur-xl sm:px-8 lg:px-12">
       <nav className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4">
         <Logo />
 

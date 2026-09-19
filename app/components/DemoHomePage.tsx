@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { EventAtmosphere } from "./EventAtmosphere";
 import { Footer } from "./Footer";
 import { EventDiscoverySearch } from "./EventDiscoverySearch";
 import { HowItWorks } from "./HowItWorks";
@@ -7,42 +7,33 @@ import { Navigation } from "./Navigation";
 
 export function DemoHomePage() {
   return (
-    <main className="min-h-screen ui-soft ui-text">
+    <main className="customer-experience demo-home min-h-screen ui-page ui-text">
       <Navigation />
-      <section className="relative isolate overflow-hidden px-6 py-20 sm:px-8 sm:py-28 lg:px-12">
-        <Image
-          src="/event-planning-hero.png"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="absolute inset-0 -z-20 h-full w-full object-cover"
-        />
-        <div className="demo-hero-shade absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(247,244,236,0.97),rgba(247,244,236,0.84)_45%,rgba(247,244,236,0.42)),linear-gradient(180deg,rgba(255,252,247,0.4),rgba(247,244,236,0.96))]" />
-        <div className="demo-hero-base absolute bottom-0 left-0 right-0 -z-10 h-28 bg-[linear-gradient(180deg,transparent,#F7F4EC)]" />
+      <section className="customer-hero relative px-6 py-12 sm:px-8 sm:py-20 lg:px-12">
+        <div className="customer-hero-photo"><EventAtmosphere priority /><div className="customer-hero-shade" /></div>
         <div className="relative mx-auto flex max-w-7xl flex-col justify-center">
           <p className="w-fit rounded-full border border-[#D4AF37]/20 ui-surface px-4 py-2 text-sm font-semibold ui-text shadow-[0_12px_30px_rgba(13,19,33,0.08)] backdrop-blur">
             Elevate every event
           </p>
-          <h1 className="mt-8 max-w-4xl text-4xl font-semibold tracking-tight ui-text sm:text-6xl">
+          <h1 className="mt-8 max-w-2xl text-4xl font-semibold tracking-tight ui-text sm:text-6xl">
             Your occasion. Everything it needs.
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 ui-muted sm:text-xl">
+          <p className="mt-6 max-w-xl text-lg leading-8 ui-muted sm:text-xl">
             Find the place, discover your team, and keep the details together.
             Start with an idea. Build an event that feels like you.
           </p>
-          <div className="mt-10 w-full max-w-3xl animate-[fadeUp_360ms_ease-out]">
+          <div className="mt-10 w-full max-w-2xl">
             <EventDiscoverySearch />
           </div>
-          <div className="mt-10 grid max-w-3xl gap-3 sm:grid-cols-3">
+          <div className="mt-7 flex max-w-2xl flex-wrap gap-x-6 gap-y-2">
             {[
-              "Understands the event",
-              "Finds the right places",
-              "Builds the vendor stack",
+              "One connected plan",
+              "Places and people you’ll love",
+              "Every detail together",
             ].map((item) => (
               <div
                 key={item}
-                className="rounded-2xl border border-[#D4AF37]/16 ui-surface px-4 py-3 text-sm font-semibold ui-muted shadow-[0_14px_38px_rgba(13,19,33,0.07)] backdrop-blur"
+                className="text-sm font-medium ui-muted"
               >
                 {item}
               </div>
@@ -59,7 +50,7 @@ export function DemoHomePage() {
             ["Weddings", "Wedding", "Your people. Your day. Your way.", "bg-[#E5ECE4]"],
             ["Gatherings", "Private party", "Good company deserves a great setting", "bg-[#E6EAF0]"],
             ["Company events", "Corporate dinner", "Bring the team together", "bg-[#EFE3DD]"],
-          ].map(([name, query, note, color], index) => <Link key={name} href={`/discover?query=${encodeURIComponent(query)}`} className={`${color} rounded-2xl p-6 transition hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4`}><span className="text-sm ui-muted">0{index + 1}</span><h3 className="mt-8 text-xl font-semibold">{name} ↗</h3><p className="mt-2 text-sm leading-6 ui-muted">{note}</p></Link>)}
+          ].map(([name, query, note, color], index) => <Link key={name} href={`/discover?query=${encodeURIComponent(query)}`} className={`occasion-card ${color} rounded-2xl p-6 transition hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4`}><span className="text-sm ui-muted">0{index + 1}</span><h3 className="mt-8 text-xl font-semibold">{name} ↗</h3><p className="mt-2 text-sm leading-6 ui-muted">{note}</p></Link>)}
         </div>
       </section>
       <section className="mx-auto max-w-7xl px-6 py-12 sm:px-8">
@@ -69,7 +60,7 @@ export function DemoHomePage() {
       </section>
       <HowItWorks />
       <section className="ui-surface px-6 py-20 sm:px-8 lg:px-12">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 rounded-[30px] border border-[#D4AF37]/16 bg-[linear-gradient(135deg,#FFFCF7,#F6F3EA)] p-8 shadow-[0_22px_70px_rgba(13,19,33,0.06)] sm:p-10 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 rounded-[30px] border border-[#D4AF37]/16 ui-soft p-8 shadow-[0_22px_70px_rgba(13,19,33,0.06)] sm:p-10 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">
               Providers

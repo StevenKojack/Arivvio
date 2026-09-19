@@ -3,6 +3,7 @@ import type { EventIdentity, EventTaxonomyProfile } from "./types";
 import { hasPositivePhrase } from "./intent-text";
 
 const concepts = [
+  { id: "divorce-party", label: "Divorce Party", terms: ["divorce party"] },
   { id: "celebration-of-life", label: "Celebration of Life", terms: ["celebration of life"] },
   { id: "corporate-dinner", label: "Corporate Dinner", terms: ["corporate dinner", "company dinner"] },
   { id: "funeral-reception", label: "Funeral Reception", terms: ["funeral reception", "repass"] },
