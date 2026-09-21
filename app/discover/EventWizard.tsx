@@ -313,6 +313,9 @@ export function EventWizard() {
     }
 
     setQuery(cleanQuery);
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set("query", cleanQuery);
+    window.history.replaceState(null, "", `/discover?${nextParams.toString()}`);
     if (getDiscoveryFamily(cleanQuery)) { setStep(0); return; }
     const nextIntelligence = buildEventIntelligenceProfile({ query: cleanQuery });
     setStages(nextIntelligence.stages);
@@ -1214,9 +1217,9 @@ function FinalReview({
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <PlainDetail label="Date" value={timing.date || "Choose date"} />
-        <PlainDetail label="Time" value={`${formatTime(timing.startTime)} - ${formatTime(timing.endTime)}`} />
-        <PlainDetail label="Guests" value={guestCount.toLocaleString()} />
-        <PlainDetail label="Budget" value={`$${budget.toLocaleString()}`} />
+        <PlainDetail label={stages.length ? "Overall time" : "Time"} value={`${formatTime(timing.startTime)} - ${formatTime(timing.endTime)}`} />
+        <PlainDetail label={stages.length ? "Overall guests" : "Guests"} value={guestCount.toLocaleString()} />
+        <PlainDetail label={stages.length ? "Overall budget" : "Budget"} value={`$${budget.toLocaleString()}`} />
       </div>
       <EventPartsSummary stages={stages} defaults={{ ...timing, budget, guestCount, location: getLocationSummary(locations) }} />
       <div className="rounded-[30px] border border-neutral-200 bg-white p-5">

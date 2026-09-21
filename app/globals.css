@@ -302,7 +302,9 @@ html[data-theme="dark"] .brand-symbol { color: #dfbd65; }
 .quote-progress [aria-current=step] { border-color: #c5ad72; color: var(--hub-text); font-weight: 600; }
 .quote-provider { border-left: 3px solid #c5ad72; }
 html[data-theme="dark"] .customer-hero-shade { background: linear-gradient(90deg,#181e29fc 0%,#181e29ed 34%,#181e2988 64%,#181e2922); }
-html[data-theme="dark"] .customer-experience [class*="bg-[linear-gradient"] { background: var(--hub-surface); }
+html[data-theme="dark"] .customer-experience [class*="bg-[linear-gradient"][class*="#FF"],
+html[data-theme="dark"] .customer-experience [class*="bg-[linear-gradient"][class*="#F6"] { background: var(--hub-surface); }
+html[data-theme="dark"] .customer-experience :is(button,a,span)[class*="bg-[#F"] { background-color: var(--hub-soft); color: var(--hub-text); }
 html[data-theme="dark"] .customer-experience .occasion-card { background: var(--hub-surface); border: 1px solid var(--hub-border); }
 html[data-theme="dark"] .customer-experience [class*="bg-[#FFF8E1]"] { background-color: #3c382d; }
 html[data-theme="dark"] .customer-experience [class*="text-[#B88A1D]"] { color: #dcc77f; }
@@ -337,3 +339,4 @@ html[data-theme="dark"] .customer-experience [class*="bg-neutral-50"] { backgrou
   .brand-symbol { width: 34px; height: 39px; }
 }
 @media (prefers-reduced-motion: reduce) { .event-moment { display: none !important; } .demo-home,.demo-entry { animation: none; } .lobby-entering > section { opacity: 1; } }
+html[data-theme="dark"] .vendor-entry form { background: var(--hub-surface); border-color: var(--hub-border); color: var(--hub-text); }
