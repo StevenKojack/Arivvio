@@ -74,6 +74,7 @@ export function Navigation() {
   const menuLinks = navState.isLoggedIn
     ? [
         { href: "/account", label: "Account", show: true },
+        { href: "/requests", label: "Saved demo requests", show: true },
         { href: "/account", label: "My events", show: true },
         {
           href: "/vendor/dashboard",
@@ -84,6 +85,7 @@ export function Navigation() {
         { href: "/auth/logout", label: "Log out", show: true },
       ]
     : [
+        { href: "/requests", label: "Saved demo requests", show: true },
         { href: "/auth/login", label: "Log in", show: true },
         { href: "/auth/signup", label: "Sign up", show: true },
         { href: "/?info=1", label: "Pre-Beta information", show: true },

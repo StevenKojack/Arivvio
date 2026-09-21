@@ -3,7 +3,7 @@ export type VendorEvent = {
   id: string; name: string; type: string; client: string; date: string;
   start: string; end: string; location: string; service: string; notes: string;
   status: EventStatus; source: "ARIVVIO" | "MANUAL";
-  tasks: { title: string; done: boolean }[];
+  tasks: { title: string; done: boolean }[]; requestId?: string;
 };
 export type Hours = { enabled: boolean; start: string; end: string };
 export type ListingMedia = { cover?: string; profile?: string; gallery: string[] };
