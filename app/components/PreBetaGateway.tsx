@@ -216,22 +216,7 @@ export function PreBetaGateway() {
         </div>
       </section>
 
-      <footer className="border-t border-[#D4AF37]/16 px-5 py-8 sm:px-8 lg:px-12">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 text-sm ui-muted sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-semibold ui-text">Arivvio Pre-Beta Demo</p>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/demo" className="font-semibold hover:text-[#8A6A16]">
-              Demo homepage
-            </Link>
-            <Link
-              href="/support-project"
-              className="font-semibold hover:text-[#8A6A16]"
-            >
-              Contact
-            </Link>
-          </div>
-        </div>
-      </footer>
+
 
       {showSupport ? (
         <SupportModal onClose={() => setShowSupport(false)} />

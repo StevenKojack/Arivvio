@@ -1,4 +1,3 @@
-import { Footer } from "../../components/Footer";
 import { Navigation } from "../../components/Navigation";
 import { VendorOnboardingForm } from "./VendorOnboardingForm";
 
@@ -21,7 +20,6 @@ export default function VendorOnboardingPage() {
         </div>
         <VendorOnboardingForm />
       </section>
-      <Footer />
     </main>
   );
 }

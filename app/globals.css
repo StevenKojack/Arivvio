@@ -311,12 +311,12 @@ html[data-theme="dark"] .customer-experience [class*="text-[#B88A1D]"] { color: 
 html[data-theme="dark"] .customer-experience [class*="text-neutral-8"] { color: var(--hub-text); }
 html[data-theme="dark"] .customer-experience [class*="bg-neutral-50"] { background: var(--hub-soft); }
 .event-moment { pointer-events: none; position: fixed; inset: 80px 0 0; z-index: 35; overflow: hidden; }
-.event-moment-celebratory i { position: absolute; bottom: 4%; left: 8%; width: 30px; height: 39px; border-radius: 50%; background: #c5ad72bd; animation: occasion-rise 2.1s ease-out both; }
-.event-moment-celebratory i::after { content: ""; position: absolute; top: 100%; left: 50%; width: 1px; height: 55px; background: #c5ad72aa; }
-.event-moment-celebratory i:nth-child(2) { left: 87%; background: #b98478b0; animation-delay: 100ms; }
-.event-moment-celebratory i:nth-child(3) { left: 92%; width: 24px; height: 32px; animation-delay: 200ms; }
-.event-moment-elegant { inset: 80px 0 auto; height: 280px; }
-.event-moment-elegant i { display: block; height: 100%; background: radial-gradient(ellipse at 50% 0,#d6be7c50,transparent 65%); animation: occasion-light 2s ease-in-out both; }
+.event-moment-balloons i { position: absolute; bottom: 4%; left: 8%; width: 30px; height: 39px; border-radius: 50%; background: #c5ad72bd; animation: occasion-rise 2.1s ease-out both; }
+.event-moment-balloons i::after { content: ""; position: absolute; top: 100%; left: 50%; width: 1px; height: 55px; background: #c5ad72aa; }
+.event-moment-balloons i:nth-child(2) { left: 87%; background: #b98478b0; animation-delay: 100ms; }
+.event-moment-balloons i:nth-child(3) { left: 92%; width: 24px; height: 32px; animation-delay: 200ms; }
+.event-moment-flourish { inset: 80px 0 auto; height: 280px; }
+.event-moment-flourish i { display: block; height: 100%; background: radial-gradient(ellipse at 50% 0,#d6be7c50,transparent 65%); animation: occasion-light 2s ease-in-out both; }
 @keyframes occasion-rise { 0% { opacity: 0; transform: translateY(30px) rotate(-8deg); } 20% { opacity: .8; } 100% { opacity: 0; transform: translateY(-240px) rotate(8deg); } }
 @keyframes occasion-light { 0%,100% { opacity: 0; } 35% { opacity: 1; } }
 @keyframes customer-arrive { from { opacity: .65; } to { opacity: 1; } }
@@ -340,3 +340,18 @@ html[data-theme="dark"] .customer-experience [class*="bg-neutral-50"] { backgrou
 }
 @media (prefers-reduced-motion: reduce) { .event-moment { display: none !important; } .demo-home,.demo-entry { animation: none; } .lobby-entering > section { opacity: 1; } }
 html[data-theme="dark"] .vendor-entry form { background: var(--hub-surface); border-color: var(--hub-border); color: var(--hub-text); }
+
+/* Event personality accents stay at the edges and never intercept input. */
+.event-moment-water { inset: auto 0 0; height: 100px; }
+.event-moment-water i { position:absolute; inset:30% -20% -100%; border-radius:45%; background:#71c5d52e; animation:occasion-wave 2.2s ease-out both; }
+.event-moment-water i:nth-child(2) { animation-delay:120ms; background:#6b9cbf26; }
+.event-moment-snow i { position:absolute; left:calc(4% + var(--particle) * 13%); top:0; width:5px; height:5px; border-radius:50%; background:var(--hub-gold,#c5ad72); animation:occasion-snow 2.2s ease-out both; }
+.event-moment-sparks i { position:absolute; left:calc(3% + var(--particle) * 13%); top:8%; width:4px; height:18px; border-radius:50%; background:#c5ad7288; animation:occasion-spark 1.8s ease-out both; }
+@keyframes occasion-wave { 0% { transform:translateY(70%) rotate(-3deg); opacity:0; } 40% { opacity:1; } 100% { transform:translateY(-15%) rotate(3deg); opacity:0; } }
+@keyframes occasion-snow { 0% { transform:translate(0,-10px); opacity:0; } 25% { opacity:.75; } 100% { transform:translate(18px,150px); opacity:0; } }
+@keyframes occasion-spark { 0% { transform:translateY(40px) scale(.3); opacity:0; } 30% { opacity:.7; } 100% { transform:translateY(-50px) rotate(35deg) scale(.2); opacity:0; } }
+.intake-personality { border-left:3px solid var(--hub-border); padding:10px 14px; margin-bottom:16px; color:var(--hub-muted); font-size:13px; }
+.intake-personality[data-personality="water"] { border-color:#70aebb; }
+.intake-personality[data-personality="snow"] { border-color:#a4bdc9; }
+.intake-personality[data-personality="flourish"],.intake-personality[data-personality="balloons"],.intake-personality[data-personality="sparks"] { border-color:#c5ad72; }
+@media (prefers-reduced-motion: reduce) { .event-moment { display:none!important; } }

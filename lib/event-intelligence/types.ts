@@ -24,6 +24,8 @@ export type EventIdentity = {
 };
 
 export type EventTaxonomyProfile = {
+  visualPersonality?: "balloons" | "flourish" | "water" | "snow" | "sparks";
+  discoveryRank?: number;
   aliases: string[];
   ageContext?: string;
   budgetTier: BudgetTier;

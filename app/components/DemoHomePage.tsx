@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { EventAtmosphere } from "./EventAtmosphere";
-import { Footer } from "./Footer";
 import { EventDiscoverySearch } from "./EventDiscoverySearch";
 import { HowItWorks } from "./HowItWorks";
 import { Navigation } from "./Navigation";
@@ -80,7 +79,6 @@ export function DemoHomePage() {
           </Link>
         </div>
       </section>
-      <Footer />
     </main>
   );
 }

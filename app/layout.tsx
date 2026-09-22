@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Footer } from "./components/Footer";
 import { ThemeControl } from "./components/ThemeControl";
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ export default function RootLayout({
       className="h-full antialiased"
       data-build-commit={process.env.VERCEL_GIT_COMMIT_SHA ?? "local"}
     >
-      <body className="min-h-full flex flex-col">{children}<ThemeControl /></body>
+      <body className="min-h-full flex flex-col">{children}<Footer /><ThemeControl /></body>
     </html>
   );
 }

@@ -1,5 +1,5 @@
 import {
-  eventExamples,
+  defaultDiscoveryEvents,
   eventDiscoveryFamilies,
   eventTaxonomyProfiles,
   getDefaultProfile,
@@ -67,7 +67,7 @@ export function searchEventIntents(query: string, limit = 7) {
   const normalizedQuery = normalizeSearchText(query);
 
   if (!normalizedQuery || normalizedQuery.length < 2) {
-    return eventExamples.slice(0, limit).map((example) => {
+    return defaultDiscoveryEvents.slice(0, limit).map((example) => {
       const recognition = recognizeEventIntent(example);
 
       return {
@@ -86,13 +86,13 @@ export function searchEventIntents(query: string, limit = 7) {
 
   const suggestions = scoreProfiles(query)
     .filter((match) => match.score >= 0.45)
-    .map((match) => {
-      const label = getCompleteSuggestionLabel(match.profile, normalizedQuery);
-
-      return {
-        label,
-        recognition: recognizeEventIntent(label),
-      };
+    .flatMap((match) => {
+      const matchingAliases = match.profile.aliases.filter(alias => {
+        const words = normalizeSearchText(alias).split(" ");
+        return normalizedQuery.split(" ").every(part => words.some(word => word.startsWith(part)));
+      });
+      const labels = [getCompleteSuggestionLabel(match.profile, normalizedQuery), ...matchingAliases.map(toTitleCase)];
+      return labels.slice(0, 4).map(label => ({ label, recognition: recognizeEventIntent(label) }));
     });
 
   return uniqueSuggestions(suggestions).slice(0, limit);
@@ -140,7 +140,7 @@ function scoreProfiles(query: string) {
             : Math.max(bestAlias?.score ?? 0, synonymScore, tagScore),
       };
     })
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => b.score - a.score || (a.profile.discoveryRank ?? 100) - (b.profile.discoveryRank ?? 100));
 }
 
 function detectForcedProfileId(query: string) {

@@ -11,3 +11,9 @@ export function getEventVisualTone(recognition: EventRecognition): VisualTone {
   if (recognition.identity.canonicalEventType === "wedding") return "elegant";
   return "neutral";
 }
+
+export function getEventPersonality(recognition: EventRecognition) {
+  const context = normalizeSearchText(`${recognition.normalizedQuery} ${recognition.identity.canonicalEventType} ${recognition.identity.internalEventFamily}`);
+  if (/\b(funeral|memorial|celebration of life|wake|repass|burial|remembrance|mourning|corporate|conference|business|professional|ceremonial)\b/.test(context) || recognition.confidence < 0.48) return "none";
+  return recognition.profile.visualPersonality ?? "none";
+}

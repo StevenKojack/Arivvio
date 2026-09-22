@@ -1,4 +1,3 @@
-import { Footer } from "../../components/Footer";
 import { Navigation } from "../../components/Navigation";
 import { EventDetail } from "./EventDetail";
 
@@ -15,7 +14,6 @@ export default async function EventPage({
       <section className="px-6 py-16 sm:px-8 lg:px-12">
         <EventDetail eventId={id} />
       </section>
-      <Footer />
     </main>
   );
 }

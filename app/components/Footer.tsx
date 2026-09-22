@@ -15,7 +15,7 @@ export function Footer() {
           </p>
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-neutral-300">
-          <Link className="transition hover:text-[#D4AF37]" href="/#categories">
+          <Link className="transition hover:text-[#D4AF37]" href="/demo#categories">
             Categories
           </Link>
           <Link className="transition hover:text-[#D4AF37]" href="/plan">
@@ -35,6 +35,7 @@ export function Footer() {
           </Link>
         </div>
       </div>
+      <div className="mx-auto mt-8 flex max-w-7xl flex-wrap justify-between gap-4 border-t border-white/15 pt-6 text-xs text-neutral-300"><p>Copyright © 2026 Arivvio. All rights reserved.</p><nav aria-label="Legal"><Link className="mr-5" href="/privacy">Privacy Policy</Link><Link className="mr-5" href="/terms">Terms of Use</Link><Link href="/legal">Legal</Link></nav></div>
     </footer>
   );
 }

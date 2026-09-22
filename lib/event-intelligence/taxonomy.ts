@@ -29,6 +29,7 @@ function holidayProfile(
     recommendedTags: ["holiday", id, ...tags],
     recommendedVendors,
     requiredVendors: ["Venue"],
+    visualPersonality: tags.includes("snow") ? "snow" : tags.includes("fireworks") ? "sparks" : undefined,
     season,
     subtype: name,
     timeOfDay: "evening",
@@ -37,11 +38,11 @@ function holidayProfile(
 }
 
 const holidayTaxonomyProfiles: EventTaxonomyProfile[] = [
-  holidayProfile("christmas", "Christmas", ["christmas dinner", "office christmas party"], "winter", "warm, festive, generous", ["winter", "family", "gifts", "dinner"]),
+  holidayProfile("christmas", "Christmas", ["christmas dinner", "office christmas party"], "winter", "warm, festive, generous", ["winter", "family", "gifts", "dinner", "snow"]),
   holidayProfile("halloween", "Halloween", ["costume party", "halloween celebration"], "fall", "playful, theatrical, costume-friendly", ["costumes", "spooky", "candy", "performers"], ["Rentals", "DJ", "Character Performers"]),
   holidayProfile("thanksgiving", "Thanksgiving", ["friendsgiving", "thanksgiving dinner"], "fall", "warm, food-centered, communal", ["dinner", "family", "friendsgiving"], ["Catering", "Rentals", "Cleaning"]),
-  holidayProfile("fourth-of-july", "Fourth of July", ["4th of july", "independence day party"], "summer", "outdoor, social, patriotic", ["outdoor", "barbecue", "summer"], ["Catering", "Rentals", "Security"]),
-  holidayProfile("new-years-eve", "New Year's Eve", ["nye", "new years eve"], "winter", "late-night, celebratory, polished", ["midnight", "countdown", "late-night"], ["DJ", "Catering", "Security"]),
+  holidayProfile("fourth-of-july", "Fourth of July", ["4th of july", "independence day party"], "summer", "outdoor, social, patriotic", ["outdoor", "barbecue", "summer", "fireworks"], ["Catering", "Rentals", "Security"]),
+  holidayProfile("new-years-eve", "New Year's Eve", ["nye", "new years eve"], "winter", "late-night, celebratory, polished", ["midnight", "countdown", "late-night", "fireworks"], ["DJ", "Catering", "Security"]),
   holidayProfile("new-years-day", "New Year's Day", ["new years day", "new year brunch"], "winter", "fresh, relaxed, social", ["brunch", "daytime"], ["Catering", "Rentals", "Photography"]),
   holidayProfile("valentines-day", "Valentine's Day", ["valentines", "galentines", "galentine's day"], "winter", "intimate, warm, romantic", ["romantic", "dinner", "friends"], ["Catering", "Florals", "Live Music"]),
   holidayProfile("mothers-day", "Mother's Day", ["mothers day", "mother day brunch"], "spring", "warm, appreciative, family-centered", ["brunch", "family"], ["Catering", "Florals", "Photography"]),
@@ -65,7 +66,6 @@ export const eventDiscoveryFamilies = [
 
 export const eventExamples = [
   "Birthday party",
-  "Divorce Party",
   "Quinceañera",
   "Pool party",
   "Bar mitzvah",
@@ -105,6 +105,7 @@ export const eventExamples = [
   "Church event",
   "School carnival",
   "Sports banquet",
+  "Divorce Party",
 ] as const;
 
 export const eventTaxonomyProfiles: EventTaxonomyProfile[] = [
@@ -118,6 +119,8 @@ export const eventTaxonomyProfiles: EventTaxonomyProfile[] = [
     formality: "casual",
     guestSize: "20-100",
     id: "pool-party",
+    discoveryRank: 10,
+    visualPersonality: "water",
     indoorOutdoor: "outdoor",
     likelyGuestType: "friends and family",
     likelyNeeds: [
@@ -178,6 +181,7 @@ export const eventTaxonomyProfiles: EventTaxonomyProfile[] = [
     aliases: [
       "birthday",
       "birthday party",
+      "birthday dinner",
       "18th birthday",
       "21st birthday",
       "kids birthday",
@@ -192,6 +196,8 @@ export const eventTaxonomyProfiles: EventTaxonomyProfile[] = [
     formality: "casual",
     guestSize: "20-80",
     id: "birthday",
+    discoveryRank: 1,
+    visualPersonality: "balloons",
     indoorOutdoor: "indoor-outdoor",
     likelyGuestType: "friends and family",
     likelyNeeds: ["Cake", "Food", "Rentals", "Music", "Photos", "Decor"],
@@ -234,6 +240,8 @@ export const eventTaxonomyProfiles: EventTaxonomyProfile[] = [
     formality: "formal",
     guestSize: "75-250",
     id: "wedding",
+    discoveryRank: 2,
+    visualPersonality: "flourish",
     indoorOutdoor: "indoor-outdoor",
     likelyGuestType: "family, friends, and wedding guests",
     likelyNeeds: ["Ceremony/reception venue", "Catering", "Photography", "Florals", "Music", "Rentals"],
@@ -555,3 +563,6 @@ export function getProfileByMarketplaceType(eventType: EventType) {
     getDefaultProfile()
   );
 }
+
+// Editorial defaults. Search still covers every taxonomy profile and alias.
+export const defaultDiscoveryEvents = ["Birthday party", "Wedding", "Baby shower", "Graduation party", "Anniversary", "Corporate dinner", "Holiday party", "Backyard BBQ", "Family reunion", "Housewarming", "Pool party", "Retirement party"];

@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
 import { EventWizard } from "./EventWizard";
 
@@ -10,7 +9,6 @@ export default function DiscoverPage() {
       <Suspense fallback={<DiscoveryLoading />}>
         <EventWizard />
       </Suspense>
-      <Footer />
     </main>
   );
 }

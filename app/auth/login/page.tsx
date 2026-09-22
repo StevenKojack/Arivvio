@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { AuthForm } from "../AuthForm";
-import { Footer } from "../../components/Footer";
 import { Navigation } from "../../components/Navigation";
 
 export default function LoginPage() {
@@ -20,7 +19,6 @@ export default function LoginPage() {
           </Suspense>
         </div>
       </section>
-      <Footer />
     </main>
   );
 }

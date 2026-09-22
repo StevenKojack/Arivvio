@@ -1,5 +1,4 @@
 import { EventDiscoverySearch } from "../components/EventDiscoverySearch";
-import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
 
 const suggestionGroups = [
@@ -55,7 +54,6 @@ export default function PlanPage() {
           </div>
         </div>
       </section>
-      <Footer />
     </main>
   );
 }

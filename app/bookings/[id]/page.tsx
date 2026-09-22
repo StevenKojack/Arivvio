@@ -1,4 +1,3 @@
-import { Footer } from "@/app/components/Footer";
 import { Navigation } from "@/app/components/Navigation";
 import { BookingDetail } from "./BookingDetail";
 
@@ -17,7 +16,6 @@ export default async function BookingPage({ params }: BookingPageProps) {
       <section className="px-6 py-16 sm:px-8 lg:px-12">
         <BookingDetail bookingId={id} />
       </section>
-      <Footer />
     </main>
   );
 }

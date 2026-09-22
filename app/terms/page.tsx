@@ -1,0 +1,9 @@
+import { LegalPage } from "../legal/LegalPage";
+export default function TermsPage() { return <LegalPage title="Terms of Use" sections={[
+  ["Demonstration access", "Arivvio is a pre-beta event planning demonstration. Features may be incomplete, simulated, changed or removed. Use it to explore the product, not as the sole source of information for a real event."],
+  ["Listings, estimates and requests", "Listings may include fictional providers, illustrative images and example prices. Inclusion is not a verified endorsement or promise of availability. A demo request, vendor response or tentative calendar event does not contact a real provider, form a contract, reserve a service or create a confirmed booking."],
+  ["Accounts and appropriate use", "Keep account credentials private. Submit only information and content you are entitled to use. Do not misuse the site, impersonate others, upload unlawful content or interfere with other users or services. Do not enter payment details in the demo."],
+  ["No sales or payments in this demo", "This demonstration does not process purchases, deposits, printing orders or payments. It has no product sales or refund workflow. Any future commercial service will need its own reviewed terms before launch."],
+  ["Content and external services", "Arivvio's branding and original product materials belong to their respective owners. Third-party names, images and links remain subject to their owners' rights and terms. External sites operate separately from Arivvio."],
+  ["Availability and changes", "Access and saved demo data may change or become unavailable during development. Verify event arrangements directly with providers outside the demo. Nothing in these starter terms is intended to remove rights that cannot lawfully be excluded."]
+]} />; }

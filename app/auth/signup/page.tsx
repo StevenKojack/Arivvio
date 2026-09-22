@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { AuthForm } from "../AuthForm";
-import { Footer } from "../../components/Footer";
 import { Navigation } from "../../components/Navigation";
 
 export default function SignupPage() {
@@ -25,7 +24,6 @@ export default function SignupPage() {
           </Suspense>
         </div>
       </section>
-      <Footer />
     </main>
   );
 }

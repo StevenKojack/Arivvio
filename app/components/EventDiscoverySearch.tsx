@@ -2,11 +2,11 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { eventExamples } from "@/lib/event-intelligence/taxonomy";
+import { eventExamples, defaultDiscoveryEvents } from "@/lib/event-intelligence/taxonomy";
 import { getDiscoveryFamily, searchEventIntents } from "@/lib/event-intelligence/search";
 import { SearchLogoMark } from "./SearchLogoMark";
 
-const loopExamples = [...eventExamples.slice(0, 18), ...eventExamples.slice(0, 18)];
+const loopExamples = [...defaultDiscoveryEvents, ...defaultDiscoveryEvents];
 
 export function EventDiscoverySearch() {
   const router = useRouter();
@@ -17,7 +17,7 @@ export function EventDiscoverySearch() {
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const suggestions = useMemo(() => {
     const seen = new Set<string>();
-    return searchEventIntents(query, eventExamples.length).filter((suggestion) => {
+    return searchEventIntents(query, getDiscoveryFamily(query) ? eventExamples.length : 8).filter((suggestion) => {
       const key = suggestion.label.toLowerCase();
       if (seen.has(key)) return false;
       seen.add(key);
@@ -27,11 +27,12 @@ export function EventDiscoverySearch() {
   const placeholder = eventExamples[0];
 
   useEffect(() => {
-    optionRefs.current[activeIndex]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    optionRefs.current[activeIndex]?.scrollIntoView({ block: "nearest", behavior: "auto" });
   }, [activeIndex]);
 
-  function submitSearch(nextQuery = query) {
-    const cleanQuery = nextQuery.trim() || placeholder;
+  function submitSearch(nextQuery = query, complete = false) {
+    let cleanQuery = nextQuery.trim() || placeholder;
+    if (complete && cleanQuery.split(/\s+/).length <= 2 && suggestions[0] && suggestions[0].label.toLowerCase().startsWith(cleanQuery.toLowerCase())) cleanQuery = suggestions[0].label;
     if (getDiscoveryFamily(cleanQuery)) { setFocused(true); return; }
     const params = new URLSearchParams({ query: cleanQuery });
 
@@ -43,7 +44,7 @@ export function EventDiscoverySearch() {
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          submitSearch();
+          submitSearch(query, true);
         }}
         className="relative"
       >
@@ -55,9 +56,9 @@ export function EventDiscoverySearch() {
             aria-autocomplete="list"
             aria-controls={listboxId}
             aria-expanded={focused}
-            aria-activedescendant={activeIndex >= 0 && suggestions[activeIndex] ? `${listboxId}-${activeIndex}` : undefined}
+            aria-activedescendant={focused && activeIndex >= 0 && suggestions[activeIndex] ? `${listboxId}-${activeIndex}` : undefined}
             value={query}
-            onBlur={() => window.setTimeout(() => { setFocused(false); setActiveIndex(-1); }, 120)}
+            onBlur={(event) => { if (!event.currentTarget.form?.contains(event.relatedTarget)) { setFocused(false); setActiveIndex(-1); } }}
             onChange={(event) => { setQuery(event.target.value); setActiveIndex(-1); }}
             onFocus={() => setFocused(true)}
             onKeyDown={(event) => {
@@ -89,7 +90,7 @@ export function EventDiscoverySearch() {
         </div>
 
         {focused ? (
-          <div id={listboxId} role="listbox" className="absolute left-0 right-0 top-[84px] z-20 max-h-[min(420px,56vh)] touch-pan-y scroll-py-2 overflow-y-auto overscroll-contain scroll-smooth rounded-[28px] border border-[#D4AF37]/18 bg-white p-2 shadow-[0_28px_90px_rgba(13,19,33,0.16)]">
+          <div id={listboxId} role="listbox" className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-[min(420px,56vh)] touch-pan-y scroll-py-2 overflow-y-auto overscroll-contain scroll-smooth rounded-[28px] border border-[#D4AF37]/18 bg-white p-2 shadow-[0_28px_90px_rgba(13,19,33,0.16)]">
             {getDiscoveryFamily(query) && <p className="px-4 py-2 text-xs ui-muted">Choose the occasion you have in mind.</p>}
             {suggestions.map((suggestion, index) => (
               <button

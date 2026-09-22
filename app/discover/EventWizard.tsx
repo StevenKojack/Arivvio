@@ -55,6 +55,7 @@ import {
   type LocationProfile,
 } from "@/lib/maps/zones";
 import { CalendarPicker } from "./components/CalendarPicker";
+import { getEventPersonality } from "@/lib/event-intelligence/visual-tone";
 import { EventMoment } from "../components/EventMoment";
 import { StepCard } from "./components/StepCard";
 import { StepTwoConfirmation } from "./components/StepTwoConfirmation";
@@ -412,6 +413,7 @@ export function EventWizard() {
   return (
     <section className="relative px-4 py-8 sm:px-8 lg:px-12">
       <EventMoment recognition={recognition} active={step === 1} />
+      {step > 0 && <p className="intake-personality mx-auto max-w-7xl" data-personality={getEventPersonality(recognition)}>{recognition.identity.selectedDisplayEvent} · One connected plan, shaped around your occasion.</p>}
       <div
         className={`mx-auto min-w-0 transition-[max-width] duration-300 ${
           step === 3 ? "max-w-[1600px]" : step === 1 ? "max-w-6xl" : "max-w-5xl"

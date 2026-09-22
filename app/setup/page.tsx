@@ -1,4 +1,3 @@
-import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
 
 const steps = [
@@ -60,7 +59,6 @@ export default function SetupPage() {
           </div>
         </div>
       </section>
-      <Footer />
     </main>
   );
 }

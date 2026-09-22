@@ -1,4 +1,3 @@
-import { Footer } from "@/app/components/Footer";
 import { Navigation } from "@/app/components/Navigation";
 import { AdminDashboard } from "./AdminDashboard";
 
@@ -9,7 +8,6 @@ export default function AdminPage() {
       <section className="px-6 py-16 sm:px-8 lg:px-12">
         <AdminDashboard />
       </section>
-      <Footer />
     </main>
   );
 }

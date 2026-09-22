@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 type StepCardProps = {
   action: ReactNode;
@@ -19,6 +19,16 @@ export function StepCard({
   layout = "standard",
   title,
 }: StepCardProps) {
+  const content = useRef<HTMLDivElement>(null);
+  const [long, setLong] = useState(false);
+  useEffect(() => {
+    const node = content.current;
+    if (!node) return;
+    const measure = () => setLong(node.getBoundingClientRect().height > window.innerHeight * .65);
+    const observer = new ResizeObserver(measure); observer.observe(node); measure();
+    window.addEventListener("resize", measure);
+    return () => { observer.disconnect(); window.removeEventListener("resize", measure); };
+  }, []);
   if (layout === "wide") {
     return (
       <div className="min-w-0 animate-[fadeUp_220ms_ease-out] p-6 sm:p-8 lg:p-10">
@@ -34,14 +44,14 @@ export function StepCard({
           </div>
           <div className="shrink-0">{action}</div>
         </div>
-        <div className="mt-8 min-w-0">{children}</div>
+        <div ref={content} className="mt-8 min-w-0">{children}</div>{long && <div className="mt-6 border-t ui-border pt-5">{action}</div>}
       </div>
     );
   }
 
   return (
     <div className="grid min-w-0 animate-[fadeUp_220ms_ease-out] gap-8 p-6 sm:p-8 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] lg:p-10">
-      <div className="flex flex-col justify-between gap-8">
+      <div className="flex flex-col gap-8">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">
             {eyebrow}
@@ -53,7 +63,7 @@ export function StepCard({
         </div>
         <div>{action}</div>
       </div>
-      <div className="min-w-0">{children}</div>
+      <div className="min-w-0"><div ref={content}>{children}</div>{long && <div className="mt-6 border-t ui-border pt-5">{action}</div>}</div>
     </div>
   );
 }
