@@ -92,7 +92,7 @@ export function searchEventIntents(query: string, limit = 7) {
         return normalizedQuery.split(" ").every(part => words.some(word => word.startsWith(part)));
       });
       const labels = [getCompleteSuggestionLabel(match.profile, normalizedQuery), ...matchingAliases.map(toTitleCase)];
-      return labels.slice(0, 4).map(label => ({ label, recognition: recognizeEventIntent(label) }));
+      return Array.from(new Set(labels)).slice(0, 4).map(label => ({ label, recognition: recognizeEventIntent(label) }));
     });
 
   return uniqueSuggestions(suggestions).slice(0, limit);
@@ -137,7 +137,7 @@ function scoreProfiles(query: string) {
         score:
           forcedProfileId === profile.id
             ? 1.1
-            : Math.max(bestAlias?.score ?? 0, synonymScore, tagScore),
+            : Math.max(bestAlias?.score ?? 0, synonymScore, tagScore, normalizeSearchText(profile.subtype ?? profile.primaryType).startsWith(normalizedQuery) ? 0.95 : 0),
       };
     })
     .sort((a, b) => b.score - a.score || (a.profile.discoveryRank ?? 100) - (b.profile.discoveryRank ?? 100));
