@@ -41,10 +41,18 @@ export function understandEvent(profile: EventIntelligenceProfile, selectedProvi
     .filter(([service]) => !profile.requestedServices.includes(service as ServiceName) && !profile.excludedServices.includes(service as ServiceName) && !restricted.includes(service as ServiceName))
     .sort((a,b) => (b[1] ?? 0) - (a[1] ?? 0)).slice(0,3)
     .map(([service]) => ({ service: service as ServiceName, reason: profile.homeEvent && ['Rentals','Cleaning','Catering'].includes(service) ? 'May help with hosting at home. Optional until you add it.' : 'An optional service relevant to this occasion.' }));
+  const logistics: {priority: 'Important' | 'Recommended' | 'Optional'; detail: string}[] = [];
+  if (profile.homeEvent && (profile.planning?.guestCount ?? 0) >= 80) {
+    logistics.push({priority:'Important',detail:'Check seating, restroom capacity, parking and power for this headcount.'}, {priority:'Recommended',detail:'Decide who handles setup and cleanup. Rentals are optional if you already have enough equipment.'});
+  }
+  if (profile.homeEvent || profile.indoorOutdoor === 'outdoor') logistics.push({priority:'Recommended',detail:'If any part is outdoors, agree on a weather backup before confirming providers.'});
+  if (profile.stages.length > 1) logistics.push({priority:'Important',detail:'Allow travel and setup time between parts. Confirm which services cover each location.'});
+  if (profile.audience.audienceType === 'kids') logistics.push({priority:'Important',detail:'Plan age-appropriate activities, supervision and dietary needs with the hosts.'});
+  if (tone === 'professional') logistics.push({priority:'Recommended',detail:'Confirm the run of show, check-in process and any AV needs with the event team.'});
   const core = has('planning.guestCount') && (profile.homeEvent || has('planning.location') || profile.venuePreferences.length > 0);
   const scheduling = !has('planning.date') || needsTime || stageFields.length > 0 || ambiguous.length > 0;
   const readiness = !core ? 'Early idea' : scheduling ? 'Needs scheduling details' : !profile.requestedServices.length ? 'Ready for service planning' : !has('planning.location') || !has('planning.budget') ? 'Core details understood' : 'Ready for Marketplace matching';
-  return { known, inferred, ambiguous, missing: questions, nextBestQuestion: questions[0] ?? null, recommended, requestedServices: profile.requestedServices, inferredServices: profile.venueRequired && !profile.requestedServices.includes('Venue') ? [{service: 'Venue' as ServiceName, reason: 'Venue status is not confirmed.'}] : [], serviceRelationships, tone, readiness,
+  return { logistics, known, inferred, ambiguous, missing: questions, nextBestQuestion: questions[0] ?? null, recommended, requestedServices: profile.requestedServices, inferredServices: profile.venueRequired && !profile.requestedServices.includes('Venue') ? [{service: 'Venue' as ServiceName, reason: 'Venue status is not confirmed.'}] : [], serviceRelationships, tone, readiness,
     readyToRequestProviders: readiness === 'Ready for Marketplace matching' && selectedProviderCount > 0,
     budget: reasonAboutBudget({ overall: has('planning.budget') ? profile.planning?.budget : undefined, stages: profile.stages }),
   };

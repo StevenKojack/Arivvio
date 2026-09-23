@@ -24,6 +24,7 @@ export type EventIntelligenceInput = {
   guestSize?: number;
   inferPreferencesFromQuery?: boolean;
   locationContext?: string;
+  homeEventOverride?: boolean;
   planSelections?: PlanSelection[];
   preferences?: SelectedPlanningPreference[];
   query: string;
@@ -57,7 +58,9 @@ export function buildEventIntelligenceProfile(
     ...planSelections.flatMap((item) => item.matchingServices),
   ]);
   const venuePreferences = preferences.filter((item) => item.type === "location").map((item) => item.label);
-  const homeEvent = context.homeEvent || preferences.some((item) => ["At home", "Backyard"].includes(item.label));
+  const homeEvent = input.homeEventOverride ?? (context.homeEvent || preferences.some((item) => ["At home", "Backyard"].includes(item.label)));
+  const searchingVenue = /\b(?:thinking about|looking for|find|need|want)\b.{0,40}\b(?:venue|banquet hall|ballroom)\b/i.test(input.query);
+  if (searchingVenue && input.planSelections === undefined && !homeEvent && !rawRequestedServices.includes("Venue")) rawRequestedServices.push("Venue");
   const requestedServices = rawRequestedServices.filter((service) => !(homeEvent && service === "Venue"));
   const normalizedQuery = normalizeSearchText(input.query);
   const knownVenueInText = /\b(at|in) (a |the )?(church|banquet hall|reception hall|restaurant|hotel|ballroom)\b/.test(normalizedQuery);
@@ -145,7 +148,7 @@ export function buildEventIntelligenceProfile(
     planning: { date: "", startTime: "", endTime: "", location: "", guestCount: input.guestSize ?? 0, budget: 0, ...facts.planning, ...(input.guestSize !== undefined ? { guestCount: input.guestSize } : {}), ...input.planning },
     activityStyle: preferences.filter((item) => item.type === "activity").map((item) => item.label),
     audience,
-    commercialVenue: !homeEvent && (knownVenueContext || venuePreferences.length > 0),
+    commercialVenue: !homeEvent && (knownVenueContext || (!searchingVenue && (knownVenueInText || venuePreferences.length > 0))),
     cultures: unique([
       ...preferences.filter((item) => item.type === "culture").map((item) => item.label),
       ...getPlanDetailLabels(planSelections, ["culture", "cultures"]),
@@ -216,7 +219,7 @@ export function buildEventIntelligenceProfile(
     ]),
     travelRequired: stages.length > 1 || preferences.some((item) => item.type === "transportation"),
     venuePreferences,
-    venueRequired: !homeEvent && !knownVenueInText && !knownVenueContext && !venuePreferences.length,
+    venueRequired: !homeEvent && !knownVenueContext && (searchingVenue || (!knownVenueInText && !venuePreferences.length)),
   };
 }
 

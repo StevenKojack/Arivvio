@@ -33,6 +33,8 @@ import {
 import { getProfileByMarketplaceType } from "@/lib/event-intelligence/taxonomy";
 import { recognizeEventIntent } from "@/lib/event-intelligence/search";
 import { rankMarketplaceItems } from "@/lib/event-intelligence/recommendations";
+import { publishAssistantContext } from "@/lib/assistant/session";
+import { providerContext } from "@/lib/assistant/context";
 import { loadEventIntelligenceProfile } from "@/lib/event-intelligence/storage";
 import type { EventIntelligenceProfile } from "@/lib/event-intelligence/types";
 import { loadDemoCart, saveDemoCart } from "@/lib/event-intelligence/demo-session";
@@ -543,6 +545,21 @@ export function MarketplaceBrowser() {
       queueMicrotask(() => setSelectedMapItemId(null));
     }
   }, [filteredItems, selectedMapItemId]);
+
+  useEffect(() => {
+    const visible = selectedMapItemId ? filteredItems.filter(p=>p.id===selectedMapItemId) : filteredItems.slice(0,5);
+    publishAssistantContext({path:"/marketplace", services:selectedServices, providers:visible.map(providerContext)});
+  }, [filteredItems, selectedServices, selectedMapItemId]);
+  useEffect(() => {
+    const refresh = () => {
+      const p=loadEventIntelligenceProfile(); if(!p)return;
+      setEventIntelligence(p); setExcludedServices(p.excludedServices); setSelectedServices(p.requestedServices);
+      if(p.planning){setGuestCount(p.planning.guestCount);setEventDate(p.planning.date);setStartTime(p.planning.startTime);setEndTime(p.planning.endTime);setHomeAddress(p.planning.location);}
+      setCartMessage("Plan updated. Review existing cart service windows before sending requests.");
+    };
+    window.addEventListener("arivvio:assistant-plan",refresh);
+    return ()=>window.removeEventListener("arivvio:assistant-plan",refresh);
+  }, []);
 
   const setMapHoverItem = useCallback((itemId: number | null) => {
     if (hoverFrameRef.current) {

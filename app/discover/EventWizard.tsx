@@ -16,7 +16,7 @@ import {
   getDiscoveryFamily,
 } from "@/lib/event-intelligence/search";
 import { buildEventIntelligenceProfile } from "@/lib/event-intelligence/engine";
-import { saveEventIntelligenceProfile } from "@/lib/event-intelligence/storage";
+import { loadEventIntelligenceProfile, saveEventIntelligenceProfile } from "@/lib/event-intelligence/storage";
 import { loadDemoPlannerSession, saveDemoPlannerSession } from "@/lib/event-intelligence/demo-session";
 import { formatNaturalList } from "@/lib/event-intelligence/service-plan";
 import type { AudienceProfile, EventIntelligenceProfile, EventRecognition, EventStage } from "@/lib/event-intelligence/types";
@@ -152,6 +152,7 @@ export function EventWizard() {
   );
   const [audience, setAudience] = useState<AudienceProfile>(initialIntelligence.audience);
   const [stages, setStages] = useState<EventStage[]>(initialStages);
+  const [conversationProfile, setConversationProfile] = useState<EventIntelligenceProfile | null>(null);
   const selectedServices = useMemo(
     () => Array.from(new Set(planSelections.flatMap((item) => item.matchingServices))),
     [planSelections],
@@ -161,11 +162,12 @@ export function EventWizard() {
     ...contextPreferences,
   ].map((preference) => [preference.id, preference])).values()), [contextPreferences, planSelections]);
   const eventIntelligence = useMemo(
-    () => buildEventIntelligenceProfile({
+    () => ({ ...buildEventIntelligenceProfile({
       audience,
       guestSize: guestCount,
       inferPreferencesFromQuery: false,
       locationContext: locations[0]?.mode === "has_venue" ? "has_venue" : locations[0]?.context,
+      homeEventOverride: conversationProfile ? locations[0]?.context === "likely_home" : undefined,
       planSelections,
       preferences,
       query: query || "Private party",
@@ -173,8 +175,8 @@ export function EventWizard() {
       stages,
       confirmedPlanningFields,
       planning: { ...timing, guestCount, budget, location: getLocationSummary(locations) },
-    }),
-    [audience, guestCount, budget, timing, locations, planSelections, preferences, query, selectedServices, stages, confirmedPlanningFields],
+    }), ...(conversationProfile ? { eventId: conversationProfile.eventId, dateHint: timing.date ? undefined : conversationProfile.dateHint, approximateGuests: conversationProfile.approximateGuests, excludedServices: conversationProfile.excludedServices } : {}) }),
+    [audience, guestCount, budget, timing, locations, planSelections, preferences, query, selectedServices, stages, confirmedPlanningFields, conversationProfile],
   );
   const recognition = eventIntelligence.recognition;
   const planningNotes = useMemo(
@@ -261,9 +263,16 @@ export function EventWizard() {
     sessionRestoredRef.current = true;
 
     {
+      const assistantProfile = loadEventIntelligenceProfile();
+      if (assistantProfile && (searchParams.get("assistant") === "1" || window.sessionStorage.getItem("arivvio:assistant-intake") === "1")) {
+        queueMicrotask(() => { restoreConversationProfile(assistantProfile); setStep(1); setSessionReady(true); });
+        window.sessionStorage.removeItem("arivvio:assistant-intake");
+        return;
+      }
       const saved = loadDemoPlannerSession<DemoPlannerSessionState>();
       if (saved?.query && (!initialQuery || saved.query === initialQuery)) {
         queueMicrotask(() => {
+          if (assistantProfile?.plannerIntent.rawText === saved.query) setConversationProfile(assistantProfile);
           setConfirmedPlanningFields(saved.confirmedPlanningFields ?? []);
           setAudience(saved.audience);
           setBudget(saved.budget);
@@ -280,7 +289,7 @@ export function EventWizard() {
         });
       } else { queueMicrotask(() => setSessionReady(true)); }
     }
-  }, [initialQuery]);
+  }, [initialQuery, searchParams]);
 
   useEffect(() => {
     if (!sessionReady || !query.trim()) return;
@@ -312,8 +321,28 @@ export function EventWizard() {
     if (sessionReady) saveEventIntelligenceProfile(eventIntelligence);
   }, [eventIntelligence, sessionReady]);
 
+  function restoreConversationProfile(profile: EventIntelligenceProfile) {
+    setConversationProfile(profile);
+    setQuery(profile.plannerIntent.rawText);
+    setAudience(profile.audience);
+    setPlanSelections(profile.planSelections);
+    setContextPreferences(profile.preferences.filter(isAdvancedPreference));
+    setStages(profile.stages);
+    setConfirmedPlanningFields(profile.evidence.filter(e=>e.userConfirmed && e.field.startsWith("planning.")).map(e=>e.field.slice(9)));
+    setGuestCount(profile.planning?.guestCount ?? 0);
+    setBudget(profile.planning?.budget ?? 0);
+    setTiming(current=>({...current,date:profile.planning?.date ?? "",startTime:profile.planning?.startTime ?? "",endTime:profile.planning?.endTime ?? ""}));
+    setLocations([getLocationForIntelligence(profile)]);
+  }
+  useEffect(() => {
+    const apply = (event: Event) => restoreConversationProfile((event as CustomEvent<EventIntelligenceProfile>).detail);
+    window.addEventListener("arivvio:assistant-plan", apply);
+    return () => window.removeEventListener("arivvio:assistant-plan", apply);
+  }, []);
+
   function continueFromSearch(nextQuery = query, preserveDetails = false) {
     const cleanQuery = nextQuery.trim();
+    if (!preserveDetails) setConversationProfile(null);
 
     if (!cleanQuery) {
       return;
@@ -1321,7 +1350,7 @@ function PrimaryButton({
 }
 
 function getLocationForIntelligence(profile: EventIntelligenceProfile): EventLocation {
-  return profile.homeEvent ? { ...getEmptyLocation(), context: "likely_home", kind: "Already have venue", mode: "has_venue", query: profile.planning?.location || "" } : getEmptyLocation();
+  return { ...getEmptyLocation(), context: profile.homeEvent ? "likely_home" : profile.commercialVenue ? "likely_venue" : "venue_needed", kind: profile.homeEvent || profile.commercialVenue ? "Already have venue" : "Venue needed", mode: profile.homeEvent || profile.commercialVenue ? "has_venue" : "needs_venue", query: profile.planning?.location || "" };
 }
 
 function getInitialLocationFromSession(): EventLocation {

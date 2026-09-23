@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { AskArivvioButton } from "@/app/components/AskArivvioButton";
+import { getAssistantContext, publishAssistantContext } from "@/lib/assistant/session";
+import { providerContext } from "@/lib/assistant/context";
 import Image from "next/image";
 import { ListingImage } from "./ListingImage";
 import type { MarketplaceItem } from "@/app/data/marketplace";
@@ -9,6 +12,12 @@ import { getVendorImage } from "@/lib/marketplace/vendorImages";
 export function ProviderProfile({ item, quote, matchReason, selected, onAdd, onClose, preview = false }: { item: MarketplaceItem; quote: number; matchReason: string; selected: boolean; onAdd: () => void; onClose: () => void; preview?: boolean }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const demo = item.databaseSource === false;
+  useEffect(() => {
+    if(preview)return;
+    const previous = getAssistantContext("/marketplace");
+    publishAssistantContext({...previous,providers:[providerContext(item)]});
+    return ()=>publishAssistantContext(previous);
+  }, [item, preview]);
   useEffect(() => {
     const element = dialog.current;
     const overflow = document.body.style.overflow;
@@ -29,7 +38,7 @@ export function ProviderProfile({ item, quote, matchReason, selected, onAdd, onC
         {!!item.galleryUrls?.length && <section className="mt-8"><h3 className="text-lg font-semibold">Gallery</h3><div className="mt-3 grid grid-cols-2 gap-3">{item.galleryUrls.map((src,i)=><div className="relative aspect-[4/3] overflow-hidden rounded-xl" key={i}><Image src={src} alt={`${item.name} gallery photo ${i+1}`} fill unoptimized sizes="350px" className="object-cover" /></div>)}</div></section>}
         <section className="mt-8"><h3 className="text-lg font-semibold">Availability</h3><p className="mt-3 text-sm leading-7 ui-muted">Availability is not live. Adding this provider to your cart does not reserve a date.</p></section>
       </div>
-      <aside className="h-fit rounded-2xl border ui-border ui-surface p-5 md:sticky md:top-24"><p className="text-xs ui-muted">{demo ? "Demo estimate" : "Estimated price"}</p><p className="mt-2 text-3xl font-semibold">{preview ? "See packages" : <>${quote.toLocaleString()}</>}</p><p className="mt-2 text-xs ui-muted">{preview ? "Pricing is shown for each service." : item.pricing.label}</p><div className="my-5 border-y py-4"><h3 className="text-sm font-semibold">{preview ? "Marketplace headline" : "Your event fit"}</h3><p className="mt-2 text-sm leading-6 ui-muted">{matchReason}</p></div><button disabled={selected || preview} onClick={onAdd} className="w-full rounded-full ui-primary px-4 py-3 text-sm font-semibold disabled:opacity-60">{preview ? "Add to quote cart · preview" : selected ? "Added to your quote cart" : "Add to quote cart"}</button><p className="mt-3 text-xs leading-5 ui-muted">Compare your selections in the marketplace cart. No payment is taken and no booking is confirmed.</p></aside>
+      <aside className="h-fit rounded-2xl border ui-border ui-surface p-5 md:sticky md:top-24"><p className="text-xs ui-muted">{demo ? "Demo estimate" : "Estimated price"}</p><p className="mt-2 text-3xl font-semibold">{preview ? "See packages" : <>${quote.toLocaleString()}</>}</p><p className="mt-2 text-xs ui-muted">{preview ? "Pricing is shown for each service." : item.pricing.label}</p><div className="my-5 border-y py-4"><h3 className="text-sm font-semibold">{preview ? "Marketplace headline" : "Your event fit"}</h3><p className="mt-2 text-sm leading-6 ui-muted">{matchReason}</p></div><button disabled={selected || preview} onClick={onAdd} className="w-full rounded-full ui-primary px-4 py-3 text-sm font-semibold disabled:opacity-60">{preview ? "Add to quote cart · preview" : selected ? "Added to your quote cart" : "Add to quote cart"}</button>{!preview&&<AskArivvioButton />}<p className="mt-3 text-xs leading-5 ui-muted">Compare your selections in the marketplace cart. No payment is taken and no booking is confirmed.</p></aside>
     </div>
   </dialog>;
 }

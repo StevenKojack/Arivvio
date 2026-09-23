@@ -14,13 +14,16 @@ export function extractEventFacts(query: string): ParsedFacts {
   };
   const guests = query.match(/\b(?:(around|about|approximately|roughly)\s+)?(\d[\d,]*)\s*(?:people|guests|employees|attendees)\b/i);
   if (guests && Number(guests[2].replaceAll(',', '')) > 0) add('guestCount', Number(guests[2].replaceAll(',', '')));
-  const budget = query.match(/\b(?:budget(?:\s+of|\s+is)?|under|up to)\s*\$?([\d,]+(?:\.\d+)?)\s*(k\b)?/i);
+  const budget = query.match(/\b(?:budget(?:\s+of|\s+is)?|under|up to)\s*(?:around\s+|about\s+|approximately\s+)?\$?([\d,]+(?:\.\d+)?)\s*(k\b)?/i);
   if (budget) add('budget', Number(budget[1].replaceAll(',', '')) * (budget[2] ? 1000 : 1));
   const iso = query.match(/\b(20\d{2}-\d{2}-\d{2})\b/);
   if (iso && !Number.isNaN(Date.parse(iso[1])) && new Date(iso[1]).toISOString().slice(0, 10) === iso[1]) add('date', iso[1]);
   const dateHint = query.match(/\b(?:next\s+)?(?:January|February|March|April|May|June|July|August|September|October|November|December)(?:\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+20\d{2})?)?\b/i)?.[0];
   const city = query.match(/\b(?:house|home|backyard)\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})(?=[,.;!?]|\s+(?:for|with|on|in|from)|$)/)?.[1];
   if (city && !/^(January|February|March|April|May|June|July|August|September|October|November|December)$/i.test(city)) add('location', city);
+  const months = /^(January|February|March|April|May|June|July|August|September|October|November|December)$/i;
+  const area = [...query.matchAll(/\b(?:around|near|in)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})(?=[,.;!?]|\s+(?:for|with|on|and)|$)/g)].map(match=>match[1]).find(value=>!months.test(value));
+  if (!city && area) add('location', area);
   const range = query.match(/\bfrom\s+(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*(am|pm)?\s*(?:to|until|[-–])\s*(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*(am|pm)?\b/i);
   if (range) {
     const inferred = !range[3] || !range[6];

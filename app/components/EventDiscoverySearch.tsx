@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { eventExamples, defaultDiscoveryEvents } from "@/lib/event-intelligence/taxonomy";
 import { getDiscoveryFamily, searchEventIntents } from "@/lib/event-intelligence/search";
+import { AskArivvioButton } from "./AskArivvioButton";
 import { SearchLogoMark } from "./SearchLogoMark";
 
 const loopExamples = [...defaultDiscoveryEvents, ...defaultDiscoveryEvents];
@@ -122,6 +123,7 @@ export function EventDiscoverySearch() {
           </div>
         ) : null}
       </form>
+      <AskArivvioButton />
 
       <div className="mt-6 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">
         <div className="flex w-max animate-[eventLoop_34s_linear_infinite] gap-2">

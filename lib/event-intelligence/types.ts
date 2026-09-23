@@ -149,6 +149,7 @@ export type PlannerIntent = {
 };
 
 export type EventIntelligenceProfile = {
+  eventId?: string;
   dateHint?: string;
   approximateGuests?: boolean;
   timeAssumptions?: string[];
