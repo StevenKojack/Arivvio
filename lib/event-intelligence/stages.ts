@@ -1,3 +1,5 @@
+import { clockTime } from "./facts";
+import { hasPositivePhrase } from "./intent-text";
 import { normalizeSearchText } from "./normalize";
 import type { EventRecognition, EventStage } from "./types";
 
@@ -21,6 +23,7 @@ const configurations: Record<string, StageConfiguration> = {
     availableStages: [
       stage("rehearsal-dinner", "Rehearsal dinner", 1),
       stage("ceremony", "Ceremony", 2),
+      stage("cocktail-hour", "Cocktail hour", 2.5),
       stage("reception", "Reception", 3),
       stage("afterparty", "Afterparty", 4),
       stage("brunch", "Next-day brunch", 5),
@@ -72,6 +75,8 @@ const configurations: Record<string, StageConfiguration> = {
   baptism: ceremonyGatheringConfiguration(),
   "bar-mitzvah": serviceCelebrationConfiguration(),
   "bat-mitzvah": serviceCelebrationConfiguration(),
+  conference: conferenceConfiguration(),
+  graduation: { availableStages: [stage("ceremony", "Ceremony", 1), stage("party", "Graduation party", 2)], description: "Keep the ceremony and party together when both are part of your plan.", options: [] },
   "corporate-event": corporateConfiguration(),
   "corporate-dinner": corporateConfiguration(),
   "bachelor-party": destinationConfiguration(),
@@ -88,7 +93,7 @@ export function getInitialStages(recognition: EventRecognition, rawQuery = recog
   const query = recognition.normalizedQuery;
   const explicitStageIds = configuration.availableStages
     .filter((item) =>
-      [item.id, item.label].some((term) => query.includes(normalizeSearchText(term))),
+      [item.id.replaceAll("-", " "), item.label].some((term) => hasPositivePhrase(query, normalizeSearchText(term))),
     )
     .map((item) => item.id);
 
@@ -102,7 +107,9 @@ export function getInitialStages(recognition: EventRecognition, rawQuery = recog
     explicitStageIds.push("reception");
   }
 
-  return inferStageDetails(resolveStages(configuration, Array.from(new Set(explicitStageIds))), rawQuery);
+  const resolved = resolveStages(configuration, Array.from(new Set(explicitStageIds)));
+  if (recognition.identity.canonicalEventType === "graduation" && resolved.length < 2) return [];
+  return inferStageDetails(resolved, rawQuery);
 }
 
 export function resolveStages(configuration: StageConfiguration, stageIds: string[]) {
@@ -135,6 +142,10 @@ function serviceCelebrationConfiguration(): StageConfiguration {
   };
 }
 
+function conferenceConfiguration(): StageConfiguration {
+  return { availableStages: [stage("registration", "Registration", 1), stage("general-session", "General session", 2), stage("breakouts", "Breakouts", 3), stage("lunch", "Lunch", 4), stage("reception", "Reception", 5)], description: "Only the program parts you mention are included.", options: [] };
+}
+
 function corporateConfiguration(): StageConfiguration {
   return {
     availableStages: [stage("conference", "Conference or program", 1), stage("dinner", "Dinner", 2), stage("networking", "Networking reception", 3), stage("offsite", "Off-site activity", 4)],
@@ -165,7 +176,7 @@ export function inferStageDetails(stages: EventStage[], query: string): EventSta
   const mentions = stages.map((item) => {
     const terms = [item.id.replaceAll("-", " "), ...item.label.toLowerCase().split(" or ")];
     if (item.id === "ceremony") terms.push("church");
-    if (item.id === "reception") terms.push("banquet hall");
+    if (item.id === "reception") terms.push("banquet hall", "banquet");
     const positions = terms.map((term) => text.indexOf(term)).filter((position) => position >= 0);
     return { item, position: positions.length ? Math.min(...positions) : -1 };
   }).filter((entry) => entry.position >= 0).sort((a, b) => a.position - b.position);
@@ -175,7 +186,11 @@ export function inferStageDetails(stages: EventStage[], query: string): EventSta
     const clause = text.slice(mentions[index].position, mentions[index + 1]?.position ?? text.length);
     const times = [...clause.matchAll(/\b(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*(am|pm)\b/g)].map((match) =>
       `${String(Number(match[1]) % 12 + (match[3] === "pm" ? 12 : 0)).padStart(2, "0")}:${match[2] ?? "00"}`);
-    const location = clause.match(/\b(church|banquet hall|reception hall|hotel|restaurant|office|home|park)\b/)?.[0];
+    if (!times.length) {
+      const bareTime = clause.match(/\bat\s+(1[0-2]|0?[1-9])(?::([0-5]\d))?(?!\d)/);
+      if (bareTime) times.push(clockTime(bareTime[1], bareTime[2], /morning/.test(clause) ? "am" : "pm"));
+    }
+    const location = clause.match(/\b(church|banquet hall|banquet|reception hall|hotel|restaurant|office|home|park)\b/)?.[0];
     return { ...item, ...(times[0] ? { startTime: times[0] } : {}), ...(times[1] ? { endTime: times[1] } : {}), ...(location ? { location } : {}) };
   });
 }

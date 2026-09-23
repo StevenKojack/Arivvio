@@ -1,3 +1,4 @@
+import { getEventContextTone } from "./visual-tone";
 import type { AudienceProfile, EventRecognition, EventTone } from "./types";
 
 export type EventMessage = {
@@ -110,6 +111,8 @@ const messages: Record<string, EventMessage> = {
 };
 
 export function getEventMessage(recognition: EventRecognition, audience: AudienceProfile = {}) {
+  if (getEventContextTone(recognition) === "respectful") return messages.funeral;
+  if (getEventContextTone(recognition) === "professional") return messages["corporate-event"];
   const honoreeAge = audience.honoreeAge;
   if (recognition.identity.canonicalEventType === "birthday" && audience.celebrating === "self") {
     return {

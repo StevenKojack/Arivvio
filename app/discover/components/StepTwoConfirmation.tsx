@@ -1,5 +1,7 @@
 "use client";
 
+import { understandEvent } from "@/lib/event-intelligence/understanding";
+import { UnderstandingSummary } from "./UnderstandingSummary";
 import { useMemo, useState } from "react";
 import type { ServiceName } from "@/app/data/marketplace";
 import { getEventMessage } from "@/lib/event-intelligence/messaging";
@@ -69,27 +71,30 @@ export function StepTwoConfirmation({
   const [inviteesOpen, setInviteesOpen] = useState(false);
   const [selectedPlanItem, setSelectedPlanItem] = useState<PlanSelection>();
   const [planMessage, setPlanMessage] = useState("");
+  const understanding = understandEvent(intelligence);
   const planSelections = intelligence.planSelections;
   const eventSuggestions = useMemo(() => searchEventIntents(eventQuery, 5), [eventQuery]);
   const message = getEventMessage(recognition, audience);
   const stageConfiguration = getStageConfiguration(recognition);
-  const essentialServices = getEssentialServices(recognition, stages);
+  const essentialServices = getEssentialServices(recognition, stages, intelligence.homeEvent);
   const recommendedServices = getServiceSuggestions(recognition, essentialServices, stages, intelligence.recommendationScores);
   const contextualSuggestions = useMemo(() => getContextualPlanningSuggestions(recognition, audience), [audience, recognition]);
   const searchHelper = useMemo(() => getPlanningSearchHelper(recognition, audience), [audience, recognition]);
   const relevantSuggestions = useMemo(() => {
     const suggestions = [
+      ...understanding.recommended.map(item => createServiceSelection(item.service, "initial-suggestion")),
       ...essentialServices.map((service) => createServiceSelection(service, "initial-suggestion")),
       ...recommendedServices.map((item) => createServiceSelection(item.service, "initial-suggestion")),
       ...contextualSuggestions.map((preference) => createPreferenceSelection(preference, "initial-suggestion")),
     ];
     const seen = new Set<string>();
     return suggestions.filter((item) => {
+      if (understanding.tone !== "warm" && item.linkedService && !understanding.recommended.some(s => s.service === item.linkedService)) return false;
       if (seen.has(item.id) || planSelections.some((selected) => selected.id === item.id)) return false;
       seen.add(item.id);
       return true;
-    }).slice(0, 6);
-  }, [contextualSuggestions, essentialServices, planSelections, recommendedServices]);
+    }).slice(0, 3);
+  }, [contextualSuggestions, essentialServices, planSelections, recommendedServices, understanding.recommended, understanding.tone]);
   const contextPreferences = intelligence.preferences.filter(isAdvancedPreference);
   const contextSelections = contextPreferences.map((preference) => createPreferenceSelection(preference, "browse-all"));
   const selectedIds = [
@@ -136,7 +141,9 @@ export function StepTwoConfirmation({
         ) : null}
       </section>
 
-      {stageConfiguration ? <StageSelector key={recognition.identity.canonicalEventType} configuration={stageConfiguration} value={stages} onChange={onStagesChange} /> : null}
+      <UnderstandingSummary profile={intelligence} />
+
+      {stageConfiguration && stageConfiguration.options.length > 0 && !stages.length ? <StageSelector key={recognition.identity.canonicalEventType} configuration={stageConfiguration} value={stages} onChange={onStagesChange} /> : null}
 
       <section className="rounded-[24px] border border-[#D4AF37]/22 bg-white p-4 shadow-[0_14px_42px_rgba(13,19,33,0.05)] sm:p-5">
         <h3 className="text-xl font-semibold text-[#0D1321]">Let&apos;s start building your plan</h3>

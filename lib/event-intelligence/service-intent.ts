@@ -13,9 +13,11 @@ import { normalizeSearchText } from "./normalize";
 import { hasNegatedPhrase, hasPositivePhrase } from "./intent-text";
 
 const serviceAliases: Partial<Record<ServiceName, string[]>> = {
-  Catering: ["catering", "caterer", "food service"],
+  Catering: ["catering", "caterer", "food service", "food", "tacos"],
   DJ: ["dj", "disc jockey"],
-  Photography: ["photography", "photographer"],
+  Photography: ["photography", "photographer", "taking pictures"],
+  Florals: ["flowers", "florist"],
+  "AV Production": ["av", "audio visual"],
   Rentals: ["rentals", "rental"],
   Transportation: ["transportation", "transport"],
   Venue: ["venue", "event space"],
@@ -29,7 +31,7 @@ export function inferServicePlanSelections(
   let selections: PlanSelection[] = [];
 
   preferences
-    .filter((preference) => preference.linkedService)
+    .filter((preference) => preference.linkedService && preference.type !== "location")
     .filter((preference) => !excludedServices.includes(preference.linkedService as ServiceName))
     .forEach((preference) => {
       selections = mergePlanSelection(

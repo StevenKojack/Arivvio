@@ -2,6 +2,8 @@ import type { ServiceName } from "@/app/data/marketplace";
 import { planningPreferenceCatalog, type PlanSelection } from "@/lib/planning-taxonomy";
 import { toSelectedPreference } from "@/lib/planning-taxonomy/search";
 import type { PlanningPreference, SelectedPlanningPreference } from "@/lib/planning-taxonomy/types";
+import { extractEventFacts, type PlanningDetails } from "./facts";
+import { planningEvidence } from "./understanding";
 import { derivePlanningContext } from "./context";
 import { normalizeSearchText } from "./normalize";
 import { hasNegatedPhrase, hasPositivePhrase } from "./intent-text";
@@ -16,6 +18,8 @@ import type {
 } from "./types";
 
 export type EventIntelligenceInput = {
+  planning?: PlanningDetails;
+  confirmedPlanningFields?: string[];
   audience?: AudienceProfile;
   guestSize?: number;
   inferPreferencesFromQuery?: boolean;
@@ -29,7 +33,8 @@ export type EventIntelligenceInput = {
 
 export function buildEventIntelligenceProfile(
   input: EventIntelligenceInput,
-): EventIntelligenceProfile {
+): EventIntelligenceProfile & { planning: PlanningDetails } {
+  const facts = extractEventFacts(input.query);
   const recognition = recognizeEventIntent(input.query || "Private party");
   const context = derivePlanningContext({
     eventLabel: input.query,
@@ -50,7 +55,6 @@ export function buildEventIntelligenceProfile(
   const rawRequestedServices = unique([
     ...(input.selectedServices ?? []),
     ...planSelections.flatMap((item) => item.matchingServices),
-    ...preferences.flatMap((item) => item.linkedService ? [item.linkedService] : []),
   ]);
   const venuePreferences = preferences.filter((item) => item.type === "location").map((item) => item.label);
   const homeEvent = context.homeEvent || preferences.some((item) => ["At home", "Backyard"].includes(item.label));
@@ -89,8 +93,8 @@ export function buildEventIntelligenceProfile(
     {
       confidence: recognition.confidence,
       field: "eventType",
-      source: input.query.trim() ? "explicit-selection" : "default",
-      userConfirmed: Boolean(input.query.trim()),
+      source: input.query.trim() ? "explicit-text" : "default",
+      userConfirmed: false,
       value: recognition.identity.selectedDisplayEvent,
     },
     ...preferences.map((item) => ({
@@ -127,7 +131,18 @@ export function buildEventIntelligenceProfile(
   });
   if (homeEvent) evidence.push({ confidence: 0.96, field: "venue.homeEvent", source: "deterministic-inference", userConfirmed: false, value: true });
 
+  requestedServices.forEach(service => evidence.push({ field: `service.${service}`, value: service, confidence: .96, source: input.selectedServices?.includes(service) && !planSelections.some(item => item.matchingServices.includes(service) && item.source === "natural-language-inference") ? "explicit-step-choice" : "explicit-text", userConfirmed: Boolean(input.selectedServices?.includes(service) && !planSelections.some(item => item.matchingServices.includes(service) && item.source === "natural-language-inference")) }));
+  if (stages.length && /\bat\s+\d{1,2}(?::\d{2})?(?![\d:])(?=\s*[,.;]|\s+(?:and|banquet|church|reception|ceremony)|$)/i.test(input.query)) facts.assumptions.push("Stage times without AM/PM were interpreted as afternoon/evening. Confirm their timing.");
+  const confirmed = planningEvidence(input.planning ?? {}, input.confirmedPlanningFields ?? (input.planning ? Object.keys(input.planning) : []));
+  if (input.guestSize !== undefined && input.confirmedPlanningFields === undefined && !confirmed.some(item => item.field === "planning.guestCount")) confirmed.push({ field: "planning.guestCount", value: input.guestSize, confidence: 1, source: "explicit-step-choice", userConfirmed: true });
+  evidence.push(...facts.evidence.filter(item => !confirmed.some(explicit => explicit.field === item.field)), ...confirmed);
+  if (input.guestSize !== undefined && !evidence.some(item => item.field === "planning.guestCount") && input.confirmedPlanningFields === undefined) evidence.push({ field: "planning.guestCount", value: input.guestSize, confidence: 1, source: "explicit-step-choice", userConfirmed: true });
+  if (homeEvent) evidence.push({ field: "locationType", value: "At home", confidence: .96, source: /\b(home|house|backyard|my place|our place)\b/i.test(input.query) ? "explicit-text" : "deterministic-inference", userConfirmed: false });
   return {
+    dateHint: facts.dateHint,
+    approximateGuests: facts.approximateGuests,
+    timeAssumptions: facts.assumptions,
+    planning: { date: "", startTime: "", endTime: "", location: "", guestCount: input.guestSize ?? 0, budget: 0, ...facts.planning, ...(input.guestSize !== undefined ? { guestCount: input.guestSize } : {}), ...input.planning },
     activityStyle: preferences.filter((item) => item.type === "activity").map((item) => item.label),
     audience,
     commercialVenue: !homeEvent && (knownVenueContext || venuePreferences.length > 0),
@@ -145,8 +160,8 @@ export function buildEventIntelligenceProfile(
       .map((item) => item.label),
     eventType: {
       confidence: recognition.confidence,
-      source: input.query.trim() ? "explicit-selection" : "default",
-      userConfirmed: Boolean(input.query.trim()),
+      source: input.query.trim() ? "explicit-text" : "default",
+      userConfirmed: false,
       value: recognition.identity.selectedDisplayEvent,
     },
     excludedServices: recognition.excludedServices,
@@ -154,7 +169,7 @@ export function buildEventIntelligenceProfile(
       ...preferences.filter((item) => item.type === "food").map((item) => item.label),
       ...planSelections.filter((item) => item.linkedService === "Catering").flatMap((item) => item.details.filter((detail) => !["cuisine", "cultures"].includes(detail.group.toLowerCase())).map((detail) => detail.label)),
     ]),
-    guestSize: input.guestSize,
+    guestSize: input.planning?.guestCount ?? input.guestSize ?? facts.planning.guestCount,
     homeEvent,
     honoree: {
       age: audience.honoreeAge,
@@ -201,7 +216,7 @@ export function buildEventIntelligenceProfile(
     ]),
     travelRequired: stages.length > 1 || preferences.some((item) => item.type === "transportation"),
     venuePreferences,
-    venueRequired: !homeEvent && !knownVenueInText && !knownVenueContext,
+    venueRequired: !homeEvent && !knownVenueInText && !knownVenueContext && !venuePreferences.length,
   };
 }
 

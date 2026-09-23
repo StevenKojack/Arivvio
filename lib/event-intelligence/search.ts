@@ -144,6 +144,10 @@ function scoreProfiles(query: string) {
 }
 
 function detectForcedProfileId(query: string) {
+  if (["funeral", "memorial", "wake", "repass", "celebration of life"].some(term => hasPositivePhrase(query, term))) return "funeral";
+  if (/\b(employees|company|corporate|business)\b/i.test(query) && /\b(dinner|holiday)\b/i.test(query)) return "corporate";
+  if (hasPositivePhrase(query, "getting married")) return "wedding";
+  if (hasPositivePhrase(query, "graduating")) return "graduation";
   if (hasPositivePhrase(query, "birthday")) return "birthday";
   if (hasPositivePhrase(query, "wedding")) return "wedding";
   if (hasPositivePhrase(query, "graduation")) return "graduation";

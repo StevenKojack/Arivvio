@@ -14,6 +14,14 @@ export function getEventVisualTone(recognition: EventRecognition): VisualTone {
 
 export function getEventPersonality(recognition: EventRecognition) {
   const context = normalizeSearchText(`${recognition.normalizedQuery} ${recognition.identity.canonicalEventType} ${recognition.identity.internalEventFamily}`);
-  if (/\b(funeral|memorial|celebration of life|wake|repass|burial|remembrance|mourning|corporate|conference|business|professional|ceremonial)\b/.test(context) || recognition.confidence < 0.48) return "none";
+  if (getEventContextTone(recognition) !== "warm" || /\bceremonial\b/.test(context) || recognition.confidence < 0.48) return "none";
   return recognition.profile.visualPersonality ?? "none";
+}
+
+// Shared with planning recommendations, not only decorative treatments.
+export function getEventContextTone(recognition: EventRecognition): "respectful" | "professional" | "warm" {
+  const context = normalizeSearchText(`${recognition.identity.canonicalEventType} ${recognition.identity.internalEventFamily} ${recognition.normalizedQuery}`);
+  if (/\b(funeral|memorial|celebration of life|wake|repass|burial|remembrance|mourning)\b/.test(context)) return "respectful";
+  if (/\b(corporate|conference|business|professional|employees|company)\b/.test(context)) return "professional";
+  return "warm";
 }

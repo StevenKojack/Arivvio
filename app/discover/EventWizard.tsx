@@ -18,7 +18,7 @@ import {
 import { buildEventIntelligenceProfile } from "@/lib/event-intelligence/engine";
 import { saveEventIntelligenceProfile } from "@/lib/event-intelligence/storage";
 import { loadDemoPlannerSession, saveDemoPlannerSession } from "@/lib/event-intelligence/demo-session";
-import { getEssentialServices, formatNaturalList } from "@/lib/event-intelligence/service-plan";
+import { formatNaturalList } from "@/lib/event-intelligence/service-plan";
 import type { AudienceProfile, EventIntelligenceProfile, EventRecognition, EventStage } from "@/lib/event-intelligence/types";
 import {
   createPreferenceSelection,
@@ -95,6 +95,7 @@ type EventLocation = {
 };
 
 type DemoPlannerSessionState = {
+  confirmedPlanningFields?: string[];
   audience: AudienceProfile;
   budget: number;
   contextPreferences: SelectedPlanningPreference[];
@@ -129,21 +130,22 @@ export function EventWizard() {
   const [sessionReady, setSessionReady] = useState(false);
   const [step, setStep] = useState(initialQuery && !getDiscoveryFamily(initialQuery) ? 1 : 0);
   const [query, setQuery] = useState(initialQuery);
+  const [confirmedPlanningFields, setConfirmedPlanningFields] = useState<string[]>([]);
   const [timing, setTiming] = useState({
-    date: "",
+    date: initialIntelligence.planning?.date || "",
     endDate: "",
-    endTime: "22:00",
+    endTime: initialIntelligence.planning?.endTime || "22:00",
     setupTime: "17:00",
-    startTime: "18:00",
+    startTime: initialIntelligence.planning?.startTime || initialStages[0]?.startTime || "18:00",
     teardownTime: "23:00",
   });
   const [showAdvancedTiming, setShowAdvancedTiming] = useState(false);
   const [isMultiDay, setIsMultiDay] = useState(false);
   const [locations, setLocations] = useState<EventLocation[]>(() => [
-    getInitialLocationFromSession(),
+    initialQuery ? getLocationForIntelligence(initialIntelligence) : getInitialLocationFromSession(),
   ]);
-  const [guestCount, setGuestCount] = useState(60);
-  const [budget, setBudget] = useState(6000);
+  const [guestCount, setGuestCount] = useState(initialIntelligence.guestSize ?? 60);
+  const [budget, setBudget] = useState(initialIntelligence.planning?.budget || 6000);
   const [planSelections, setPlanSelections] = useState<PlanSelection[]>(() => createInitialPlanSelections(initialIntelligence));
   const [contextPreferences, setContextPreferences] = useState<SelectedPlanningPreference[]>(
     () => initialIntelligence.preferences.filter(isAdvancedPreference),
@@ -159,7 +161,7 @@ export function EventWizard() {
     ...contextPreferences,
   ].map((preference) => [preference.id, preference])).values()), [contextPreferences, planSelections]);
   const eventIntelligence = useMemo(
-    () => ({ ...buildEventIntelligenceProfile({
+    () => buildEventIntelligenceProfile({
       audience,
       guestSize: guestCount,
       inferPreferencesFromQuery: false,
@@ -169,8 +171,10 @@ export function EventWizard() {
       query: query || "Private party",
       selectedServices,
       stages,
-    }), planning: { ...timing, guestCount, budget, location: getLocationSummary(locations) } }),
-    [audience, guestCount, budget, timing, locations, planSelections, preferences, query, selectedServices, stages],
+      confirmedPlanningFields,
+      planning: { ...timing, guestCount, budget, location: getLocationSummary(locations) },
+    }),
+    [audience, guestCount, budget, timing, locations, planSelections, preferences, query, selectedServices, stages, confirmedPlanningFields],
   );
   const recognition = eventIntelligence.recognition;
   const planningNotes = useMemo(
@@ -260,6 +264,7 @@ export function EventWizard() {
       const saved = loadDemoPlannerSession<DemoPlannerSessionState>();
       if (saved?.query && (!initialQuery || saved.query === initialQuery)) {
         queueMicrotask(() => {
+          setConfirmedPlanningFields(saved.confirmedPlanningFields ?? []);
           setAudience(saved.audience);
           setBudget(saved.budget);
           setContextPreferences(saved.contextPreferences);
@@ -280,6 +285,7 @@ export function EventWizard() {
   useEffect(() => {
     if (!sessionReady || !query.trim()) return;
     saveDemoPlannerSession<DemoPlannerSessionState>({
+      confirmedPlanningFields,
       audience,
       budget,
       contextPreferences,
@@ -292,7 +298,7 @@ export function EventWizard() {
       step,
       timing,
     });
-  }, [sessionReady, audience, budget, contextPreferences, guestCount, isMultiDay, locations, planSelections, query, stages, step, timing]);
+  }, [sessionReady, audience, budget, contextPreferences, guestCount, isMultiDay, locations, planSelections, query, stages, step, timing, confirmedPlanningFields]);
 
   useEffect(() => {
     const profile = buildLocationProfile(locations[0]);
@@ -306,7 +312,7 @@ export function EventWizard() {
     if (sessionReady) saveEventIntelligenceProfile(eventIntelligence);
   }, [eventIntelligence, sessionReady]);
 
-  function continueFromSearch(nextQuery = query) {
+  function continueFromSearch(nextQuery = query, preserveDetails = false) {
     const cleanQuery = nextQuery.trim();
 
     if (!cleanQuery) {
@@ -319,6 +325,13 @@ export function EventWizard() {
     window.history.replaceState(null, "", `/discover?${nextParams.toString()}`);
     if (getDiscoveryFamily(cleanQuery)) { setStep(0); return; }
     const nextIntelligence = buildEventIntelligenceProfile({ query: cleanQuery });
+    if (!preserveDetails) {
+    setConfirmedPlanningFields([]);
+    setGuestCount(nextIntelligence.guestSize ?? 60);
+    setBudget(nextIntelligence.planning?.budget || 6000);
+    setTiming(current => ({ ...current, date: nextIntelligence.planning?.date || "", startTime: nextIntelligence.planning?.startTime || nextIntelligence.stages[0]?.startTime || "18:00", endTime: nextIntelligence.planning?.endTime || "22:00" }));
+    setLocations([getLocationForIntelligence(nextIntelligence)]);
+    }
     setStages(nextIntelligence.stages);
     setAudience(nextIntelligence.audience);
     setPlanSelections(createInitialPlanSelections(nextIntelligence));
@@ -463,7 +476,7 @@ export function EventWizard() {
                 audience={audience}
                 intelligence={eventIntelligence}
                 onAudienceChange={setAudience}
-                onChangeEvent={continueFromSearch}
+                onChangeEvent={(value) => continueFromSearch(value, true)}
                 onContextPreferencesChange={updateContextPreferences}
                 onPlanPreferenceAdd={addPlanPreference}
                 onPlanSelectionAdd={addCanonicalPlanSelection}
@@ -484,7 +497,7 @@ export function EventWizard() {
               eyebrow="Step 3"
               title="When is it?"
               body="Date and time help Arivvio estimate availability and pricing without asking for too much."
-              action={<PrimaryButton label="Continue" onClick={() => setStep(3)} />}
+              action={<PrimaryButton label="Continue" onClick={() => { setConfirmedPlanningFields(current => [...new Set([...current, "date", "startTime", "endTime"])]); setStep(3); }} />}
             >
               <div className="grid gap-5">
                 <CalendarPicker
@@ -558,7 +571,7 @@ export function EventWizard() {
               title="Where is it?"
               body="Choose the known place, or draw one clean search area for where the venue should be."
               layout="wide"
-              action={<PrimaryButton label="Continue" onClick={() => setStep(4)} />}
+              action={<PrimaryButton label="Continue" onClick={() => { setConfirmedPlanningFields(current => [...new Set([...current, "location"])]); setStep(4); }} />}
             >
               <EventPartsEditor stages={stages} onChange={setStages} defaults={eventIntelligence.planning} section="location" />
               <LocationStep
@@ -606,7 +619,7 @@ export function EventWizard() {
               eyebrow="Step 5"
               title="Guests and budget."
               body="A simple range is enough. Arivvio will use it to keep matches realistic."
-              action={<PrimaryButton label="Review plan" onClick={() => setStep(5)} />}
+              action={<PrimaryButton label="Review plan" onClick={() => { setConfirmedPlanningFields(current => [...new Set([...current, "guestCount", "budget"])]); setStep(5); }} />}
             >
               <EventPartsEditor stages={stages} onChange={setStages} defaults={eventIntelligence.planning} section="allocation" />
               <div className="grid gap-5">
@@ -722,17 +735,14 @@ export function EventWizard() {
 
 function createInitialPlanSelections(intelligence: EventIntelligenceProfile) {
   const preferenceSelections = intelligence.preferences
-    .filter((preference) => !isAdvancedPreference(preference))
+    .filter((preference) => !isAdvancedPreference(preference) && (!preference.linkedService || intelligence.requestedServices.includes(preference.linkedService)))
     .map((preference) => createPreferenceSelection(preference, "natural-language-inference"));
   const representedServices = new Set(preferenceSelections.flatMap((item) => item.matchingServices));
-  const serviceSelections = Array.from(new Set([
-    ...getEssentialServices(intelligence.recognition, intelligence.stages),
-    ...intelligence.requestedServices,
-  ]))
+  const serviceSelections = Array.from(new Set(intelligence.requestedServices))
     .filter((service) => !representedServices.has(service))
     .map((service) => createServiceSelection(service, "initial-suggestion"));
 
-  return [...intelligence.planSelections, ...serviceSelections, ...preferenceSelections]
+  return [...intelligence.planSelections.filter(item => !item.linkedService || intelligence.requestedServices.includes(item.linkedService)), ...serviceSelections, ...preferenceSelections]
     .reduce<PlanSelection[]>(mergePlanSelection, []);
 }
 
@@ -1308,6 +1318,10 @@ function PrimaryButton({
       {label}
     </button>
   );
+}
+
+function getLocationForIntelligence(profile: EventIntelligenceProfile): EventLocation {
+  return profile.homeEvent ? { ...getEmptyLocation(), context: "likely_home", kind: "Already have venue", mode: "has_venue", query: profile.planning?.location || "" } : getEmptyLocation();
 }
 
 function getInitialLocationFromSession(): EventLocation {

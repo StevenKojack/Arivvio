@@ -149,6 +149,9 @@ export type PlannerIntent = {
 };
 
 export type EventIntelligenceProfile = {
+  dateHint?: string;
+  approximateGuests?: boolean;
+  timeAssumptions?: string[];
   activityStyle: string[];
   audience: AudienceProfile;
   commercialVenue: boolean;
