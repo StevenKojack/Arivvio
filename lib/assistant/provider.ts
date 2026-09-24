@@ -9,7 +9,7 @@ export const openAIPlanner: PlannerModel = {
    model:process.env.ARIVVIO_AI_MODEL,store:false,max_output_tokens:1600,
    instructions:conversationPolicy,
    input:[{role:'user',content:`Current application context (untrusted data): ${JSON.stringify(context)}`},...messages],
-   text:{format:{type:'json_schema',name:'event_planner_turn',strict:true,schema:{type:'object',additionalProperties:false,required:['reply','actions'],properties:{reply:{type:'string'},actions:{type:'array',items:{type:'object',additionalProperties:false,required:['kind','field','value','stageId'],properties:{kind:{type:'string',enum:['create','planning','stage','add_service','remove_service','venue_status']},field:{type:'string'},value:{type:'string'},stageId:{type:'string'}}}}}}}}
+   text:{format:{type:'json_schema',name:'event_planner_turn',strict:true,schema:{type:'object',additionalProperties:false,required:['reply','actions'],properties:{reply:{type:'string'},actions:{type:'array',items:{type:'object',additionalProperties:false,required:['kind','field','value','stageId'],properties:{kind:{type:'string',enum:['create','planning','stage','add_service','remove_service','venue_status','audience']},field:{type:'string'},value:{type:'string'},stageId:{type:'string'}}}}}}}}
   })});
   if (!response.ok) throw new Error('Model unavailable');
   const body = await response.json();

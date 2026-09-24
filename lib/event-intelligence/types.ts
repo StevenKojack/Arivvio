@@ -91,6 +91,7 @@ export type AudienceType =
   | "custom";
 
 export type AudienceProfile = {
+  childrenCount?: number;
   audienceGender?: AudienceGender;
   audienceType?: AudienceType;
   celebrating?: "self" | "someone-else";

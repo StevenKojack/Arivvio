@@ -7,6 +7,7 @@ import { isAdminEmail } from "@/lib/auth/roles";
 import { getCurrentProfile } from "@/lib/repositories/profilesRepository";
 import { getVendorBusinessesByOwner } from "@/lib/repositories/vendorsRepository";
 import { createBrowserSupabaseClient, hasSupabaseConfig } from "@/lib/supabase/client";
+import { ThemeControl } from "./ThemeControl";
 import { Logo } from "./Logo";
 
 type SessionNavState = {
@@ -24,7 +25,6 @@ const centerLinks = [
 export function Navigation() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [navState, setNavState] = useState<SessionNavState>({
     email: null,
     hasVendorProfile: false,
@@ -74,6 +74,7 @@ export function Navigation() {
   const menuLinks = navState.isLoggedIn
     ? [
         { href: "/account", label: "Account", show: true },
+        { href: "/account/demo", label: "Demo Account", show: true },
         { href: "/requests", label: "Saved demo requests", show: true },
         { href: "/account", label: "My events", show: true },
         {
@@ -85,6 +86,7 @@ export function Navigation() {
         { href: "/auth/logout", label: "Log out", show: true },
       ]
     : [
+        { href: "/account/demo", label: "Demo Account", show: true },
         { href: "/requests", label: "Saved demo requests", show: true },
         { href: "/auth/login", label: "Log in", show: true },
         { href: "/auth/signup", label: "Sign up", show: true },
@@ -101,7 +103,7 @@ export function Navigation() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-[#D4AF37]/10 ui-surface px-5 shadow-[0_10px_40px_rgba(13,19,33,0.055)] backdrop-blur-xl sm:px-8 lg:px-12">
-      <nav className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4">
+      <nav className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-2">
         <Logo />
 
         <div className="hidden items-center rounded-full border border-[#D4AF37]/18 ui-surface p-1 text-sm font-semibold ui-muted shadow-[0_12px_34px_rgba(13,19,33,0.06)] backdrop-blur md:flex">
@@ -126,6 +128,7 @@ export function Navigation() {
         ) : null}
 
         <div className="flex items-center gap-2">
+          <ThemeControl />
           <Link
             href="/vendor/login"
             className="hidden rounded-full px-4 py-2 text-sm font-semibold ui-text transition hover:-translate-y-0.5 hover:opacity-80 md:inline-flex"
@@ -156,6 +159,7 @@ export function Navigation() {
                     {navState.email}
                   </p>
                 ) : null}
+                {[...centerLinks, { href: "/vendor/login", label: "Become a vendor" }].map(item => <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} className="block px-4 py-3 text-sm font-semibold ui-muted md:hidden">{item.label}</Link>)}
                 {menuLinks
                   .filter((item) => item.show)
                   .map((item) => (
@@ -171,38 +175,9 @@ export function Navigation() {
               </div>
             ) : null}
           </div>
-          <button
-            type="button"
-            onClick={() => setMobileOpen((current) => !current)}
-            className="inline-flex h-11 items-center rounded-full border border-[#D4AF37]/25 ui-surface px-4 text-sm font-semibold ui-text md:hidden"
-          >
-            Menu
-          </button>
         </div>
       </nav>
 
-      {mobileOpen ? (
-        <div className="mx-auto grid max-w-7xl gap-2 border-t border-neutral-100 py-4 md:hidden">
-          {[
-            ...centerLinks,
-            { href: "/vendor/login", label: "Become a vendor" },
-            { href: "/account", label: "My events" },
-            { href: "/auth/login", label: "Sign in" },
-            { href: "/?info=1", label: "Pre-Beta information" },
-            { href: "/support-project", label: "Contact Arivvio" },
-          ]
-            .map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className="rounded-lg px-3 py-3 text-sm font-semibold ui-text hover:opacity-80"
-              >
-                {item.label}
-              </Link>
-            ))}
-        </div>
-      ) : null}
     </header>
   );
 }

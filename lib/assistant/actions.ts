@@ -3,7 +3,7 @@ import { buildEventIntelligenceProfile } from '@/lib/event-intelligence/engine';
 import { createServiceSelection } from '@/lib/planning-taxonomy/selection';
 import type { EventIntelligenceProfile } from '@/lib/event-intelligence/types';
 import { planningEvidence } from '@/lib/event-intelligence/understanding';
-export type PlanAction = { kind: 'create' | 'planning' | 'stage' | 'add_service' | 'remove_service' | 'venue_status'; field: string; value: string; stageId: string };
+export type PlanAction = { kind: 'create' | 'planning' | 'stage' | 'add_service' | 'remove_service' | 'venue_status' | 'audience'; field: string; value: string; stageId: string };
 const fields = ['date','startTime','endTime','location','guestCount','budget'];
 function validValue(field: string, value: string) {
   if (field === 'guestCount' || field === 'budget') return /^\d+(\.\d{1,2})?$/.test(value) && Number(value) >= (field === 'guestCount' ? 1 : 0) && Number(value) <= (field === 'guestCount' ? 100000 : 100000000) && (field !== 'guestCount' || Number.isInteger(Number(value)));
@@ -21,6 +21,8 @@ export function validateActions(input: unknown, profile: EventIntelligenceProfil
       if (a.field === 'dateHint') { if (!a.value.trim() || a.value.length > 80) throw new Error('Invalid date hint.'); }
       else if (a.field === 'approximateGuests') { if (!['true','false'].includes(a.value)) throw new Error('Invalid approximation.'); }
       else if (!fields.includes(a.field) || !validValue(a.field,a.value)) throw new Error('Check the planning value.');
+    } else if (a.kind === 'audience') {
+      if (a.field !== 'childrenCount' || !/^\d+$/.test(a.value) || Number(a.value) > 100000) throw new Error('Check the child headcount.');
     } else if (a.kind === 'stage') {
       if (!profile.stages.some(s=>s.id === a.stageId) || !fields.includes(a.field) || !validValue(a.field,a.value)) throw new Error('Check the event part and value.');
     } else if (a.kind === 'add_service' || a.kind === 'remove_service') {
@@ -50,6 +52,9 @@ export function applyPlanActions(profile: EventIntelligenceProfile | null, input
         next.evidence = [...next.evidence.filter(e=>e.field !== `planning.${a.field}`), ...planningEvidence(next.planning,[a.field])];
         if (a.field === 'guestCount') next.guestSize = Number(a.value);
       }
+    } else if (a.kind === 'audience') {
+      next.audience = {...next.audience, childrenCount:Number(a.value)};
+      changes.push(`Children expected: ${a.value}`);
     } else if (a.kind === 'stage') {
       next.stages = next.stages.map(s=>s.id === a.stageId ? {...s,[a.field]:typed} : s);
       changes.push(`${next.stages.find(s=>s.id === a.stageId)?.label} ${a.field}: ${a.value}`);
@@ -64,6 +69,7 @@ export function applyPlanActions(profile: EventIntelligenceProfile | null, input
     } else if (a.kind === 'venue_status') {
       next.homeEvent = a.value === 'home'; next.commercialVenue = a.value === 'secured'; next.venueRequired = a.value === 'needed';
       if (a.value !== 'needed') removeService(next,'Venue');
+      else next.excludedServices = next.excludedServices.filter(service => service !== 'Venue');
       changes.push(`Venue: ${a.value}`);
     }
   }

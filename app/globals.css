@@ -78,7 +78,8 @@ html[data-theme="dark"] .brand-dark { display: block; }
 .workspace-drawer { inset: 0 0 0 auto; margin: 0; height: 100dvh; max-height: 100dvh; width: min(480px, 100vw); max-width: 100vw; border: 0; border-left: 1px solid var(--hub-border); background: var(--hub-surface); color: var(--hub-text); overflow-y: auto; box-shadow: -20px 0 60px #0002; animation: workspace-in 180ms ease-out; }
 .workspace-drawer::backdrop { background: #0b1b142b; }
 .notice-unread { border-left: 3px solid var(--hub-accent); }
-.theme-control { position: fixed; right: 14px; bottom: 10px; z-index: 45; border: 1px solid var(--hub-border); border-radius: 18px; background: var(--hub-surface); color: var(--hub-text); padding: 7px 11px; font-size: 12px; box-shadow: 0 3px 15px #0001; }
+.theme-control { position: relative; flex-shrink: 0; border: 1px solid var(--hub-border); border-radius: 18px; background: var(--hub-surface); color: var(--hub-text); padding: 3px; font-size: 12px; }
+.theme-options { position: absolute; right: 0; top: calc(100% + 8px); min-width: 185px; padding: 14px; border: 1px solid var(--hub-border); border-radius: 16px; background: var(--hub-surface); box-shadow: 0 8px 24px #0002; z-index: 45; }
 .theme-control select { margin-left: 6px; background: var(--hub-surface); color: var(--hub-text); }
 .context-reveal { animation: context-in 180ms ease-out; }
 .vendor-hub { padding-bottom: 45px; background: var(--hub-bg); }
@@ -357,7 +358,7 @@ html[data-theme="dark"] .vendor-entry form { background: var(--hub-surface); bor
 @media (prefers-reduced-motion: reduce) { .event-moment { display:none!important; } }
 
 /* Customer planner uses the same surface tokens in both themes. */
-.assistant-launch { position: fixed; left: 16px; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 44; box-shadow: 0 6px 24px #0002; font-size: 13px; }
+.assistant-launch { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 44; box-shadow: 0 6px 24px #0002; font-size: 13px; }
 .assistant-dialog { border: 1px solid var(--hub-border); border-radius: 24px; padding: 0; width: min(460px, calc(100vw - 32px)); max-height: min(780px, calc(100dvh - 32px)); margin: auto 20px 20px auto; box-shadow: 0 20px 80px #0004; }
 .assistant-dialog[open] { display: flex; flex-direction: column; }
 .assistant-dialog::backdrop { background: #07101c55; }
@@ -367,5 +368,22 @@ html[data-theme="dark"] .vendor-entry form { background: var(--hub-surface); bor
 @media (max-width: 639px) {
  .assistant-dialog { width: 100%; max-width: 100%; height: 100dvh; max-height: 100dvh; margin: 0; border-radius: 0; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
  .assistant-scroll { flex: 1; }
- .assistant-launch { bottom: calc(82px + env(safe-area-inset-bottom)); }
+
 }
+
+/* Reserve scroll room for customer launchers. Expanded workspaces use dismissible dialogs. */
+body.has-customer-assistant { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+.assistant-launch { max-width: 155px; min-height: 48px; }
+.marketplace-cart-launch { position: fixed; bottom: calc(16px + env(safe-area-inset-bottom)); left: 16px; z-index: 40; width: min(350px, calc(100vw - 195px)); min-height: 48px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; box-shadow: 0 6px 24px #0002; }
+.marketplace-cart-launch span { max-width: 100%; }
+.event-search-control { flex-wrap: wrap; border-radius: 28px; }
+.event-search-control > input { flex-basis: 140px; }
+.event-search-ask { flex-shrink: 0; min-height: 48px; border-radius: 24px; }
+@media (max-width: 639px) {
+ .event-search-control > input { width: calc(100% - 55px); flex-basis: calc(100% - 55px); }
+ .event-search-control > button { flex: 1; }
+}
+
+.customer-dialog { margin: auto; width: min(680px, calc(100vw - 24px)); max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--hub-border); border-radius: 24px; overflow-y: auto; overscroll-behavior: contain; }
+.customer-dialog::backdrop { background: #07101c88; }
+@media(max-width: 639px) { .customer-dialog { max-height: calc(100dvh - 24px - env(safe-area-inset-bottom)); } }

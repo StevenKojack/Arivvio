@@ -90,11 +90,13 @@ export function StepTwoConfirmation({
     const seen = new Set<string>();
     return suggestions.filter((item) => {
       if (understanding.tone !== "warm" && item.linkedService && !understanding.recommended.some(s => s.service === item.linkedService)) return false;
+      if (item.linkedService === "Venue" && (intelligence.homeEvent || intelligence.commercialVenue || !intelligence.venueRequired)) return false;
+      if (item.linkedService && intelligence.excludedServices.includes(item.linkedService)) return false;
       if (seen.has(item.id) || planSelections.some((selected) => selected.id === item.id)) return false;
       seen.add(item.id);
       return true;
     }).slice(0, 3);
-  }, [contextualSuggestions, essentialServices, planSelections, recommendedServices, understanding.recommended, understanding.tone]);
+  }, [contextualSuggestions, essentialServices, planSelections, recommendedServices, understanding.recommended, understanding.tone, intelligence.homeEvent, intelligence.commercialVenue, intelligence.venueRequired, intelligence.excludedServices]);
   const contextPreferences = intelligence.preferences.filter(isAdvancedPreference);
   const contextSelections = contextPreferences.map((preference) => createPreferenceSelection(preference, "browse-all"));
   const selectedIds = [

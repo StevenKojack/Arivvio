@@ -59,6 +59,7 @@ import { getEventPersonality } from "@/lib/event-intelligence/visual-tone";
 import { EventMoment } from "../components/EventMoment";
 import { StepCard } from "./components/StepCard";
 import { StepTwoConfirmation } from "./components/StepTwoConfirmation";
+import { TimeSelect } from "./components/TimeSelect";
 import { TimeDurationPicker } from "./components/TimeDurationPicker";
 import { formatTime } from "@/lib/utils/format";
 
@@ -128,6 +129,7 @@ export function EventWizard() {
   const initialStages = initialIntelligence.stages;
   const sessionRestoredRef = useRef(false);
   const [sessionReady, setSessionReady] = useState(false);
+  const [storageNotice, setStorageNotice] = useState("");
   const [step, setStep] = useState(initialQuery && !getDiscoveryFamily(initialQuery) ? 1 : 0);
   const [query, setQuery] = useState(initialQuery);
   const [confirmedPlanningFields, setConfirmedPlanningFields] = useState<string[]>([]);
@@ -318,8 +320,8 @@ export function EventWizard() {
   }, [locations]);
 
   useEffect(() => {
-    if (sessionReady) saveEventIntelligenceProfile(eventIntelligence);
-  }, [eventIntelligence, sessionReady]);
+    if (sessionReady && step > 0) { try { saveEventIntelligenceProfile(eventIntelligence); queueMicrotask(() => setStorageNotice("")); } catch (error) { queueMicrotask(() => setStorageNotice(error instanceof Error ? error.message : "Unable to save this browser plan.")); } }
+  }, [eventIntelligence, sessionReady, step]);
 
   function restoreConversationProfile(profile: EventIntelligenceProfile) {
     setConversationProfile(profile);
@@ -455,6 +457,7 @@ export function EventWizard() {
   return (
     <section className="relative px-4 py-8 sm:px-8 lg:px-12">
       <EventMoment recognition={recognition} active={step === 1} />
+      {storageNotice && <p role="alert" className="hub-card mx-auto mb-4 max-w-5xl p-4">{storageNotice}</p>}
       {step > 0 && <p className="intake-personality mx-auto max-w-7xl" data-personality={getEventPersonality(recognition)}>{recognition.identity.selectedDisplayEvent} · One connected plan, shaped around your occasion.</p>}
       <div
         className={`mx-auto min-w-0 transition-[max-width] duration-300 ${
@@ -573,17 +576,15 @@ export function EventWizard() {
                       }
                     />
                   ) : null}
-                  <TimingField
+                  <TimeSelect
                     label="Setup time"
-                    type="time"
                     value={timing.setupTime}
                     onChange={(value) =>
                       setTiming((current) => ({ ...current, setupTime: value }))
                     }
                   />
-                  <TimingField
+                  <TimeSelect
                     label="Teardown time"
-                    type="time"
                     value={timing.teardownTime}
                     onChange={(value) =>
                       setTiming((current) => ({ ...current, teardownTime: value }))

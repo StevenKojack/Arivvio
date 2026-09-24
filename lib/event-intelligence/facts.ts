@@ -15,7 +15,8 @@ export function extractEventFacts(query: string): ParsedFacts {
   const guests = query.match(/\b(?:(around|about|approximately|roughly)\s+)?(\d[\d,]*)\s*(?:people|guests|employees|attendees)\b/i);
   if (guests && Number(guests[2].replaceAll(',', '')) > 0) add('guestCount', Number(guests[2].replaceAll(',', '')));
   const budget = query.match(/\b(?:budget(?:\s+of|\s+is)?|under|up to)\s*(?:around\s+|about\s+|approximately\s+)?\$?([\d,]+(?:\.\d+)?)\s*(k\b)?/i);
-  if (budget) add('budget', Number(budget[1].replaceAll(',', '')) * (budget[2] ? 1000 : 1));
+  const approximateBudget = budget ?? query.match(/\b(?:around|about|approximately)\s+\$([\d,]+(?:\.\d+)?)\s*(k\b)?/i);
+  if (approximateBudget) add('budget', Number(approximateBudget[1].replaceAll(',', '')) * (approximateBudget[2] ? 1000 : 1));
   const iso = query.match(/\b(20\d{2}-\d{2}-\d{2})\b/);
   if (iso && !Number.isNaN(Date.parse(iso[1])) && new Date(iso[1]).toISOString().slice(0, 10) === iso[1]) add('date', iso[1]);
   const dateHint = query.match(/\b(?:next\s+)?(?:January|February|March|April|May|June|July|August|September|October|November|December)(?:\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+20\d{2})?)?\b/i)?.[0];
@@ -36,4 +37,8 @@ export function extractEventFacts(query: string): ParsedFacts {
 }
 export function clockTime(hour: string, minute = '00', meridiem = 'pm') {
   return `${String(Number(hour) % 12 + (meridiem.toLowerCase() === 'pm' ? 12 : 0)).padStart(2, '0')}:${minute}`;
+}
+
+export function hasSecuredVenue(text: string) {
+  return text.split(/[.!?;]/).some(clause => /\b(?:already have|booked|secured|found|reserved)\b.{0,25}\b(?:venue|hall|church|restaurant|hotel|ballroom|location)\b/i.test(clause) && !/\b(?:not|no|haven['’]t|haven not|hadn['’]t|haven’t|never)\b/i.test(clause));
 }

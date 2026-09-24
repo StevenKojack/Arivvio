@@ -116,7 +116,7 @@ export function QuoteCartDrawer({
           ? "max-h-[52vh] overflow-y-auto p-4"
           : isWorkspace
             ? "max-h-[calc(100vh-6.5rem)] overflow-y-auto p-4"
-            : "sticky top-24 h-fit p-5"
+            : "h-fit p-5"
       }`}
     >
       <div className="flex items-start justify-between gap-4">

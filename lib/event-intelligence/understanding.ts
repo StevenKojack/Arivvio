@@ -37,7 +37,10 @@ export function understandEvent(profile: EventIntelligenceProfile, selectedProvi
     ...serviceRelationships.filter(item => item.scope === 'uncertain').map(item => item.explanation),
   ];
   const restricted: ServiceName[] = tone === 'respectful' ? ['DJ', 'Balloons', 'Bounce Houses', 'Magic', 'Character Performers', 'Photo Booth', 'Party Bus', 'Cake & Desserts'] : tone === 'professional' ? ['Balloons', 'Bounce Houses', 'Magic', 'Character Performers', 'Party Bus'] : [];
-  const recommended = Object.entries(profile.recommendationScores)
+  const scores = { ...profile.recommendationScores };
+  if (profile.venueRequired && !profile.homeEvent && !profile.commercialVenue) scores.Venue = 110;
+  else delete scores.Venue;
+  const recommended = Object.entries(scores)
     .filter(([service]) => !profile.requestedServices.includes(service as ServiceName) && !profile.excludedServices.includes(service as ServiceName) && !restricted.includes(service as ServiceName))
     .sort((a,b) => (b[1] ?? 0) - (a[1] ?? 0)).slice(0,3)
     .map(([service]) => ({ service: service as ServiceName, reason: profile.homeEvent && ['Rentals','Cleaning','Catering'].includes(service) ? 'May help with hosting at home. Optional until you add it.' : 'An optional service relevant to this occasion.' }));
@@ -47,7 +50,7 @@ export function understandEvent(profile: EventIntelligenceProfile, selectedProvi
   }
   if (profile.homeEvent || profile.indoorOutdoor === 'outdoor') logistics.push({priority:'Recommended',detail:'If any part is outdoors, agree on a weather backup before confirming providers.'});
   if (profile.stages.length > 1) logistics.push({priority:'Important',detail:'Allow travel and setup time between parts. Confirm which services cover each location.'});
-  if (profile.audience.audienceType === 'kids') logistics.push({priority:'Important',detail:'Plan age-appropriate activities, supervision and dietary needs with the hosts.'});
+  if (profile.audience.audienceType === 'kids' || (profile.audience.childrenCount ?? 0) > 0) logistics.push({priority:'Important',detail:'Plan age-appropriate activities, supervision and dietary needs with the hosts.'});
   if (tone === 'professional') logistics.push({priority:'Recommended',detail:'Confirm the run of show, check-in process and any AV needs with the event team.'});
   const core = has('planning.guestCount') && (profile.homeEvent || has('planning.location') || profile.venuePreferences.length > 0);
   const scheduling = !has('planning.date') || needsTime || stageFields.length > 0 || ambiguous.length > 0;

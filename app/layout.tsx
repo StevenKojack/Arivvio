@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Footer } from "./components/Footer";
 import { EventAssistant } from "./components/EventAssistant";
-import { ThemeControl } from "./components/ThemeControl";
+import { ThemeInitializer } from "./components/ThemeControl";
 
 export const metadata: Metadata = {
   title: "Arivvio | Plan any event in one place",
@@ -23,7 +23,7 @@ export default function RootLayout({
       className="h-full antialiased"
       data-build-commit={process.env.VERCEL_GIT_COMMIT_SHA ?? "local"}
     >
-      <body className="min-h-full flex flex-col">{children}<Footer /><ThemeControl /><EventAssistant /></body>
+      <body className="min-h-full flex flex-col">{children}<Footer /><ThemeInitializer /><EventAssistant /></body>
     </html>
   );
 }

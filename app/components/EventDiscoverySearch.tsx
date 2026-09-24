@@ -49,7 +49,7 @@ export function EventDiscoverySearch() {
         }}
         className="relative"
       >
-        <div className="event-search-bar flex min-h-[72px] items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-white/94 px-4 py-3 shadow-[0_24px_80px_rgba(13,19,33,0.13)] transition focus-within:border-[#D4AF37]/55 focus-within:shadow-[0_28px_90px_rgba(13,19,33,0.17)] sm:px-5">
+        <div className="event-search-bar event-search-control flex min-h-[72px] items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-white/94 px-4 py-3 shadow-[0_24px_80px_rgba(13,19,33,0.13)] transition focus-within:border-[#D4AF37]/55 focus-within:shadow-[0_28px_90px_rgba(13,19,33,0.17)] sm:px-5">
           <SearchLogoMark />
           <input
             role="combobox"
@@ -86,8 +86,9 @@ export function EventDiscoverySearch() {
             type="submit"
             className="h-12 rounded-full bg-[#0D1321] px-5 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(13,19,33,0.2)] transition hover:-translate-y-0.5 hover:bg-[#111A2E] sm:px-7"
           >
-            Plan my event
+            Search
           </button>
+          <AskArivvioButton attached />
         </div>
 
         {focused ? (
@@ -123,7 +124,6 @@ export function EventDiscoverySearch() {
           </div>
         ) : null}
       </form>
-      <AskArivvioButton />
 
       <div className="mt-6 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">
         <div className="flex w-max animate-[eventLoop_34s_linear_infinite] gap-2">

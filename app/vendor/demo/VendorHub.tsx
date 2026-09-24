@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { marketplaceItems } from "@/app/data/marketplace";
+import { ThemeControl } from "@/app/components/ThemeControl";
 import { Logo } from "@/app/components/Logo";
 import { CalendarWorkspace } from "./CalendarWorkspace";
 import { Inquiries } from "./Inquiries";
@@ -48,8 +49,9 @@ export function VendorHub() {
     setState(hydrateHub(loaded));
     const today = dateKey(new Date()); setSelectedDate(today);
     const syncHash = () => { let value = ""; try { value = decodeURIComponent(window.location.hash.slice(1)); } catch { return; } if (sections.includes(value as Section)) { setSection(value as Section); setEventId(null); setEditingEvent(null); setEditingService(null); } };
-    syncHash(); window.addEventListener("hashchange", syncHash);
-    return () => window.removeEventListener("hashchange", syncHash);
+    const refreshStored = () => { try { const saved = JSON.parse(localStorage.getItem(storageKey) ?? "null"); if (saved?.version === 1) { setState(hydrateHub(saved)); setEventId(null); setEditingEvent(null); } } catch { setStorageError("Unable to reload demo changes."); } };
+    syncHash(); window.addEventListener("hashchange", syncHash); window.addEventListener("storage", refreshStored);
+    return () => { window.removeEventListener("hashchange", syncHash); window.removeEventListener("storage", refreshStored); };
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -85,7 +87,7 @@ export function VendorHub() {
   return <div className="vendor-hub min-h-screen bg-[#F7F6F2] ui-text lg:grid lg:grid-cols-[240px_minmax(0,1fr)]">
     <aside className="border-b ui-border ui-surface px-5 py-5 lg:sticky lg:top-0 lg:h-screen lg:border-r lg:py-8"><Logo /><div className="mt-6"><p className="text-xs font-semibold uppercase tracking-widest text-[#8A6A16]">Vendor Demo</p>{state.media?.profile && <Image src={state.media.profile} alt="Your business image" width={48} height={48} unoptimized className="mt-3 rounded-lg object-contain" />}<p className="mt-2 font-semibold">{state.business.name}</p></div><nav aria-label="Vendor workspace" className="mt-5 flex gap-2 overflow-x-auto pb-2 lg:flex-col">{sections.map(item => <button key={item} aria-current={section === item ? "page" : undefined} onClick={() => navigate(item)} className={`shrink-0 rounded-xl px-4 py-3 text-left text-sm font-medium ${section === item ? "ui-primary" : "ui-muted hover:opacity-80"}`}>{item}</button>)}</nav><Link href="/" className="mt-4 inline-block text-sm font-semibold ui-muted underline lg:mt-8">Exit demo</Link></aside>
     <main className="min-w-0 px-4 py-7 sm:px-8 lg:px-10 lg:py-10">
-      <div className="mx-auto max-w-6xl"><header className="mb-4 flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs uppercase tracking-widest ui-muted">Your business workspace</p><h1 className="mt-2 text-2xl font-semibold tracking-tight">{editingEvent ? "Manage event" : current ? current.name : section}</h1><p className="mt-2 max-w-2xl text-sm leading-6 ui-muted">Calendar, services and your Marketplace listing.</p></div><div className="flex flex-wrap gap-2"><Notifications state={state} save={save} follow={notice => { navigate(notice.destination); const event = state.events.find(e => e.id === notice.eventId); if (event) openEvent(event); }} /><button onClick={() => addEvent()} className={buttonClass}>+ Add Event</button></div></header>
+      <div className="mx-auto max-w-6xl"><header className="mb-4 flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs uppercase tracking-widest ui-muted">Your business workspace</p><h1 className="mt-2 text-2xl font-semibold tracking-tight">{editingEvent ? "Manage event" : current ? current.name : section}</h1><p className="mt-2 max-w-2xl text-sm leading-6 ui-muted">Calendar, services and your Marketplace listing.</p></div><div className="flex flex-wrap gap-2"><ThemeControl /><Notifications state={state} save={save} follow={notice => { navigate(notice.destination); const event = state.events.find(e => e.id === notice.eventId); if (event) openEvent(event); }} /><button onClick={() => addEvent()} className={buttonClass}>+ Add Event</button></div></header>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#E8DFC9] bg-[#FFFCF5] px-4 py-3 text-xs text-[#675227]"><span>Fictional demo business. Your edits stay in this browser only.</span><span>No live requests, bookings or payments.</span></div>
       {message && <p role="status" className="mb-5 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{message}</p>}{storageError && <p role="alert" className="mb-5 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">{storageError}</p>}
       {editingEvent ? <EventForm key={editingEvent.id} event={editingEvent} state={state} onCancel={() => setEditingEvent(null)} onSave={event => { save({ ...state, events: [...state.events.filter(e => e.id !== event.id), event] }, "Event saved. Calendar and availability updated."); setEditingEvent(null); setEventId(event.id); setSelectedDate(event.date); }} /> : current ? <div className="space-y-5">

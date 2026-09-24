@@ -2,7 +2,7 @@ import type { ServiceName } from "@/app/data/marketplace";
 import { planningPreferenceCatalog, type PlanSelection } from "@/lib/planning-taxonomy";
 import { toSelectedPreference } from "@/lib/planning-taxonomy/search";
 import type { PlanningPreference, SelectedPlanningPreference } from "@/lib/planning-taxonomy/types";
-import { extractEventFacts, type PlanningDetails } from "./facts";
+import { extractEventFacts, hasSecuredVenue, type PlanningDetails } from "./facts";
 import { planningEvidence } from "./understanding";
 import { derivePlanningContext } from "./context";
 import { normalizeSearchText } from "./normalize";
@@ -48,7 +48,7 @@ export function buildEventIntelligenceProfile(
   const inferredIds = new Set(preferences.filter((item) => item.selectionSource === "explicit-text").map((item) => item.id));
   const stages = input.stages ?? getInitialStages(recognition, input.query);
   const audience = mergeAudience(inferAudienceFromQuery(input.query, recognition.identity.canonicalEventType), input.audience);
-  const planSelections = input.planSelections ?? inferServicePlanSelections(
+  let planSelections = input.planSelections ?? inferServicePlanSelections(
     input.query,
     preferences,
     recognition.excludedServices,
@@ -64,13 +64,15 @@ export function buildEventIntelligenceProfile(
   const requestedServices = rawRequestedServices.filter((service) => !(homeEvent && service === "Venue"));
   const normalizedQuery = normalizeSearchText(input.query);
   const knownVenueInText = /\b(at|in) (a |the )?(church|banquet hall|reception hall|restaurant|hotel|ballroom)\b/.test(normalizedQuery);
-  const knownVenueContext = ["business", "church", "has_venue", "likely_venue"].includes(input.locationContext ?? "");
+  const bookedVenue = hasSecuredVenue(input.query);
+  const knownVenueContext = bookedVenue || ["business", "church", "has_venue", "likely_venue"].includes(input.locationContext ?? "");
   const contextualSuggestions = getContextualPlanningSuggestions(recognition, audience);
   const recommendationScores: Partial<Record<ServiceName, number>> = {};
 
   contextualSuggestions.forEach((item, index) => {
     if (item.linkedService) recommendationScores[item.linkedService] = Math.max(62, 96 - index * 5);
   });
+  recognition.profile.requiredVendors.forEach(service => { recommendationScores[service] = Math.max(recommendationScores[service] ?? 0, 90); });
   recognition.profile.recommendedVendors.forEach((service) => {
     recommendationScores[service] = Math.max(recommendationScores[service] ?? 0, 72);
   });
@@ -91,6 +93,12 @@ export function buildEventIntelligenceProfile(
     recommendationScores.Cleaning = 97;
   }
   if (stages.length > 1) recommendationScores.Transportation = 96;
+
+  const venueRequired = !homeEvent && !knownVenueContext && (searchingVenue || !knownVenueInText);
+  if (venueRequired && !recognition.excludedServices.includes("Venue")) recommendationScores.Venue = 110;
+  else delete recommendationScores.Venue;
+  if (recommendationScores.Catering) recommendationScores.Catering = Math.max(recommendationScores.Catering, 100);
+  if (bookedVenue) { planSelections = planSelections.filter(s => s.linkedService !== "Venue"); const index = requestedServices.indexOf("Venue"); if (index >= 0) requestedServices.splice(index, 1); }
 
   const evidence: EventIntelligenceProfile["evidence"] = [
     {
@@ -148,7 +156,7 @@ export function buildEventIntelligenceProfile(
     planning: { date: "", startTime: "", endTime: "", location: "", guestCount: input.guestSize ?? 0, budget: 0, ...facts.planning, ...(input.guestSize !== undefined ? { guestCount: input.guestSize } : {}), ...input.planning },
     activityStyle: preferences.filter((item) => item.type === "activity").map((item) => item.label),
     audience,
-    commercialVenue: !homeEvent && (knownVenueContext || (!searchingVenue && (knownVenueInText || venuePreferences.length > 0))),
+    commercialVenue: !homeEvent && (knownVenueContext || (!searchingVenue && knownVenueInText)),
     cultures: unique([
       ...preferences.filter((item) => item.type === "culture").map((item) => item.label),
       ...getPlanDetailLabels(planSelections, ["culture", "cultures"]),
@@ -219,7 +227,7 @@ export function buildEventIntelligenceProfile(
     ]),
     travelRequired: stages.length > 1 || preferences.some((item) => item.type === "transportation"),
     venuePreferences,
-    venueRequired: !homeEvent && !knownVenueContext && (searchingVenue || (!knownVenueInText && !venuePreferences.length)),
+    venueRequired,
   };
 }
 
@@ -245,6 +253,7 @@ export function inferAudienceFromQuery(query: string, canonicalEventType?: strin
         : "all-genders";
 
   return {
+    childrenCount: query.match(/\b(\d{1,5})\s+(?:kids|children)\b/i) ? Number(query.match(/\b(\d{1,5})\s+(?:kids|children)\b/i)![1]) : undefined,
     audienceGender,
     audienceType: context.lifeStage === "teen" ? "teens" : context.lifeStage === "kids" ? "kids" : undefined,
     genderContext,

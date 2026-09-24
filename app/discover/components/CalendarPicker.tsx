@@ -62,10 +62,11 @@ export function CalendarPicker({ label, onChange, value }: CalendarPickerProps) 
       <p className="text-sm font-semibold text-neutral-800">{label}</p>
       <button
         ref={triggerRef}
+        aria-label={`${label}: ${selectedLabel}`}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         type="button"
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={() => { if (!isOpen && selectedDate) setViewDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)); setIsOpen((current) => !current); }}
         className="mt-2 flex h-14 w-full items-center justify-between rounded-2xl border border-neutral-300 bg-white px-4 text-left text-sm font-semibold text-neutral-950 shadow-[0_10px_30px_rgba(13,19,33,0.04)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-neutral-500 hover:shadow-[0_16px_40px_rgba(13,19,33,0.08)] focus:border-[#0D1321] focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/25"
       >
         <span>{selectedLabel}</span>
@@ -83,6 +84,7 @@ export function CalendarPicker({ label, onChange, value }: CalendarPickerProps) 
           <div className="flex items-center justify-between gap-3">
             <button
               type="button"
+              aria-label="Previous month"
               onClick={() => moveMonth(-1)}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 text-lg font-semibold transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#0D1321]"
             >
@@ -98,6 +100,7 @@ export function CalendarPicker({ label, onChange, value }: CalendarPickerProps) 
             </div>
             <button
               type="button"
+              aria-label="Next month"
               onClick={() => moveMonth(1)}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 text-lg font-semibold transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#0D1321]"
             >
@@ -105,6 +108,7 @@ export function CalendarPicker({ label, onChange, value }: CalendarPickerProps) 
             </button>
           </div>
 
+          <button type="button" className="hub-button mt-4" onClick={() => selectDate("")}>Date to confirm / use overall date</button>
           <div className="mt-5 grid gap-6 md:grid-cols-2">
             {months.map((month, index) => (
               <MonthView
@@ -158,6 +162,8 @@ function MonthView({
             <button
               key={dateValue}
               type="button"
+              aria-label={day.date.toLocaleDateString("en-US", { dateStyle: "full" })}
+              aria-pressed={isSelected}
               onClick={() => onSelect(dateValue)}
               className={`relative aspect-square rounded-2xl text-sm font-semibold transition duration-150 ease-out ${
                 isSelected

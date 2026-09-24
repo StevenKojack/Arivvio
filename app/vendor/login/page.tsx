@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { AuthForm } from "../../auth/AuthForm";
+import { ThemeControl } from "../../components/ThemeControl";
 import { Logo } from "../../components/Logo";
 import { EventAtmosphere } from "../../components/EventAtmosphere";
 
@@ -11,7 +12,7 @@ export default function VendorLoginPage() {
       <div className="event-photo-caption"><p className="text-xs uppercase tracking-[.2em]">For the people behind the occasion</p><h2 className="mt-4 max-w-lg text-3xl font-medium leading-tight sm:text-5xl">You make the moments.<br />We help bring them together.</h2></div>
     </aside>
     <section className="px-6 py-8 sm:px-12 lg:px-16 lg:py-12">
-      <Logo />
+      <div className="flex items-center justify-between gap-3"><Logo /><ThemeControl /></div>
       <div className="mx-auto mt-10 max-w-md">
         <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#8A6A16]">Arivvio for vendors</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight">Welcome to your next chapter.</h1>

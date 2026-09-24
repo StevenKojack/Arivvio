@@ -1,4 +1,5 @@
 "use client";
+import { CalendarPicker } from "./CalendarPicker";
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -119,9 +120,7 @@ export function InviteesModal({
               ) : null}
 
               {featuredPerson.dueDateQuestion ? (
-                <label className="mt-5 block text-sm font-semibold text-[#0D1321]">{featuredPerson.dueDateQuestion}
-                  <input type="date" value={draft.honoreeDueDate ?? ""} onChange={(event) => setDraft((current) => ({ ...current, honoreeDueDate: event.target.value }))} className="mt-2 h-12 w-full rounded-xl border border-neutral-300 px-4 text-sm outline-none focus:border-[#D4AF37]" />
-                </label>
+                <div className="mt-5"><CalendarPicker label={featuredPerson.dueDateQuestion} value={draft.honoreeDueDate ?? ""} onChange={value => setDraft(current => ({...current, honoreeDueDate:value}))} /></div>
               ) : featuredPerson.ageQuestion ? (
                 <label className="mt-5 block text-sm font-semibold text-[#0D1321]">{featuredPerson.ageQuestion}
                   <input type="number" min="0" max="120" value={draft.honoreeAge ?? ""} onChange={(event) => setDraft((current) => ({ ...current, honoreeAge: event.target.value ? Number(event.target.value) : undefined }))} placeholder="Optional" className="mt-2 h-12 w-full rounded-xl border border-neutral-300 px-4 text-sm outline-none focus:border-[#D4AF37]" />

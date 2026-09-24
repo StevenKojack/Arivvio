@@ -1,5 +1,5 @@
 import { buildEventIntelligenceProfile } from '@/lib/event-intelligence/engine';
-import { extractEventFacts, clockTime } from '@/lib/event-intelligence/facts';
+import { extractEventFacts, clockTime, hasSecuredVenue } from '@/lib/event-intelligence/facts';
 import type { EventIntelligenceProfile } from '@/lib/event-intelligence/types';
 import type { PlanAction } from './actions';
 // Explicitly labelled parser preview, never a simulated model conversation.
@@ -10,6 +10,11 @@ export function previewPlanningTurn(text: string, profile: EventIntelligenceProf
  const actions=Object.entries(facts.planning).map(([field,value])=>action('planning',field,String(value)));
  if(facts.dateHint)actions.push(action('planning','dateHint',facts.dateHint));
  if(facts.planning.guestCount)actions.push(action('planning','approximateGuests',String(facts.approximateGuests)));
+ const children=text.match(/\b(\d{1,5})\s+(?:kids|children)\b/i);
+ if(children)actions.push(action('audience','childrenCount',children[1]));
+ if(/\b(?:handling|bringing|making|covering|providing)\b.{0,25}\b(?:dessert|cake|desserts)\b/i.test(text))actions.push(action('remove_service','','Cake & Desserts'));
+ const guestCorrection=text.match(/^\s*(?:actually\s+)?(?:make it|we(?:'ll| will) have|it(?:'s| is)(?: probably)?)\s+(?:about |around )?(\d{1,5})[.!]?\s*$/i);
+ if(guestCorrection && profile.planning?.guestCount)actions.push(action('planning','guestCount',guestCorrection[1]));
  const matchingStages=profile.stages.filter(s=>text.toLowerCase().includes(s.label.toLowerCase()));
  if(/\b(move|change|start|moved)\b/i.test(text)&&matchingStages.length){
   const clock=text.match(/\b(?:to|at)\s+(\d{1,2})(?::([0-5]\d))?\s*(am|pm)?\b/i);
@@ -20,7 +25,7 @@ export function previewPlanningTurn(text: string, profile: EventIntelligenceProf
    actions.push(action('stage','startTime',time,matchingStages[0].id));
   }
  }
- if(/\b(found|have|secured|booked)\b.{0,25}\bvenue\b/i.test(text))actions.push(action('venue_status','','secured'));
+ if(hasSecuredVenue(text))actions.push(action('venue_status','','secured'));
  if(/\b(?:at|to) (?:my|our|the) (?:house|home|backyard)\b/i.test(text))actions.push(action('venue_status','','home'));
  const removal=/\b(don['’]t need|do not need|no longer need|remove|cancel)\b/i.test(text);
  if(removal||/\b(add|need|want)\b/i.test(text)){

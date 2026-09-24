@@ -1,4 +1,5 @@
 "use client";
+import { CalendarPicker } from "@/app/discover/components/CalendarPicker";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -178,15 +179,7 @@ export function VendorsEntry() {
         ) : null}
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <label className="text-sm font-semibold text-neutral-800">
-            Date
-            <input
-              type="date"
-              value={date}
-              onChange={(event) => setDate(event.target.value)}
-              className="mt-2 h-12 w-full rounded-2xl border border-[#D4AF37]/18 bg-white px-4 text-sm font-semibold outline-none transition focus:border-[#D4AF37]"
-            />
-          </label>
+          <CalendarPicker label="Date" value={date} onChange={setDate} />
           <label className="relative text-sm font-semibold text-neutral-800">
             Location or area
             <input

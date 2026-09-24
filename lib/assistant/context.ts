@@ -8,5 +8,5 @@ export function providerContext(p: MarketplaceItem) {
 export function compactEvent(profile: EventIntelligenceProfile | null) {
   if (!profile) return null;
   const u = understandEvent(profile);
-  return {event:profile.eventType.value,planning:profile.planning,dateHint:profile.dateHint,approximateGuests:profile.approximateGuests,homeEvent:profile.homeEvent,venueRequired:profile.venueRequired,cultures:profile.cultures,cuisines:profile.cuisines,services:profile.requestedServices,stages:profile.stages,excludedServices:profile.excludedServices,understanding:{tone:u.tone,readiness:u.readiness,nextBestQuestion:u.nextBestQuestion,recommended:u.recommended,logistics:u.logistics,ambiguous:u.ambiguous,budget:u.budget}};
+  return {event:profile.eventType.value,planning:profile.planning,audience:profile.audience,dateHint:profile.dateHint,approximateGuests:profile.approximateGuests,homeEvent:profile.homeEvent,venueRequired:profile.venueRequired,cultures:profile.cultures,cuisines:profile.cuisines,services:profile.requestedServices,stages:profile.stages,excludedServices:profile.excludedServices,understanding:{tone:u.tone,readiness:u.readiness,nextBestQuestion:u.nextBestQuestion,recommended:u.recommended,logistics:u.logistics,ambiguous:u.ambiguous,budget:u.budget}};
 }

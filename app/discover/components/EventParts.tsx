@@ -2,6 +2,8 @@
 
 import type { EventStage } from "@/lib/event-intelligence/types";
 import type { ServiceName } from "@/app/data/marketplace";
+import { CalendarPicker } from "./CalendarPicker";
+import { TimeDurationPicker } from "./TimeDurationPicker";
 import { formatTime } from "@/lib/utils/format";
 
 type Defaults = { date: string; startTime: string; endTime: string; location: string; guestCount: number; budget: number };
@@ -23,7 +25,8 @@ export function EventPartsEditor({ stages, onChange, defaults, section, services
         <label className="text-sm">Notes<textarea className={inputClass} value={part.notes ?? ""} onChange={(event) => update(part.id, { notes: event.target.value })} /></label>
         <fieldset className="sm:col-span-2"><legend className="text-sm">Services for {part.label}</legend><p className="mb-2 text-xs text-neutral-500">Unassigned services remain with the overall event.</p><div className="grid gap-2 sm:grid-cols-2">{services.map((service) => <label key={service} className="flex min-h-10 items-center gap-2 rounded-lg ui-soft px-3 py-2 text-sm"><input type="checkbox" checked={part.services?.includes(service) ?? false} onChange={(event) => update(part.id, { services: event.target.checked ? [...(part.services ?? []), service] : part.services?.filter((item) => item !== service) })} />{service}</label>)}</div></fieldset>
       </div>}
-      {section === "timing" && <div className="mt-3 grid gap-3 sm:grid-cols-3">{([['date', 'Date'], ['startTime', 'Start time'], ['endTime', 'End time']] as const).map(([key, label]) => <label className="text-sm" key={key}>{part.label} {label.toLowerCase()}<input className={inputClass} type={key === "date" ? "date" : "time"} value={part[key] ?? ""} onChange={(event) => update(part.id, { [key]: event.target.value || undefined })} /><span className="text-xs text-neutral-500">Overall: {defaults[key] ? key === "date" ? defaults[key] : formatTime(defaults[key]) : "not set"}</span></label>)}</div>}
+      {section === "timing" && <div className="mt-4 grid gap-4 sm:grid-cols-2"><CalendarPicker label={`${part.label} date`} value={part.date ?? ""} onChange={value => update(part.id, { date: value || undefined })} /><TimeDurationPicker label={`${part.label} time`} startTime={part.startTime ?? ""} endTime={part.endTime ?? ""} onStartTimeChange={value => update(part.id, { startTime: value || undefined })} onEndTimeChange={value => update(part.id, { endTime: value || undefined })} /><p className="text-xs ui-muted sm:col-span-2">Blank values use the overall schedule: {defaults.date || "date to confirm"} · {formatTime(defaults.startTime)} – {formatTime(defaults.endTime)}.</p></div>}
+
       {section === "location" && <label className="mt-3 block text-sm">{part.label} location<input className={inputClass} placeholder={defaults.location || "Place, address, or venue needed"} value={part.location ?? ""} onChange={(event) => update(part.id, { location: event.target.value || undefined })} /></label>}
       {section === "allocation" && <div className="mt-3 grid gap-3 sm:grid-cols-2">{([['guestCount', 'guests'], ['budget', 'budget']] as const).map(([key, label]) => <label className="text-sm" key={key}>{part.label} {label}<input className={inputClass} type="number" min="0" step={key === "guestCount" ? "1" : "any"} placeholder={String(defaults[key])} value={part[key] ?? ""} onChange={(event) => update(part.id, { [key]: event.target.value === "" ? undefined : Math.max(0, Number(event.target.value)) })} /><span className="text-xs text-neutral-500">{key === "budget" ? "Optional allocation, not an additional budget." : "Leave blank to use overall guests."}</span></label>)}</div>}
     </div>)}

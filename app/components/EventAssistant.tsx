@@ -12,20 +12,21 @@ import { previewPlanningTurn } from '@/lib/assistant/preview';
 type Proposal = {actions:PlanAction[];base:string;key:string;changes:string[]};
 export function EventAssistant() {
  const path=usePathname();
- if (!['/','/demo','/discover','/plan','/marketplace','/requests','/providers'].some(p=>path===p || p!=='/'&&path.startsWith(p+'/'))) return null;
+ if (!['/','/demo','/discover','/plan','/marketplace','/requests','/providers','/account/demo'].some(p=>path===p || p!=='/'&&path.startsWith(p+'/'))) return null;
  return <AssistantSurface key={path} path={path} />;
 }
 function AssistantSurface({path}:{path:string}) {
  const router=useRouter(); const dialog=useRef<HTMLDialogElement>(null); const abort=useRef<AbortController|null>(null); const end=useRef<HTMLDivElement>(null);
  const [open,setOpen]=useState(false); const [confirmNew,setConfirmNew]=useState(false); const [profile,setProfile]=useState<EventIntelligenceProfile|null>(null); const [messages,setMessages]=useState<ChatMessage[]>([]); const [input,setInput]=useState(''); const [available,setAvailable]=useState(false); const [checked,setChecked]=useState(false); const [busy,setBusy]=useState(false); const [error,setError]=useState(''); const [notice,setNotice]=useState(''); const [proposal,setProposal]=useState<Proposal|null>(null);
- const key=useRef('draft'); const readOnly=path.startsWith('/requests/');
+ const key=useRef('draft'); const readOnly=path.startsWith('/requests/') || (path.startsWith('/account/demo/events/') && !profile);
  useEffect(()=>{
+  document.body.classList.add('has-customer-assistant');
   const refresh=()=>{const active=activeAssistantEvent(path); setProfile(active.profile); if(key.current!==active.key){setMessages(loadConversation(active.key));setProposal(null);} key.current=active.key;};
   queueMicrotask(()=>{refresh();setMessages(loadConversation(activeAssistantEvent(path).key));});
   const show=()=>{setOpen(true);};
   window.addEventListener(assistantEvents.open,show); window.addEventListener(assistantEvents.profile,refresh);window.addEventListener('storage',refresh);
   fetch('/api/assistant').then(r=>r.json()).then(v=>{setAvailable(v.available===true);setChecked(true);}).catch(()=>setChecked(true));
-  return()=>{abort.current?.abort();window.removeEventListener(assistantEvents.open,show);window.removeEventListener(assistantEvents.profile,refresh);window.removeEventListener('storage',refresh);};
+  return()=>{document.body.classList.remove('has-customer-assistant');abort.current?.abort();window.removeEventListener(assistantEvents.open,show);window.removeEventListener(assistantEvents.profile,refresh);window.removeEventListener('storage',refresh);};
  },[path]);
  useEffect(()=>{if(open){dialog.current?.showModal();}else dialog.current?.close();},[open]);
  useEffect(()=>{end.current?.scrollIntoView({block:'nearest'});},[messages,busy,proposal]);
@@ -62,6 +63,8 @@ function AssistantSurface({path}:{path:string}) {
  function newEvent() {
   abort.current?.abort();setBusy(false);
   try {
+   const previous=activeAssistantEvent(path).profile;
+   if(previous?.eventId)localStorage.setItem(`arivvio:cart:${previous.eventId}`,localStorage.getItem('arivvio:demo-cart:v1') ?? '[]');
    localStorage.removeItem('arivvio:event-intelligence');sessionStorage.removeItem('arivvio:event-intelligence');
    localStorage.removeItem('arivvio:demo-planner:v1');localStorage.removeItem('arivvio:demo-cart:v1');sessionStorage.removeItem('arivvio:assistant-intake');
    key.current='draft';saveConversation('draft',[]);setMessages([]);setProfile(null);setProposal(null);setConfirmNew(false);setInput('');setNotice('Describe your new occasion. Saved requests remain available.');

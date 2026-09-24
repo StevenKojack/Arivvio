@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { SupportProjectForm } from "./SupportProjectForm";
+import { ThemeControl } from "./ThemeControl";
 import { BrandMark } from "./Logo";
 
 const demoFeatures = [
@@ -72,6 +73,7 @@ export function PreBetaGateway() {
             <BrandMark />
           </Link>
           <div className="flex items-center gap-2">
+            <ThemeControl /><Link href="/account/demo" className="hub-button">Demo Account</Link>
             <Link href="/vendor/login" className="hidden rounded-full border px-4 py-2 text-sm font-semibold sm:block">Become a vendor</Link>
             <Link
               href="/support-project"

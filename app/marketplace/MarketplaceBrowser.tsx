@@ -1,5 +1,6 @@
 "use client";
 
+import { CustomerDialog } from "@/app/components/CustomerDialog";
 import { EventPartsSummary } from "@/app/discover/components/EventParts";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -1172,23 +1173,14 @@ export function MarketplaceBrowser() {
         ) : null}
 
         <div className="mt-5 grid min-w-0 gap-6 lg:grid-cols-[230px_minmax(0,1fr)]">
-          <aside className="hidden lg:block" aria-label="Marketplace filters"><div className="sticky top-4 max-h-[calc(100dvh-2rem)] overflow-y-auto"><MarketplaceFilters {...filterProps} /></div></aside>
+          <aside className="hidden lg:block" aria-label="Marketplace filters"><div className="sticky top-24 max-h-[calc(100dvh-7rem)] overflow-y-auto"><MarketplaceFilters {...filterProps} /></div></aside>
           <section
             className="min-w-0 space-y-4 pb-28"
             aria-label="Vendor discovery"
           >
-          <div>
-            <button
-              type="button"
-              onClick={() => setIsMobileMapOpen(true)}
-              className="fixed bottom-5 right-5 z-40 rounded-full ui-primary px-5 py-3 text-sm font-semibold shadow-[0_18px_48px_rgba(13,19,33,0.28)] transition duration-200 hover:-translate-y-0.5 hover:opacity-90"
-            >
-              Map
-            </button>
-            <div className="fixed bottom-5 left-4 right-24 z-40">
-              {renderQuoteCart("bar")}
-            </div>
-          </div>
+          <button type="button" className="marketplace-cart-launch hub-button" onClick={() => setIsMobileCartOpen(true)} aria-haspopup="dialog">
+            <span className="truncate">Quote cart · {cart.length} selected</span><span className="text-xs ui-muted">Review / request →</span>
+          </button>
 
           <header className="flex flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-semibold">Find your event team</h1><p className="hub-muted mt-1 text-sm">{filteredItems.length} providers found · Demo pricing and availability</p></div><div className="flex gap-2"><button className="hub-button lg:hidden" onClick={()=>setIsFilterDrawerOpen(true)}>Filters</button><button className="hub-button" onClick={()=>setIsMobileMapOpen(true)}>Show map</button></div></header>
           <div className="hub-card flex flex-wrap items-center gap-3 p-3"><input aria-label="Search providers" className="hub-input min-w-0 flex-1" placeholder="Name, location or specialty" value={query} onChange={e=>setQuery(e.target.value)} /><span className="hub-muted text-xs">{selectedServices.length ? selectedServices.join(", ") : "All services"}</span></div>
@@ -1239,31 +1231,7 @@ export function MarketplaceBrowser() {
         </div>
       ) : null}
 
-      {isMobileCartOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-end bg-[#0D1321]/35 px-3 py-4 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Quote cart"
-          onClick={() => setIsMobileCartOpen(false)}
-        >
-          <div
-            className="mx-auto max-h-[88vh] w-full max-w-2xl overflow-y-auto"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="mb-3 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setIsMobileCartOpen(false)}
-                className="rounded-full ui-surface px-4 py-2 text-sm font-semibold ui-text shadow-[0_16px_40px_rgba(13,19,33,0.18)]"
-              >
-                Back to marketplace
-              </button>
-            </div>
-            {renderQuoteCart("panel")}
-          </div>
-        </div>
-      ) : null}
+      {isMobileCartOpen && <CustomerDialog title="Quote cart" onClose={() => setIsMobileCartOpen(false)}>{renderQuoteCart("panel")}</CustomerDialog>}
 
       <FilterDrawer {...filterProps} isOpen={isFilterDrawerOpen} onClose={() => setIsFilterDrawerOpen(false)} />
 
