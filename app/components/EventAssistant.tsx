@@ -1,27 +1,34 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { assistantName, assistantEvents, clearlyOffTopic, scopeRedirect } from '@/lib/assistant/config';
 import { applyPlanActions, type PlanAction } from '@/lib/assistant/actions';
 import { activeAssistantEvent, getAssistantContext, loadConversation, saveConversation, saveAssistantProfile } from '@/lib/assistant/session';
 import { understandEvent } from '@/lib/event-intelligence/understanding';
 import type { ChatMessage } from '@/lib/assistant/provider';
 import type { EventIntelligenceProfile } from '@/lib/event-intelligence/types';
+import { cloudEventId, loadCloudAssistantEvent, saveConfirmedCloudProfile } from '@/lib/customer-cloud/session';
 import { previewPlanningTurn } from '@/lib/assistant/preview';
 
 type Proposal = {actions:PlanAction[];base:string;key:string;changes:string[]};
 export function EventAssistant() {
  const path=usePathname();
- if (!['/','/demo','/discover','/plan','/marketplace','/requests','/providers','/account/demo'].some(p=>path===p || p!=='/'&&path.startsWith(p+'/'))) return null;
- return <AssistantSurface key={path} path={path} />;
+ if (!['/','/demo','/discover','/plan','/marketplace','/requests','/providers','/account/demo','/events'].some(p=>path===p || p!=='/'&&path.startsWith(p+'/'))) return null;
+ return <Suspense fallback={null}><AssistantRoute path={path} /></Suspense>;
 }
-function AssistantSurface({path}:{path:string}) {
+function AssistantRoute({path}:{path:string}) {
+ const params=useSearchParams();
+ const cloud=path.startsWith("/events/") || Boolean(params.get("eventId"));
+ return <AssistantSurface key={`${path}:${params.get("eventId") ?? ""}`} path={path} cloud={cloud} />;
+}
+function AssistantSurface({path,cloud}:{path:string;cloud:boolean}) {
  const router=useRouter(); const dialog=useRef<HTMLDialogElement>(null); const abort=useRef<AbortController|null>(null); const end=useRef<HTMLDivElement>(null);
  const [open,setOpen]=useState(false); const [confirmNew,setConfirmNew]=useState(false); const [profile,setProfile]=useState<EventIntelligenceProfile|null>(null); const [messages,setMessages]=useState<ChatMessage[]>([]); const [input,setInput]=useState(''); const [available,setAvailable]=useState(false); const [checked,setChecked]=useState(false); const [busy,setBusy]=useState(false); const [error,setError]=useState(''); const [notice,setNotice]=useState(''); const [proposal,setProposal]=useState<Proposal|null>(null);
- const key=useRef('draft'); const readOnly=path.startsWith('/requests/') || (path.startsWith('/account/demo/events/') && !profile);
+ const key=useRef('draft'); const [readOnly,setReadOnly]=useState(path.startsWith('/requests/')||path.startsWith('/events/'));
  useEffect(()=>{
   document.body.classList.add('has-customer-assistant');
-  const refresh=()=>{const active=activeAssistantEvent(path); setProfile(active.profile); if(key.current!==active.key){setMessages(loadConversation(active.key));setProposal(null);} key.current=active.key;};
+  const refresh=()=>{const active=activeAssistantEvent(path); setProfile(active.profile);setReadOnly(active.readOnly); if(key.current!==active.key){setMessages(loadConversation(active.key));setProposal(null);} key.current=active.key;};
+  void loadCloudAssistantEvent(path).catch(()=>setError('Unable to load this account event. Sign in and reload to continue.'));
   queueMicrotask(()=>{refresh();setMessages(loadConversation(activeAssistantEvent(path).key));});
   const show=()=>{setOpen(true);};
   window.addEventListener(assistantEvents.open,show); window.addEventListener(assistantEvents.profile,refresh);window.addEventListener('storage',refresh);
@@ -72,35 +79,36 @@ function AssistantSurface({path}:{path:string}) {
    router.push('/demo');
   }catch{setError('Unable to start a new draft. Browser storage is unavailable.');}
  }
- function apply() {
-  if(!proposal)return;setError('');
+ async function apply() {
+  if(!proposal||busy)return;setError('');setBusy(true);
   try {
    const active=activeAssistantEvent(path);if(active.key!==proposal.key||JSON.stringify(active.profile)!==proposal.base)throw new Error('Your plan changed. Preview these changes again before applying.');
-   const result=applyPlanActions(active.profile,proposal.actions);saveAssistantProfile(result.profile);
+   if(active.readOnly)throw new Error('This event is read only.');
+   const result=applyPlanActions(active.profile,proposal.actions);if(cloudEventId(path))await saveConfirmedCloudProfile(path,result.profile);else saveAssistantProfile(result.profile);
    const newActive=activeAssistantEvent(path);key.current=newActive.key;setProfile(newActive.profile);saveConversation(key.current,messages);
    setNotice(`Updated: ${result.changes.join(' · ')}`);setProposal(null);setInput('');
-  }catch(e){setError(e instanceof Error?e.message:'Unable to save your plan.');}
+  }catch(e){setError(e instanceof Error?e.message:'Unable to save your plan.');}finally{setBusy(false);}
  }
  const understanding=profile?understandEvent(profile):null;
  return <>
   <button type="button" className="assistant-launch hub-button" onClick={()=>setOpen(true)} aria-haspopup="dialog">{assistantName}</button>
   <dialog ref={dialog} className="assistant-dialog ui-surface ui-text" aria-labelledby="assistant-title" onCancel={()=>setOpen(false)} onClose={()=>setOpen(false)}>
-   <header className="flex items-start justify-between gap-4 border-b ui-border p-5"><div><h2 id="assistant-title" className="text-xl font-semibold">{assistantName}</h2><p className="mt-1 text-xs ui-muted">{profile?.eventType.value || 'Start with your occasion'} · Saved in this browser only</p></div><button className="hub-button" aria-label="Close event planner" onClick={()=>setOpen(false)}>Close</button></header>
+   <header className="flex items-start justify-between gap-4 border-b ui-border p-5"><div><h2 id="assistant-title" className="text-xl font-semibold">{assistantName}</h2><p className="mt-1 text-xs ui-muted">{profile?.eventType.value || 'Start with your occasion'} · {cloud?'Account event · chat stays in this browser':'Saved in this browser only'}</p></div><button className="hub-button" aria-label="Close event planner" onClick={()=>setOpen(false)}>Close</button></header>
    <div className="assistant-scroll p-5">
     <p className="text-sm leading-6 ui-muted">{available?'Talk through your ideas. Review proposed changes before they enter your plan. Relevant event details and recent messages are sent to our AI provider when you send.':'Live conversation is not connected yet. You can preview details from your description using the existing event parser, then continue in guided planning.'}</p>
-    {readOnly&&<p className="mt-3 text-sm ui-muted">You are reviewing this saved request. Its submitted details and provider responses will not be changed here.</p>}
+    {readOnly&&<p className="mt-3 text-sm ui-muted">{cloud?'This account event is read only or unavailable. Sign in to its owner account to access an active plan.':'You are reviewing this saved request. Its submitted details and provider responses will not be changed here.'}</p>}
     {!readOnly&&profile&&<div className="mt-3 text-xs">{confirmNew?<><p>Start a new draft and clear the active planner and cart? Saved requests and their conversations stay available.</p><button type="button" className="hub-button mt-2" onClick={newEvent}>Start new draft</button><button type="button" className="ml-3 underline" onClick={()=>setConfirmNew(false)}>Keep current event</button></>:<button type="button" className="underline" onClick={()=>setConfirmNew(true)}>Plan a different event</button>}</div>}
     {messages.map((m,i)=><article key={i} className={`mt-4 rounded-2xl p-4 ${m.role==='user'?'ui-soft':'border ui-border'}`}><p className="mb-2 text-xs font-semibold">{m.role==='user'?'You':assistantName}</p><p className="whitespace-pre-wrap text-sm leading-6">{m.content}</p></article>)}
     {profile&&<details className="my-4 rounded-xl border ui-border p-4"><summary className="cursor-pointer text-sm font-semibold">Your current plan · {understanding?.readiness}</summary><dl className="mt-3 space-y-2 text-sm">{[['Guests',profile.planning?.guestCount?`${profile.approximateGuests?'About ':''}${profile.planning.guestCount}`:'To confirm'],['Date',profile.planning?.date||profile.dateHint||'To confirm'],['Location',profile.planning?.location||(profile.homeEvent?'At home, city to confirm':'To confirm')],['Budget',profile.planning?.budget?`$${profile.planning.budget.toLocaleString()}`:'To confirm'],['Services',profile.requestedServices.join(', ')||'None selected']].map(([k,v])=><div key={k}><dt className="ui-muted">{k}</dt><dd>{v}</dd></div>)}</dl>{understanding?.nextBestQuestion&&<p className="mt-4 text-sm">Next to resolve: {understanding.nextBestQuestion.question}</p>}</details>}
     {understanding&&understanding.logistics.length>0&&<details className="my-4 rounded-xl border ui-border p-4"><summary className="cursor-pointer text-sm font-semibold">Things to think through</summary><ul className="mt-3 space-y-3 text-sm">{understanding.logistics.map(item=><li key={item.detail}><span className="font-semibold">{item.priority}: </span>{item.detail}</li>)}{understanding.recommended.map(item=><li key={item.service}><span className="font-semibold">Optional: {item.service}. </span>{item.reason}</li>)}</ul><p className="mt-3 text-xs ui-muted">These are considerations, not services added to your plan.</p></details>}
-    {proposal&&<section className="my-4 rounded-2xl border ui-border p-4"><h3 className="font-semibold">Review plan changes</h3><ul className="my-3 list-inside list-disc text-sm">{proposal.changes.map((c,i)=><li key={i}>{c}</li>)}</ul>{proposal.actions[0]?.kind==='create'&&<p className="mb-3 text-xs ui-muted">Only recognized facts are prefilled. Incomplete dates and uncertain timing still need confirmation.</p>}<div className="flex gap-3"><button className="hub-button" onClick={apply}>Apply to plan</button><button className="hub-button" onClick={()=>setProposal(null)}>Dismiss</button></div></section>}
+    {proposal&&<section className="my-4 rounded-2xl border ui-border p-4"><h3 className="font-semibold">Review plan changes</h3><ul className="my-3 list-inside list-disc text-sm">{proposal.changes.map((c,i)=><li key={i}>{c}</li>)}</ul>{proposal.actions[0]?.kind==='create'&&<p className="mb-3 text-xs ui-muted">Only recognized facts are prefilled. Incomplete dates and uncertain timing still need confirmation.</p>}<div className="flex gap-3"><button className="hub-button" disabled={busy} onClick={()=>void apply()}>Apply to plan</button><button className="hub-button" onClick={()=>setProposal(null)}>Dismiss</button></div></section>}
     {notice&&<p role="status" className="my-3 text-sm">{notice}</p>}{error&&<p role="alert" className="my-3 text-sm">{error}</p>}{busy&&<p role="status" className="text-sm ui-muted">Thinking through your event…</p>}
     <div ref={end}/>
    </div>
    <form className="border-t ui-border p-4" onSubmit={e=>{e.preventDefault();if(available)void send();else previewDetails();}}>
     <label className="text-xs font-semibold" htmlFor="assistant-message">{available?'Tell your planner':'Describe your event to preview details'}</label>
     <textarea id="assistant-message" className="hub-input mt-2 w-full resize-none" rows={3} maxLength={2000} value={input} onChange={e=>setInput(e.target.value)} placeholder="An anniversary in October for about 100 guests, Armenian food and a DJ…" disabled={busy||!available&&readOnly}/>
-    <div className="mt-3 flex flex-wrap gap-2"><button className="hub-button" type="submit" disabled={!checked||busy||!input.trim()||!available&&readOnly}>{available?'Send':'Preview details'}</button><button className="hub-button" type="button" onClick={()=>{setOpen(false);router.push(readOnly?'/requests':'/discover?assistant=1');}}>{readOnly?'Saved requests':'Open guided planner'}</button>{messages.length>0&&<button type="button" className="text-xs underline" onClick={()=>{persist([]);setProposal(null);}}>Clear conversation</button>}</div>
+    <div className="mt-3 flex flex-wrap gap-2"><button className="hub-button" type="submit" disabled={!checked||busy||!input.trim()||!available&&readOnly}>{available?'Send':'Preview details'}</button><button className="hub-button" type="button" onClick={()=>{setOpen(false);router.push(cloudEventId(path)?readOnly?`/events/${cloudEventId(path)}`:`/discover?eventId=${cloudEventId(path)}`:readOnly?'/requests':'/discover?assistant=1');}}>{readOnly?cloud?'Event Hub':'Saved requests':'Open guided planner'}</button>{messages.length>0&&<button type="button" className="text-xs underline" onClick={()=>{persist([]);setProposal(null);}}>Clear conversation</button>}</div>
    </form>
   </dialog>
  </>;

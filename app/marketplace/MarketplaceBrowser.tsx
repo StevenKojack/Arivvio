@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { profileFromEvent } from "@/lib/customer-cloud/profile";
 import { CustomerDialog } from "@/app/components/CustomerDialog";
 import { EventPartsSummary } from "@/app/discover/components/EventParts";
 
@@ -553,14 +555,14 @@ export function MarketplaceBrowser() {
   }, [filteredItems, selectedServices, selectedMapItemId]);
   useEffect(() => {
     const refresh = () => {
-      const p=loadEventIntelligenceProfile(); if(!p)return;
+      const p=loadEventIntelligenceProfile(); if(eventId||!p)return;
       setEventIntelligence(p); setExcludedServices(p.excludedServices); setSelectedServices(p.requestedServices);
       if(p.planning){setGuestCount(p.planning.guestCount);setEventDate(p.planning.date);setStartTime(p.planning.startTime);setEndTime(p.planning.endTime);setHomeAddress(p.planning.location);}
       setCartMessage("Plan updated. Review existing cart service windows before sending requests.");
     };
     window.addEventListener("arivvio:assistant-plan",refresh);
     return ()=>window.removeEventListener("arivvio:assistant-plan",refresh);
-  }, []);
+  }, [eventId]);
 
   const setMapHoverItem = useCallback((itemId: number | null) => {
     if (hoverFrameRef.current) {
@@ -573,10 +575,10 @@ export function MarketplaceBrowser() {
   }, []);
 
   useEffect(() => {
-    const storedProfile = searchParams.get("eventProfile") === "session"
+    const storedProfile = !eventId && searchParams.get("eventProfile") === "session"
       ? loadEventIntelligenceProfile()
       : null;
-    const storedCart = loadDemoCart<CartLine[]>();
+    const storedCart = eventId ? [] : loadDemoCart<CartLine[]>();
     queueMicrotask(() => {
       if (storedProfile) {
         setEventIntelligence(storedProfile);
@@ -589,11 +591,11 @@ export function MarketplaceBrowser() {
       if (storedCart?.length) setCart(storedCart);
       setIsCartRestored(true);
     });
-  }, [searchParams]);
+  }, [searchParams,eventId]);
 
   useEffect(() => {
-    if (isCartRestored) saveDemoCart(cart);
-  }, [cart, isCartRestored]);
+    if (isCartRestored && !eventId) saveDemoCart(cart);
+  }, [cart, isCartRestored,eventId]);
 
   useEffect(() => {
     const profile = loadLocationProfile();
@@ -630,15 +632,16 @@ export function MarketplaceBrowser() {
         if (eventId) {
           const eventRow = await getEventById(supabase, eventId);
           setSavedEvent(eventRow);
+          const canonical=profileFromEvent(eventRow);setEventIntelligence(canonical);setSelectedServices(canonical.requestedServices);setExcludedServices(canonical.excludedServices);
           const savedLocationProfile = getLocationProfileFromEvent(eventRow);
 
           if (savedLocationProfile) {
             applyLocationProfile(savedLocationProfile, "Saved event location restored.");
           }
-          setEventDate(eventRow.date ?? eventDate);
-          setStartTime(eventRow.start_time?.slice(0, 5) ?? startTime);
-          setEndTime(eventRow.end_time?.slice(0, 5) ?? endTime);
-          setGuestCount(eventRow.guest_count ?? guestCount);
+          setEventDate(eventRow.date ?? "");
+          setStartTime(eventRow.start_time?.slice(0, 5) ?? "");
+          setEndTime(eventRow.end_time?.slice(0, 5) ?? "");
+          setGuestCount(eventRow.guest_count ?? 0);
           if (isEventType(eventRow.event_type)) {
             chooseEventType(eventRow.event_type);
           }
@@ -648,6 +651,7 @@ export function MarketplaceBrowser() {
 
         if (databaseProviders.length) {
           setProviders(databaseProviders);
+          if(eventId){const {data:rows,error}=await supabase.from('cart_items').select('*').eq('event_id',eventId).eq('status','draft');if(error)throw error;setCart((rows??[]).flatMap((row,index)=>{const item=databaseProviders.find(p=>row.service_id?p.serviceId===row.service_id:p.vendorId===row.vendor_id);return item?[{id:index+1,item,persisted:true,cartItemId:row.id,priceAdjustment:0,serviceId:row.service_id,serviceName:item.services[0],serviceTitle:item.name,serviceStart:row.start_time?.slice(0,5)??'',serviceEnd:row.end_time?.slice(0,5)??''}]:[];}));}
           setMarketplaceMessage(
             "Showing approved database providers from Supabase.",
           );
@@ -673,8 +677,24 @@ export function MarketplaceBrowser() {
     }
 
     loadMarketplace();
-    // The initial URL params should seed the browser once when the route loads.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId]);
+
+  useEffect(() => {
+    const refresh = (event: Event) => {
+      const row = (event as CustomEvent<EventRow>).detail;
+      if (!eventId || row.id !== eventId) return;
+      const canonical = profileFromEvent(row);
+      setSavedEvent(row);
+      setEventIntelligence(canonical);
+      setSelectedServices(canonical.requestedServices);
+      setExcludedServices(canonical.excludedServices);
+      setEventDate(row.date ?? "");
+      setStartTime(row.start_time?.slice(0, 5) ?? "");
+      setEndTime(row.end_time?.slice(0, 5) ?? "");
+      setGuestCount(row.guest_count ?? 0);
+    };
+    window.addEventListener("arivvio:cloud-event-changed", refresh);
+    return () => window.removeEventListener("arivvio:cloud-event-changed", refresh);
   }, [eventId]);
 
   useEffect(() => {
@@ -1018,8 +1038,10 @@ export function MarketplaceBrowser() {
   }, [addCartLine]);
 
   const removeFromCart = useCallback((lineId: number) => {
-    setCart((current) => current.filter((line) => line.id !== lineId));
-  }, []);
+    const line=cart.find(l=>l.id===lineId);
+    if(line?.cartItemId&&savedEvent){void createBrowserSupabaseClient().from('cart_items').update({status:'removed'}).eq('id',line.cartItemId).eq('event_id',savedEvent.id).then(({error})=>{if(error)setCartMessage('Unable to remove the saved item. Please retry.');else setCart(current=>current.filter(l=>l.id!==lineId));});}
+    else setCart(current=>current.filter(line=>line.id!==lineId));
+  }, [cart,savedEvent]);
 
   const selectMapItem = useCallback((item: MarketplaceItem) => {
     setSelectedMapItemId(item.id);
@@ -1113,6 +1135,7 @@ export function MarketplaceBrowser() {
 
   return (
     <>
+      {eventId&&<Link className="hub-button mb-4" href={`/events/${eventId}`}>Back to account Event Hub</Link>}
       {quoteReview && <DemoQuoteJourney key={quoteReview.id} request={quoteReview} alreadySubmitted={quoteReview.id === lastRequest?.id} onClose={() => setQuoteReview(null)} onSubmitted={setLastRequest} />}
       <div className="relative min-h-[calc(100vh-5rem)] w-full overflow-x-clip">
         {lastRequest && <button className="hub-button mb-3" onClick={() => setQuoteReview(lastRequest)}>View latest demo request</button>}
