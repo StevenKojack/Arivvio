@@ -5,11 +5,14 @@ import { EventAssistant } from "./components/EventAssistant";
 import { ThemeInitializer } from "./components/ThemeControl";
 
 export const metadata: Metadata = {
-  title: "Arivvio | Plan any event in one place",
+  metadataBase: new URL("https://www.arivvio.com"),
+  title: "Arivvio | Plan your event, keep it together",
+  openGraph: { title: "Arivvio | Your event, together", description: "Find venues and vendors, compare estimates, and keep your event in one plan.", siteName: "Arivvio", type: "website" },
+  twitter: { card: "summary_large_image" },
   applicationName: "Arivvio",
   appleWebApp: { capable: true, title: "Arivvio", statusBarStyle: "default" },
   description:
-    "Find venues, vendors, entertainment, rentals, invitations, and more with Arivvio.",
+    "Find venues and vendors, compare estimates, and keep your event details together with Arivvio.",
 };
 
 export default function RootLayout({

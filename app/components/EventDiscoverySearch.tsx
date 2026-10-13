@@ -7,7 +7,7 @@ import { getDiscoveryFamily, searchEventIntents } from "@/lib/event-intelligence
 import { AskArivvioButton } from "./AskArivvioButton";
 import { SearchLogoMark } from "./SearchLogoMark";
 
-const loopExamples = [...defaultDiscoveryEvents, ...defaultDiscoveryEvents];
+const loopExamples = defaultDiscoveryEvents.slice(0, 3);
 
 export function EventDiscoverySearch() {
   const router = useRouter();
@@ -49,7 +49,7 @@ export function EventDiscoverySearch() {
         }}
         className="relative"
       >
-        <div className="event-search-bar event-search-control flex min-h-[72px] items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-white/94 px-4 py-3 shadow-[0_24px_80px_rgba(13,19,33,0.13)] transition focus-within:border-[#D4AF37]/55 focus-within:shadow-[0_28px_90px_rgba(13,19,33,0.17)] sm:px-5">
+        <div className="event-search-bar event-search-control flex min-h-[72px] items-center gap-3 rounded-lg border border-[#D4AF37]/20 bg-white/94 px-4 py-3  transition focus-within:border-[#D4AF37]/55  sm:px-5">
           <SearchLogoMark />
           <input
             role="combobox"
@@ -79,12 +79,12 @@ export function EventDiscoverySearch() {
                 setActiveIndex(-1);
               }
             }}
-            placeholder={placeholder}
+            placeholder="What are you planning?"
             className="h-12 min-w-0 flex-1 bg-transparent text-lg font-semibold text-neutral-950 outline-none placeholder:text-neutral-400 sm:text-xl"
           />
           <button
             type="submit"
-            className="h-12 rounded-full bg-[#0D1321] px-5 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(13,19,33,0.2)] transition hover:-translate-y-0.5 hover:bg-[#111A2E] sm:px-7"
+            className="h-12 rounded-lg bg-[#0D1321] px-5 text-sm font-semibold text-white  transition hover:-translate-y-0.5 hover:bg-[#111A2E] sm:px-7"
           >
             Search
           </button>
@@ -92,7 +92,7 @@ export function EventDiscoverySearch() {
         </div>
 
         {focused ? (
-          <div id={listboxId} role="listbox" className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-[min(420px,56vh)] touch-pan-y scroll-py-2 overflow-y-auto overscroll-contain scroll-smooth rounded-[28px] border border-[#D4AF37]/18 bg-white p-2 shadow-[0_28px_90px_rgba(13,19,33,0.16)]">
+          <div id={listboxId} role="listbox" className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-[min(420px,56vh)] touch-pan-y scroll-py-2 overflow-y-auto overscroll-contain scroll-smooth rounded-xl border border-[#D4AF37]/18 bg-white p-2 ">
             {getDiscoveryFamily(query) && <p className="px-4 py-2 text-xs ui-muted">Choose the occasion you have in mind.</p>}
             {suggestions.map((suggestion, index) => (
               <button
@@ -105,7 +105,7 @@ export function EventDiscoverySearch() {
                 onMouseDown={(event) => event.preventDefault()}
                 onMouseEnter={() => setActiveIndex(index)}
                 onClick={() => submitSearch(suggestion.label)}
-                className={`flex w-full items-center justify-between gap-4 rounded-[22px] px-4 py-3 text-left transition ${index === activeIndex ? "bg-[#FFF8E1]" : "hover:bg-[#FFF8E1]"}`}
+                className={`flex w-full items-center justify-between gap-4 rounded-lg px-4 py-3 text-left transition ${index === activeIndex ? "bg-[#FFF8E1]" : "hover:bg-[#FFF8E1]"}`}
               >
                 <span>
                   <span className="block text-sm font-semibold text-neutral-950">
@@ -115,7 +115,7 @@ export function EventDiscoverySearch() {
                     {suggestion.recognition.profile.venueStyle}
                   </span>
                 </span>
-                <span className="shrink-0 rounded-full bg-[#FFF8E1] px-3 py-1 text-xs font-semibold text-[#8A6A16]">
+                <span className="shrink-0 rounded-lg bg-[#FFF8E1] px-3 py-1 text-xs font-semibold text-[#8A6A16]">
                   Event
                 </span>
               </button>
@@ -125,14 +125,14 @@ export function EventDiscoverySearch() {
         ) : null}
       </form>
 
-      <div className="mt-6 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">
-        <div className="flex w-max animate-[eventLoop_34s_linear_infinite] gap-2">
+      <div className="mt-4">
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
           {loopExamples.map((example, index) => (
             <button
               key={`${example}-${index}`}
               type="button"
               onClick={() => submitSearch(example)}
-              className="rounded-full border border-[#D4AF37]/16 bg-white/72 px-4 py-2 text-sm font-semibold text-neutral-700 backdrop-blur transition hover:-translate-y-0.5 hover:border-[#D4AF37]/50 hover:text-[#0D1321]"
+              className="py-1 text-xs ui-muted underline decoration-transparent underline-offset-4 hover:decoration-current"
             >
               {example}
             </button>

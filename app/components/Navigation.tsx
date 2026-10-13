@@ -102,16 +102,16 @@ export function Navigation() {
   }, [isInternalDemoRoute]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[#D4AF37]/10 ui-surface px-5 shadow-[0_10px_40px_rgba(13,19,33,0.055)] backdrop-blur-xl sm:px-8 lg:px-12">
+    <header className="sticky top-0 z-30 border-b border-[#D4AF37]/10 ui-surface px-5  backdrop-blur-xl sm:px-8 lg:px-12">
       <nav className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-2">
         <Logo />
 
-        <div className="hidden items-center rounded-full border border-[#D4AF37]/18 ui-surface p-1 text-sm font-semibold ui-muted shadow-[0_12px_34px_rgba(13,19,33,0.06)] backdrop-blur md:flex">
+        <div className="hidden items-center gap-1 p-1 text-sm font-semibold ui-muted  backdrop-blur md:flex">
           {centerLinks.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-full px-5 py-2 transition hover:-translate-y-0.5 hover:opacity-80"
+              className="rounded-lg px-5 py-2 transition hover:-translate-y-0.5 hover:opacity-80"
             >
               {item.label}
             </Link>
@@ -121,7 +121,7 @@ export function Navigation() {
         {isInternalDemoRoute ? (
           <Link
             href="/?info=1"
-            className="hidden rounded-full border border-[#D4AF37]/18 ui-soft px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8A6A16] transition hover:-translate-y-0.5 hover:border-[#D4AF37]/50 lg:inline-flex"
+            className="hidden rounded-lg border border-[#D4AF37]/18 ui-soft px-4 py-2 text-xs font-semibold  text-[#8A6A16] transition hover:-translate-y-0.5 hover:border-[#D4AF37]/50 lg:inline-flex"
           >
             Pre-Beta Demo
           </Link>
@@ -131,7 +131,7 @@ export function Navigation() {
           <ThemeControl />
           <Link
             href="/vendor/login"
-            className="hidden rounded-full px-4 py-2 text-sm font-semibold ui-text transition hover:-translate-y-0.5 hover:opacity-80 md:inline-flex"
+            className="hidden rounded-lg px-4 py-2 text-sm font-semibold ui-text transition hover:-translate-y-0.5 hover:opacity-80 md:inline-flex"
           >
             Become a vendor
           </Link>
@@ -139,21 +139,21 @@ export function Navigation() {
             <button
               type="button"
               onClick={() => setMenuOpen((current) => !current)}
-              className="inline-flex h-11 items-center gap-3 rounded-full border border-[#D4AF37]/20 ui-surface px-4 text-sm font-semibold ui-text shadow-[0_12px_30px_rgba(13,19,33,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(13,19,33,0.12)]"
+              className="inline-flex h-11 items-center gap-3 rounded-lg border border-[#D4AF37]/20 ui-surface px-4 text-sm font-semibold ui-text  transition hover:-translate-y-0.5 "
               aria-expanded={menuOpen}
               aria-label={navState.isLoggedIn ? "Account menu" : "Sign in and account menu"}
             >
               <span className="grid gap-1">
-                <span className="h-0.5 w-4 rounded-full ui-primary" />
-                <span className="h-0.5 w-4 rounded-full ui-primary" />
-                <span className="h-0.5 w-4 rounded-full ui-primary" />
+                <span className="h-0.5 w-4 rounded-lg ui-primary" />
+                <span className="h-0.5 w-4 rounded-lg ui-primary" />
+                <span className="h-0.5 w-4 rounded-lg ui-primary" />
               </span>
-              <span className="flex h-7 w-7 items-center justify-center rounded-full ui-primary text-xs font-semibold text-[#D4AF37]">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg ui-primary text-xs font-semibold text-[#D4AF37]">
                 {navState.email?.[0]?.toUpperCase() ?? "A"}
               </span>
             </button>
             {menuOpen ? (
-              <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-[24px] border border-[#D4AF37]/16 ui-surface py-2 shadow-[0_24px_70px_rgba(13,19,33,0.14)]">
+              <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-xl border border-[#D4AF37]/16 ui-surface py-2 ">
                 {navState.email ? (
                   <p className="border-b border-neutral-100 px-4 py-3 text-xs font-semibold ui-muted">
                     {navState.email}
