@@ -4,7 +4,7 @@ import { getEventContextTone } from "./visual-tone";
 // Curated editorial photography, not photographs of a user's event or a listed business.
 export const eventAtmospheres = [
   { id: "gathering", label: "A table for your people", query: "Anniversary", phrase: "Good food. Familiar faces. A reason to gather.", photo: "photo-1511795409834-ef04bbd61622", alt: "Flowers and glassware on a table set for a gathering", position: "center" },
-  { id: "birthday", label: "Make a birthday of it", query: "Birthday party", phrase: "Another year. A day that feels like you.", photo: "photo-1464349095431-e9a21285b5f3", alt: "A celebration cake with candles", position: "center 55%" },
+  { id: "birthday", label: "Make a birthday of it", query: "Birthday party", phrase: "Another year. A day that feels like you.", photo: "photo-1464349095431-e9a21285b5f3", alt: "A colorful layered birthday cake", position: "center 55%" },
   { id: "wedding", label: "Your day, your way", query: "Wedding", phrase: "From the first arrival to the last dance.", photo: "photo-1519167758481-83f550bb49b3", alt: "An elegant venue prepared for a wedding reception", position: "center" },
   { id: "outdoor", label: "Take it outside", query: "Backyard BBQ", phrase: "A little fresh air. A lot to look forward to.", photo: "photo-1500530855697-b586d89ba3ee", alt: "A quiet outdoor landscape in warm evening light", position: "center" },
   { id: "party", label: "Something worth celebrating", query: "Graduation party", phrase: "Big news deserves good company.", photo: "photo-1527529482837-4698179dc6ce", alt: "Friends gathered around a table for a celebration", position: "center" },

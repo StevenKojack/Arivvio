@@ -578,7 +578,7 @@ body { font-family: var(--font-arivvio), system-ui, sans-serif; }
  .hero-intro { font-size: 15px; max-width: 330px; margin-block: 22px 28px; }
  .occasion-hero-shade { background: linear-gradient(90deg,#16251bd9,#16251b70),linear-gradient(0deg,#16251de8,transparent 65%); }
  .atmosphere-layer img { object-position: 60% center !important; animation: none; }
- .atmosphere-caption { left: 20px; right: 20px; bottom: 22px; flex-direction: column; align-items: start; gap: 12px; }
+ .atmosphere-caption { left: 20px; right: 84px; bottom: 22px; flex-direction: column; align-items: start; gap: 12px; }
  .atmosphere-caption span { max-width: 300px; line-height: 1.5; }
  .atmosphere-controls { gap: 24px; }
  .hero-disclosure { max-width: 300px; line-height: 1.7; }
@@ -594,7 +594,7 @@ body { font-family: var(--font-arivvio), system-ui, sans-serif; }
  .story-previews { grid-template-columns: minmax(0,1fr); gap: 25px; }
  .story-vendor { max-width: 100%; }
  .story-vendor .provider-card { display: grid; grid-template-columns: .8fr 1fr; align-items: start; }
- .story-vendor .provider-card > div:first-child { height: 100%; min-height: 220px; }
+ .story-vendor .provider-card > div:first-child { width: 100%; min-width: 0; height: 100%; min-height: 220px; aspect-ratio: auto; }
  .story-vendor .provider-card > .p-4 { padding: 14px; }
  .story-vendor .provider-card .min-h-12 { display: none; }
  .story-vendor .provider-card button { font-size: 12px; }
