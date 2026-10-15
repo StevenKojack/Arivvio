@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ListingImage } from "@/app/marketplace/components/ListingImage";
 import Link from "next/link";
 import { eventAtmospheres, atmosphereImage } from "@/lib/event-intelligence/atmosphere";
 import { defaultDiscoveryEvents } from "@/lib/event-intelligence/taxonomy";
@@ -15,5 +16,5 @@ export function OccasionDiscovery() {
   </section>;
 }
 export function ServicesDiscovery() {
-  return <section className="customer-editorial services-discovery"><div className="services-intro"><p className="eyebrow">The people who make it happen</p><h2>A place.<br/>A menu.<br/><em>Your kind of music.</em></h2><p>Find the people who understand what you have in mind.</p><Link href="/marketplace?entryMode=browse" className="text-link">Meet your event team ↗</Link></div><div className="service-discovery-list">{services.map(({id,service})=>{const category=discoveryCategories.find(c=>c.id===id)!;const item=marketplaceItems.find(i=>i.type===service)!;return <Link key={id} href={`/marketplace?entryMode=service&services=${encodeURIComponent(service)}`}><div className="service-photo"><Image src={getVendorImage(item)} alt="" fill unoptimized sizes="96px" className="object-cover" /></div><div><h3>{category.label}</h3><p>{category.description}</p></div><span aria-hidden="true">↗</span></Link>;})}</div></section>;
+  return <section className="customer-editorial services-discovery"><div className="services-intro"><p className="eyebrow">The people who make it happen</p><h2>A place.<br/>A menu.<br/><em>Your kind of music.</em></h2><p>Find the people who understand what you have in mind.</p><Link href="/marketplace?entryMode=browse" className="text-link">Meet your event team ↗</Link></div><div className="service-discovery-list">{services.map(({id,service})=>{const category=discoveryCategories.find(c=>c.id===id)!;const item=marketplaceItems.find(i=>i.type===service)!;return <Link key={id} href={`/marketplace?entryMode=service&services=${encodeURIComponent(service)}`}><div className="service-photo"><ListingImage src={service === "DJ" ? atmosphereImage(eventAtmospheres[4], 300) : getVendorImage(item)} alt="" sizes="96px" className="object-cover" /></div><div><h3>{category.label}</h3><p>{category.description}</p></div><span aria-hidden="true">↗</span></Link>;})}</div></section>;
 }
