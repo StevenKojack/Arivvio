@@ -1,17 +1,3 @@
-import Link from "next/link";
-import { EventAtmosphere } from "./EventAtmosphere";
-import { EventDiscoverySearch } from "./EventDiscoverySearch";
-import { HowItWorks } from "./HowItWorks";
-import { Navigation } from "./Navigation";
-import { UiIcon } from "./UiIcon";
-export function DemoHomePage() {
- return <main className="customer-experience demo-home min-h-screen ui-page ui-text"><Navigation />
- <section className="planning-hero mx-auto max-w-7xl px-6 py-12 sm:px-8 sm:py-20">
- <div className="planning-hero-copy"><p className="eyebrow">Your event starts here</p><h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-6xl">Plan the day.<br/>Keep it together.</h1><p className="mt-6 max-w-lg text-lg leading-8 ui-muted">Find venues and vendors, compare estimates, and keep your event details in one place.</p><div className="mt-8"><EventDiscoverySearch /></div></div>
- <figure className="planning-hero-image"><EventAtmosphere priority /><figcaption>Space for your people. A plan for the details.</figcaption></figure>
- </section>
- <section id="categories" className="mx-auto max-w-7xl px-6 py-12 sm:px-8"><div className="section-heading"><div><p className="eyebrow">Make it yours</p><h2 className="mt-3 text-3xl font-semibold tracking-tight">What brings you together?</h2></div><Link href="/discover" className="text-link">Plan another occasion <UiIcon name="arrow" /></Link></div>
- <div className="occasion-grid mt-8">{[["Birthdays","Birthday","A dinner for ten or a party for everyone."],["Weddings","Wedding","Plan the ceremony, reception and everything between."],["Gatherings","Private party","Good food and time with your people."],["Company events","Corporate dinner","Bring colleagues, clients and teams together."]].map(([name,query,note],i)=><Link key={name} href={`/discover?query=${encodeURIComponent(query)}`} className="occasion-link"><span className="eyebrow">0{i+1}</span><h3 className="mt-6 text-xl font-semibold">{name}</h3><p className="mt-3 text-sm leading-6 ui-muted">{note}</p><UiIcon name="arrow" className="mt-5" /></Link>)}</div></section>
- <section className="mx-auto max-w-7xl px-6 py-12 sm:px-8"><div className="section-heading"><h2 className="text-3xl font-semibold tracking-tight">Find your event team.</h2><Link href="/marketplace?entryMode=browse" className="text-link">Browse vendors <UiIcon name="arrow" /></Link></div><div className="service-directory mt-8">{["Venue","Catering","DJ","Photography","Rentals","Transportation","Florals","Magic"].map(service=><Link key={service} href={`/marketplace?entryMode=service&services=${encodeURIComponent(service)}`}>{service}<UiIcon name="arrow" /></Link>)}</div><p className="mt-5 text-xs ui-muted">Demo listings and estimates. Confirmed offers and live availability are not available yet.</p></section>
- <HowItWorks /><section className="px-6 py-16 sm:px-8"><div className="vendor-intro mx-auto max-w-7xl"><div><p className="eyebrow">For event businesses</p><h2 className="mt-4 max-w-xl text-3xl font-semibold tracking-tight sm:text-4xl">Your clients. Your calendar.<br/>One workspace.</h2><p className="mt-5 max-w-lg leading-7 ui-muted">Manage inquiries, services and availability alongside events you book outside Arivvio.</p><Link href="/vendor/demo" className="hub-primary mt-7">Explore Vendor Demo <UiIcon name="arrow" /></Link></div><div className="vendor-intro-links">{[["Calendar","Plan your working day","/vendor/demo"],["Listing","Show customers what you offer","/vendor/demo"],["Inquiries","Keep requests and responses together","/vendor/demo"]].map(([title,note,href])=><Link key={title} href={href}><div><h3 className="font-semibold">{title}</h3><p className="mt-2 text-sm ui-muted">{note}</p></div><UiIcon name="arrow" /></Link>)}</div></div></section></main>;
-}
+import { PreBetaGateway } from "./PreBetaGateway";
+// One customer entry experience, whether arriving directly or returning through /demo.
+export function DemoHomePage() { return <PreBetaGateway />; }

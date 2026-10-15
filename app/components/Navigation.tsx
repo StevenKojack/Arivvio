@@ -18,7 +18,7 @@ type SessionNavState = {
 };
 
 const centerLinks = [
-  { href: "/plan", label: "Plan Your Event" },
+  { href: "/plan", label: "Plan an event" },
   { href: "/marketplace?entryMode=browse", label: "Marketplace" },
 ];
 
@@ -74,9 +74,7 @@ export function Navigation() {
   const menuLinks = navState.isLoggedIn
     ? [
         { href: "/account", label: "Account", show: true },
-        { href: "/account/demo", label: "Demo Account", show: true },
-        { href: "/requests", label: "Saved demo requests", show: true },
-        { href: "/account", label: "My events", show: true },
+        { href: "/account/demo", label: "My events on this device", show: true },
         {
           href: "/vendor/dashboard",
           label: "Vendor dashboard",
@@ -86,11 +84,10 @@ export function Navigation() {
         { href: "/auth/logout", label: "Log out", show: true },
       ]
     : [
-        { href: "/account/demo", label: "Demo Account", show: true },
-        { href: "/requests", label: "Saved demo requests", show: true },
+        { href: "/account/demo", label: "My events", show: true },
         { href: "/auth/login", label: "Log in", show: true },
         { href: "/auth/signup", label: "Sign up", show: true },
-        { href: "/?info=1", label: "Pre-Beta information", show: true },
+        { href: "/?info=1", label: "About this preview", show: true },
         { href: "/support-project", label: "Contact Arivvio", show: true },
       ];
   const isInternalDemoRoute = pathname !== "/";
@@ -107,7 +104,7 @@ export function Navigation() {
         <Logo />
 
         <div className="hidden items-center gap-1 p-1 text-sm font-semibold ui-muted  backdrop-blur md:flex">
-          {centerLinks.map((item) => (
+          {[...centerLinks, {href: "/account/demo", label: "My events"}].map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -118,22 +115,13 @@ export function Navigation() {
           ))}
         </div>
 
-        {isInternalDemoRoute ? (
-          <Link
-            href="/?info=1"
-            className="hidden rounded-lg border border-[#D4AF37]/18 ui-soft px-4 py-2 text-xs font-semibold  text-[#8A6A16] transition hover:-translate-y-0.5 hover:border-[#D4AF37]/50 lg:inline-flex"
-          >
-            Pre-Beta Demo
-          </Link>
-        ) : null}
-
         <div className="flex items-center gap-2">
           <ThemeControl />
           <Link
             href="/vendor/login"
             className="hidden rounded-lg px-4 py-2 text-sm font-semibold ui-text transition hover:-translate-y-0.5 hover:opacity-80 md:inline-flex"
           >
-            Become a vendor
+            For vendors
           </Link>
           <div className="relative">
             <button
@@ -159,7 +147,7 @@ export function Navigation() {
                     {navState.email}
                   </p>
                 ) : null}
-                {[...centerLinks, { href: "/vendor/login", label: "Become a vendor" }].map(item => <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} className="block px-4 py-3 text-sm font-semibold ui-muted md:hidden">{item.label}</Link>)}
+                {[...centerLinks, { href: "/vendor/login", label: "For vendors" }].map(item => <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} className="block px-4 py-3 text-sm font-semibold ui-muted md:hidden">{item.label}</Link>)}
                 {menuLinks
                   .filter((item) => item.show)
                   .map((item) => (

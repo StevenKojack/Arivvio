@@ -1,6 +1,6 @@
 import Image from "next/image";
+import { atmosphereImage, eventAtmospheres, type Atmosphere } from "@/lib/event-intelligence/atmosphere";
 
-// Existing application photography, shared to connect the lobby and demo entry.
-export function EventAtmosphere({ priority = false }: { priority?: boolean }) {
-  return <Image src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1600&q=85" alt="An event table set with colorful flowers, glassware, and place settings" fill unoptimized priority={priority} sizes="(max-width: 768px) 100vw, 60vw" className="object-cover" />;
+export function EventAtmosphere({ priority = false, atmosphere = eventAtmospheres[0], sizes = "100vw" }: { priority?: boolean; atmosphere?: Atmosphere; sizes?: string }) {
+  return <Image src={atmosphereImage(atmosphere)} alt={atmosphere.alt} fill unoptimized priority={priority} sizes={sizes} className="object-cover" style={{ objectPosition: atmosphere.position }} />;
 }

@@ -7,10 +7,11 @@ import { getDiscoveryFamily, searchEventIntents } from "@/lib/event-intelligence
 import { AskArivvioButton } from "./AskArivvioButton";
 import { SearchLogoMark } from "./SearchLogoMark";
 
-const loopExamples = defaultDiscoveryEvents.slice(0, 3);
+const loopExamples = defaultDiscoveryEvents;
 
-export function EventDiscoverySearch() {
+export function EventDiscoverySearch({ onInteractionChange, motionPaused = false }: { onInteractionChange?: (active: boolean) => void; motionPaused?: boolean }) {
   const router = useRouter();
+  const [stripPaused, setStripPaused] = useState(false);
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -26,6 +27,8 @@ export function EventDiscoverySearch() {
     });
   }, [query]);
   const placeholder = eventExamples[0];
+
+  useEffect(() => { onInteractionChange?.(focused || Boolean(query.trim())); }, [focused, query, onInteractionChange]);
 
   useEffect(() => {
     optionRefs.current[activeIndex]?.scrollIntoView({ block: "nearest", behavior: "auto" });
@@ -125,19 +128,13 @@ export function EventDiscoverySearch() {
         ) : null}
       </form>
 
-      <div className="mt-4">
-        <div className="flex flex-wrap gap-x-5 gap-y-2">
-          {loopExamples.map((example, index) => (
-            <button
-              key={`${example}-${index}`}
-              type="button"
-              onClick={() => submitSearch(example)}
-              className="py-1 text-xs ui-muted underline decoration-transparent underline-offset-4 hover:decoration-current"
-            >
-              {example}
-            </button>
-          ))}
+      <div className="occasion-strip-wrap">
+        <div className="occasion-strip" data-paused={stripPaused || motionPaused || focused || Boolean(query.trim())} aria-label="Occasion ideas">
+          <div className="occasion-strip-track">{[0, 1].map(copy => <div key={copy} className="occasion-strip-group" aria-hidden={copy === 1 ? true : undefined}>
+            {loopExamples.map(example => <button key={example} type="button" tabIndex={copy === 1 ? -1 : 0} onClick={() => submitSearch(example)}>{example}<span aria-hidden="true">↗</span></button>)}
+          </div>)}</div>
         </div>
+        <button type="button" className="strip-motion-control" aria-label={stripPaused ? "Play occasion ideas" : "Pause occasion ideas"} aria-pressed={stripPaused} onClick={() => setStripPaused(value => !value)}>{stripPaused ? "Play" : "Pause"}</button>
       </div>
     </div>
   );
