@@ -51,12 +51,12 @@ export function ServiceForm({ service, onSave, onCancel }: { service: DemoServic
   </form></Panel>;
 }
 
-export function BusinessForm({ business, onSave }: { business: Business; onSave: (business: Business) => void }) {
+export function BusinessForm({ business, onSave, onDraft }: { business: Business; onSave: (business: Business) => void; onDraft?: (business: Business) => void }) {
   const [draft, setDraft] = useState(business);
   return <Panel title="Business profile"><form className="space-y-5" onSubmit={e => { e.preventDefault(); if (draft.name.trim()) onSave(draft); }}>
     <p className="text-sm ui-muted">Return here anytime. Saved fields feed your customer profile preview. Demo edits are not published to the public marketplace.</p>
-    {([["name", "Business name"], ["location", "Service area"], ["contact", "Business email"], ["languages", "Languages"], ["specialties", "Event specialties"]] as const).map(([key, label]) => <Field key={key} label={label}><input required={key === "name" || key === "location"} type={key === "contact" ? "email" : "text"} className={inputClass} value={draft[key]} onChange={e => setDraft({ ...draft, [key]: e.target.value })} /></Field>)}
-    <Field label="Business description"><textarea rows={4} className={inputClass} value={draft.description} onChange={e => setDraft({ ...draft, description: e.target.value })} /></Field>
+    {([["name", "Business name"], ["location", "Service area"], ["contact", "Business email"], ["languages", "Languages"], ["specialties", "Event specialties"]] as const).map(([key, label]) => <Field key={key} label={label}><input required={key === "name" || key === "location"} type={key === "contact" ? "email" : "text"} className={inputClass} value={draft[key]} onChange={e => { const next = { ...draft, [key]: e.target.value }; setDraft(next); onDraft?.(next); }} /></Field>)}
+    <Field label="Business description"><textarea rows={4} className={inputClass} value={draft.description} onChange={e => { const next = { ...draft, description: e.target.value }; setDraft(next); onDraft?.(next); }} /></Field>
     <button className={buttonClass}>Save profile</button>
   </form></Panel>;
 }

@@ -8,7 +8,7 @@ const categoryImages: Partial<Record<MarketplaceItem["type"], string>> = {
   "Cake & Desserts":
     "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=900&q=80",
   DJ:
-    "https://images.unsplash.com/photo-1571266028243-d220c9c3b84d?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=900&q=80",
   "Live Music":
     "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=900&q=80",
   Magic:

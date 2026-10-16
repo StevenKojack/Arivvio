@@ -18,11 +18,9 @@ function subscribeVisibility(callback: () => void) {
 const scenes = eventAtmospheres.slice(0, 6);
 export function OccasionHero() {
   const [scene, setScene] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const [interacting, setInteracting] = useState(false);
   const reduced = useSyncExternalStore(subscribeMotion, reducedMotion, () => true);
   const hidden = useSyncExternalStore(subscribeVisibility, () => document.hidden, () => false);
-  const stopped = !canRotateAtmosphere({ paused, interacting, reduced, hidden });
+  const stopped = !canRotateAtmosphere({ reduced, hidden });
   useEffect(() => {
     if (stopped) return;
     const timer = window.setInterval(() => setScene(value => (value + 1) % scenes.length), 8000);
@@ -37,12 +35,12 @@ export function OccasionHero() {
       <p className="hero-kicker"><span className="brand-angle" aria-hidden="true" /> A reason to get together</p>
       <h1>It starts with<br /><em>your occasion.</em></h1>
       <p className="hero-intro">Tell us what you have in mind. Find your people, your place, and a plan for it all.</p>
-      <EventDiscoverySearch onInteractionChange={setInteracting} motionPaused={stopped} />
+      <EventDiscoverySearch pageHidden={hidden} />
       <p className="hero-disclosure">Pre-beta preview · Explore freely. No real bookings or vendor contact.</p>
     </div>
     <div className="atmosphere-caption">
       <div key={scenes[scene].id}><p>{scenes[scene].label}</p><span>{scenes[scene].phrase}</span></div>
-      <div className="atmosphere-controls"><button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused} disabled={reduced}>{reduced ? "Motion off" : paused ? "Play atmosphere" : "Pause atmosphere"}</button><button type="button" aria-label="Next event atmosphere" onClick={() => {setPaused(true); setScene(value => (value + 1) % scenes.length);}}>Next occasion →</button></div>
+
     </div>
   </section>;
 }

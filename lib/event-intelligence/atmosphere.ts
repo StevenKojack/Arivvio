@@ -25,6 +25,6 @@ export function atmosphereImage(atmosphere: Atmosphere, width = 1500) {
   return `https://images.unsplash.com/${atmosphere.photo}?auto=format&fit=crop&w=${width}&q=75`;
 }
 
-export function canRotateAtmosphere({ reduced, interacting, paused, hidden }: { reduced: boolean; interacting: boolean; paused: boolean; hidden: boolean }) {
-  return !reduced && !interacting && !paused && !hidden;
+export function canRotateAtmosphere({ reduced, hidden }: { reduced: boolean; hidden: boolean }) {
+  return !reduced && !hidden;
 }

@@ -1,3 +1,4 @@
+import { coverageProviders } from "./demo-provider-coverage";
 export type EventType =
   | "Birthday"
   | "Wedding"
@@ -82,6 +83,10 @@ export type MarketplaceServiceOption = {
 };
 
 export type MarketplaceItem = {
+  listingState?: "demo" | "unclaimed" | "claimed";
+  provenance?: { sourceUrl: string; retrievedAt: string; permittedUse: string; fields: string[] }[];
+  claimedAt?: string;
+
   marketplaceRules?: import("@/lib/vendor-demo/model").MarketplaceRules;
   id: number;
   databaseSource?: boolean;
@@ -456,6 +461,7 @@ export function estimateDriveMinutes(from: Coordinates, to: Coordinates) {
 }
 
 export const marketplaceItems: MarketplaceItem[] = [
+  ...coverageProviders,
   {
     id: 1,
     name: "The Ebell of Los Angeles",

@@ -1,5 +1,6 @@
 "use client";
 
+import { listingPresentation } from "@/lib/marketplace/listing-state";
 import { memo, useState } from "react";
 import { ListingImage } from "./ListingImage";
 import { ProviderProfile } from "./ProviderProfile";
@@ -29,7 +30,7 @@ function VendorCardComponent({
   isHighlighted = false,
   isSelected = false,
   item,
-
+  matchLabel,
   matchReason = "Fits your event details and timing.",
   onHover,
   onSelect,
@@ -38,6 +39,7 @@ function VendorCardComponent({
 }: VendorCardProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const imageUrl = item.photoUrl ?? getVendorImage(item);
+  const listing = listingPresentation(item);
   const isDemoProvider = item.databaseSource === false;
   const tags = [
     item.type,
@@ -73,7 +75,7 @@ function VendorCardComponent({
         {isSelected && <span className="absolute left-3 top-3 rounded-md ui-primary px-3 py-1 text-xs font-semibold">Selected</span>}
 
       </div>
-      <div className="p-4">
+      <div className="p-4">{matchLabel && <div className="mb-3 text-xs"><p className="font-semibold">{matchLabel}</p><p className="mt-1 leading-5 ui-muted">{matchReason}</p></div>}
         <div className="flex items-start justify-between gap-3">
           {item.profileImageUrl && <Image src={item.profileImageUrl} alt={`${item.name} logo`} width={44} height={44} unoptimized className="shrink-0 rounded-lg object-contain" />}
           <div>
@@ -101,7 +103,7 @@ function VendorCardComponent({
           </div>
           <button
             type="button"
-            disabled={disableAdd ?? isSelected}
+            disabled={!listing.canRequest || (disableAdd ?? isSelected)}
             onClick={(event) => {
               event.stopPropagation();
               if (preview) setProfileOpen(true); else onAdd(item);
@@ -112,7 +114,7 @@ function VendorCardComponent({
                 : "ui-primary hover:opacity-90"
             }`}
           >
-            {buttonLabel}
+            {!listing.canRequest ? "Unclaimed listing" : buttonLabel}
           </button>
         </div>
         <button type="button" onClick={(event) => { event.stopPropagation(); setProfileOpen(true); }} className="mt-4 py-2 text-sm font-semibold underline underline-offset-4 hover:opacity-80">View profile</button>

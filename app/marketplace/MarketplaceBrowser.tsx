@@ -1,5 +1,8 @@
 "use client";
 
+import { listingPresentation } from "@/lib/marketplace/listing-state";
+import { selectMatchingTiers, type MatchAssessment } from "@/lib/marketplace/matching-tiers";
+import { evaluateEligibility } from "@/lib/vendor-demo/eligibility";
 import { CustomerDialog } from "@/app/components/CustomerDialog";
 import { EventPartsSummary } from "@/app/discover/components/EventParts";
 
@@ -352,7 +355,8 @@ export function MarketplaceBrowser() {
       selectedEvent,
     ],
   );
-  const filteredItems = useMemo(() => {
+  const matching = useMemo(() => {
+    const assessments = new Map<number,MatchAssessment>();
     const nextItems = providers.filter((item) => {
       const matchesEvent =
         selectedEvent === "All" || item.events.includes(selectedEvent);
@@ -364,9 +368,9 @@ export function MarketplaceBrowser() {
       );
       const searchText = `${item.name} ${item.location} ${item.address} ${item.events.join(
         " ",
-      )} ${item.services.join(" ")} ${(item.tags ?? []).join(" ")}`;
+      )} ${item.services.join(" ")} ${(item.tags ?? []).join(" ")} ${item.description} ${(item.languages??[]).join(" ")} ${(item.cultures??[]).join(" ")}`;
       const matchesQuery =
-        !normalizedQuery || searchText.toLowerCase().includes(normalizedQuery);
+        !normalizedQuery || normalizedQuery.split(/\s+/).every(word=>searchText.toLowerCase().includes(word));
       const driveMinutes = eventCoordinates
         ? estimateDriveMinutes(eventCoordinates, item.coordinates)
         : 0;
@@ -403,28 +407,26 @@ export function MarketplaceBrowser() {
         endTime,
       );
 
-      return (
+      const availabilityKnown = item.availability.length > 0;
+      const eligible = evaluateEligibility(item.marketplaceRules,undefined,{eventType:selectedEvent === "All" ? undefined : selectedEvent,age:eventIntelligence?.audience.guestAgeMin,distanceMiles:eventCoordinates?miles:undefined}).eligible;
+      const fitsCapacity = !globalQuoteContext.guests || ((!item.maxGuestCount || globalQuoteContext.guests <= item.maxGuestCount) && (!item.minGuestCount || globalQuoteContext.guests >= item.minGuestCount));
+      const hardMatch = Boolean(
         (!language || item.languages?.includes(language)) &&
         (!specialty || item.tags?.includes(specialty)) &&
         (!maxEstimate || quoteItem(item,globalQuoteContext) <= Number(maxEstimate)) &&
-        matchesEvent &&
-        matchesServices &&
-        !isExcluded &&
-        matchesQuery &&
-        matchesCity &&
-        withinRadius &&
-        withinPlannerSearchRegion &&
-        isNearEnough &&
-        matchesAvailability &&
+        matchesEvent && matchesServices && !isExcluded && matchesQuery &&
+        withinRadius && withinPlannerSearchRegion && eligible && fitsCapacity &&
+        !item.blockedDates?.includes(eventDate) && (matchesAvailability || !availabilityKnown) &&
+        (!eventCoordinates || item.type === "Venue" || driveMinutes <= 90) &&
         isMarketplaceItemCompatible(item, planningContext)
       );
+      assessments.set(item.id,{hardMatch,localMatch:matchesCity && isNearEnough,availabilityKnown,broaderReason:(!matchesCity?"Based outside your event city.":"Beyond the default one-hour estimated travel area.") + (item.serviceRadiusMiles?" Within the listed service radius.":" Service area is not specified.")});
+      return hardMatch;
     });
 
     if (selectedEvent === "All") {
       const contextRanked = rankByPlanningContext(nextItems, planningContext);
-      return eventIntelligence
-        ? rankMarketplaceItemsForPlan(contextRanked, eventIntelligence)
-        : contextRanked;
+      return selectMatchingTiers(eventIntelligence ? rankMarketplaceItemsForPlan(contextRanked,eventIntelligence) : contextRanked,assessments);
     }
 
     const profile = getProfileByMarketplaceType(selectedEvent);
@@ -441,9 +443,7 @@ export function MarketplaceBrowser() {
       rankedItems.map((rankedItem) => rankedItem.item),
       planningContext,
     );
-    return eventIntelligence
-      ? rankMarketplaceItemsForPlan(contextRanked, eventIntelligence)
-      : contextRanked;
+    return selectMatchingTiers(eventIntelligence ? rankMarketplaceItemsForPlan(contextRanked,eventIntelligence) : contextRanked,assessments);
   }, [
     endTime,
     eventCoordinates,
@@ -462,6 +462,7 @@ export function MarketplaceBrowser() {
     selectedServices,
     startTime,
   ]);
+  const filteredItems = matching.items;
   const filterProviders = providers.filter(item=>!selectedServices.length || itemMatchesServices(item,selectedServices));
   const availableLanguages=[...new Set(filterProviders.flatMap(item=>item.languages ?? []))].sort();
   const availableSpecialties=[...new Set(filterProviders.flatMap(item=>item.tags ?? []))].sort();
@@ -996,6 +997,7 @@ export function MarketplaceBrowser() {
   ]);
 
   const addToCart = useCallback(async (item: MarketplaceItem) => {
+    if (!listingPresentation(item).canRequest) { setMarketplaceMessage("Requests for unclaimed listings are not open yet."); return; }
     const serviceOptions = getSelectableServiceOptions(item);
 
     if (serviceOptions.length > 1) {
@@ -1182,10 +1184,11 @@ export function MarketplaceBrowser() {
             <span className="truncate">Quote cart · {cart.length} selected</span><span className="text-xs ui-muted">Review / request →</span>
           </button>
 
-          <header className="flex flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-semibold">Find your event team</h1><p className="hub-muted mt-1 text-sm">{filteredItems.length} providers found · Demo pricing and availability</p></div><div className="flex gap-2"><button className="hub-button lg:hidden" onClick={()=>setIsFilterDrawerOpen(true)}>Filters</button><button className="hub-button" onClick={()=>setIsMobileMapOpen(true)}>Show map</button></div></header>
+          <header className="flex flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-semibold">Find your event team</h1><p className="hub-muted mt-1 text-sm">{matching.exactCount} match selected filters{filteredItems.length > matching.exactCount ? ` · ${filteredItems.length - matching.exactCount} labeled alternatives` : ""} · Confirm availability</p></div><div className="flex gap-2"><button className="hub-button lg:hidden" onClick={()=>setIsFilterDrawerOpen(true)}>Filters</button><button className="hub-button" onClick={()=>setIsMobileMapOpen(true)}>Show map</button></div></header>
           <div className="hub-card flex flex-wrap items-center gap-3 p-3"><input aria-label="Search providers" className="hub-input min-w-0 flex-1" placeholder="Name, location or specialty" value={query} onChange={e=>setQuery(e.target.value)} /><span className="hub-muted text-xs">{selectedServices.length ? selectedServices.join(", ") : "All services"}</span></div>
 
-          {filteredItems.length ? <div className="listing-grid" data-marketplace-row="best-matches">{[...filteredItems].sort((a,b)=>sort === "Price: low to high" ? quoteItem(a,globalQuoteContext)-quoteItem(b,globalQuoteContext) : sort === "Name" ? a.name.localeCompare(b.name) : 0).map(item=><div key={item.id} data-vendor-id={item.id} data-row-id="best-matches" id={`vendor-card-best-matches-${item.id}`}><VendorCard item={item} quote={quoteItem(item,globalQuoteContext)} isSelected={cartedIds.includes(item.id)} disableAdd={cart.filter(line=>line.item.id===item.id).length >= (item.serviceOptions?.length ?? item.services.length)} buttonLabel={cartedIds.includes(item.id)?"Added ✓":"Add to quote"} matchLabel={cartedIds.includes(item.id)?"Added":""} matchReason={planMatchReasons[item.id] ?? item.description} onAdd={addToCart} onSelect={selectMapItem} onHover={setMapHoverItem} /></div>)}</div> : <div className="hub-card p-8 text-center"><h2 className="text-xl font-semibold">No matching providers</h2><p className="hub-muted mt-2">Try adjusting your filters or search.</p></div>}
+          {filteredItems.length > matching.exactCount && <p className="hub-card p-4 text-sm" role="status">{matching.exactCount ? "Limited exact inventory." : "We don’t have an exact match for these filters yet."} These alternatives keep your service, event, capacity and explicit filters. Differences are labeled on each listing.</p>}
+          {filteredItems.length ? <div className="listing-grid" data-marketplace-row="best-matches">{[...filteredItems].sort((a,b)=>matching.details[a.id].order - matching.details[b.id].order || (sort === "Price: low to high" ? quoteItem(a,globalQuoteContext)-quoteItem(b,globalQuoteContext) : sort === "Name" ? a.name.localeCompare(b.name) : 0)).map(item=><div key={item.id} data-vendor-id={item.id} data-row-id="best-matches" id={`vendor-card-best-matches-${item.id}`}><VendorCard item={item} quote={quoteItem(item,globalQuoteContext)} isSelected={cartedIds.includes(item.id)} disableAdd={cart.filter(line=>line.item.id===item.id).length >= (item.serviceOptions?.length ?? item.services.length)} buttonLabel={cartedIds.includes(item.id)?"Added ✓":"Add to quote"} matchLabel={matching.details[item.id]?.label} matchReason={matching.details[item.id]?.tier !== "exact" ? matching.details[item.id]?.reason : planMatchReasons[item.id] ?? matching.details[item.id]?.reason} onAdd={addToCart} onSelect={selectMapItem} onHover={setMapHoverItem} /></div>)}</div> : <div className="hub-card p-8 text-center"><h2 className="text-xl font-semibold">No exact match here yet</h2><p className="hub-muted mt-2">We haven’t found a defensible alternative within your requirements. Your filters are still applied.</p><div className="mt-5 flex flex-wrap justify-center gap-2">{query&&<button className="hub-button" onClick={()=>setQuery("")}>Clear search text</button>}{language&&<button className="hub-button" onClick={()=>setLanguage("")}>Remove language filter</button>}{specialty&&<button className="hub-button" onClick={()=>setSpecialty("")}>Remove specialty filter</button>}{maxEstimate&&<button className="hub-button" onClick={()=>setMaxEstimate("")}>Remove price limit</button>}<button className="hub-button" onClick={()=>setIsFilterDrawerOpen(true)}>Adjust filters and area</button></div></div>}
 
         </section>
 

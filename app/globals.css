@@ -476,22 +476,14 @@ body { font-family: var(--font-arivvio), system-ui, sans-serif; }
 .atmosphere-caption { position: absolute; bottom: 25px; right: max(40px,calc((100vw - 1200px)/2)); left: max(40px,calc((100vw - 1200px)/2)); display: flex; align-items: end; justify-content: space-between; gap: 20px; }
 .atmosphere-caption p { font-size: 15px; font-weight: 500; }
 .atmosphere-caption span { display: block; margin-top: 5px; font-size: 12px; color: #eee9dd; }
-.atmosphere-controls { display: flex; flex-wrap: wrap; gap: 16px; font-size: 11px; }
-.atmosphere-controls button { min-height: 36px; border-bottom: 1px solid #ffffff70; }
-.atmosphere-controls button:disabled { opacity: .8; cursor: default; }
-.occasion-strip-wrap { position: relative; margin-top: 16px; padding-right: 48px; }
+.occasion-strip-wrap { position: relative; margin-top: 16px; padding-right: 0; }
 .occasion-strip { overflow: hidden; mask-image: linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 25px),transparent); }
 .occasion-strip-track { display: flex; width: max-content; animation: eventLoop 75s linear infinite; }
 .occasion-strip-group { display: flex; flex-shrink: 0; gap: 10px; padding-right: 10px; }
 .occasion-strip-group button { display: flex; align-items: center; gap: 18px; min-height: 42px; padding: 8px 14px; border: 1px solid #ffffff65; border-radius: 6px; font-size: 12px; white-space: nowrap; background: #1b281c30; color: #fff; }
 .occasion-strip-group button:hover { background: #ffffff24; }
 .occasion-strip-group span { opacity: .65; }
-.occasion-strip[data-paused="true"] .occasion-strip-track, .occasion-strip:hover .occasion-strip-track { animation-play-state: paused; }
-/* Keyboard users get a native scrollable, unmoving single row. */
-.occasion-strip:focus-within { overflow-x: auto; mask-image: none; }
-.occasion-strip:focus-within .occasion-strip-track { animation: none; }
-.occasion-strip:focus-within .occasion-strip-group[aria-hidden="true"] { display: none; }
-.strip-motion-control { position: absolute; right: 0; top: 0; font-size: 10px; min-height: 42px; text-decoration: underline; text-underline-offset: 3px; }
+.occasion-strip[data-paused="true"] .occasion-strip-track { animation-play-state: paused; }
 .event-search-control { transition: outline-color 160ms, box-shadow 160ms; }
 .occasion-hero .event-search-control:focus-within { outline-color: #f0dcab; box-shadow: 0 6px 24px #0002; }
 .occasion-hero [role="listbox"] { color: var(--hub-text); box-shadow: 0 12px 40px #0003; }
@@ -580,7 +572,6 @@ body { font-family: var(--font-arivvio), system-ui, sans-serif; }
  .atmosphere-layer img { object-position: 60% center !important; animation: none; }
  .atmosphere-caption { left: 20px; right: 84px; bottom: 22px; flex-direction: column; align-items: start; gap: 12px; }
  .atmosphere-caption span { max-width: 300px; line-height: 1.5; }
- .atmosphere-controls { gap: 24px; }
  .hero-disclosure { max-width: 300px; line-height: 1.7; }
  .occasion-strip-group button { font-size: 11px; min-height: 40px; }
  .occasion-strip-track { animation-duration: 95s; }
@@ -608,10 +599,28 @@ body { font-family: var(--font-arivvio), system-ui, sans-serif; }
  .vendor-invitation-aside { border-left: 0; border-top: 1px solid var(--hub-border); padding-left: 0; padding-top: 28px; }
 }
 @media (prefers-reduced-motion: reduce) {
- .occasion-strip { overflow-x: auto; mask-image: none; }
+ .occasion-strip { overflow: hidden; mask-image: none; }
  .occasion-strip-track, .atmosphere-layer img { animation: none !important; }
- .occasion-strip-group[aria-hidden="true"], .strip-motion-control { display: none; }
  .occasion-strip-wrap { padding-right: 0; }
  .atmosphere-layer { transition: none; }
  .occasion-photo:hover img, .service-discovery-list a:hover img, .provider-card:hover { transform: none; }
 }
+
+@media (prefers-reduced-motion: reduce) {
+ .occasion-strip-track { width: 100%; }
+ .occasion-strip-group { flex-wrap: wrap; width: 100%; }
+ .occasion-strip-group[aria-hidden="true"] { display: none; }
+}
+
+/* Vendor operations share the existing control and surface system. */
+.operations-home { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr); gap:24px; }
+.operation-event { display:flex; width:100%; justify-content:space-between; align-items:start; gap:16px; padding:18px 0; text-align:left; border-bottom:1px solid var(--hub-border); }
+.operation-event strong { display:block; font-weight:600; }
+.operation-event span span { display:block; margin-top:6px; font-size:12px; color:var(--hub-muted); }
+.operation-event:hover strong { text-decoration:underline; text-underline-offset:4px; }
+.listing-editor-layout { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(260px,1fr); gap:24px; align-items:start; }
+.listing-live-preview { position:sticky; top:24px; }
+.listing-live-preview .provider-card { height:auto; }
+.vendor-hub input, .vendor-hub select, .vendor-hub textarea, .vendor-hub button { border-radius:8px; }
+@media(max-width:1100px){ .listing-editor-layout { grid-template-columns:minmax(0,1fr); } .listing-live-preview { position:static; max-width:420px; } }
+@media(max-width:760px){ .operations-home { grid-template-columns:minmax(0,1fr); } .operation-event { flex-wrap:wrap; } }

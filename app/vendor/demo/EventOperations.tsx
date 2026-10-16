@@ -1,0 +1,12 @@
+"use client";
+import { daySchedule, type HubState, type VendorEvent } from "@/lib/vendor-demo/model";
+import { useVendorInquiries } from "./useVendorInquiries";
+import { Inquiry } from "./Inquiries";
+import { Panel, secondaryClass } from "./HubForms";
+export function EventOperations({event,state,save,openEvent}:{event:VendorEvent;state:HubState;save:(state:HubState,message?:string)=>void;openEvent:(event:VendorEvent)=>void}) {
+  const inquiries=useVendorInquiries();
+  const linked=inquiries.filter(({request,item})=>request.id===event.requestId && `inquiry:${item.id}`===event.id);
+  const day=daySchedule(state,event.date);
+  const service=state.services.find(s=>s.name===event.service || s.category===event.service);
+  return <div className="space-y-5"><div className="grid gap-5 lg:grid-cols-2"><Panel title="Service and preparation"><p className="font-semibold">{event.service || "Service to confirm"}</p><p className="mt-2 text-sm ui-muted">{service?.details || "Record service details in the event notes."}</p><p className="mt-3 text-sm">{service?.price ? `Listed package: ${service.price}. Event quote may differ.` : "No package price linked."}</p><p className="mt-3 text-xs ui-muted">Use operational notes and tasks for load-in, setup and breakdown. These buffers are not reserved separately on the calendar.</p></Panel><Panel title="Schedule context"><p className="text-sm">{day.blocked?"Date blocked":day.hours.enabled?`Working hours ${day.hours.start}–${day.hours.end}`:"Outside normal working hours"}</p><p className="mt-3 text-sm ui-muted">{day.events.length} event{day.events.length===1?"":"s"} on this date</p>{day.events.filter(e=>e.id!==event.id).map(e=><button key={e.id} className={`${secondaryClass} mt-3 block`} onClick={()=>openEvent(e)}>{e.start}–{e.end} · {e.name}</button>)}</Panel></div><Panel title="Client, inquiry and quote">{linked.length?linked.map(({request,item})=><Inquiry key={`${item.id}:${item.response?.at??"new"}`} request={request} item={item} state={state} refresh={()=>{}} save={save} openEvent={openEvent} />):<p className="text-sm ui-muted">{event.source==="MANUAL"?"External booking. The client and quote are managed outside ARIVVIO. Record agreed details in your event notes.":"Sample ARIVVIO event. No customer inquiry or quote is linked."}</p>}<p className="mt-5 border-t ui-border pt-4 text-xs ui-muted">Calendar status: {event.status}. This demo does not confirm a customer booking or collect payments. Payment tracking is not connected.</p></Panel></div>;
+}
