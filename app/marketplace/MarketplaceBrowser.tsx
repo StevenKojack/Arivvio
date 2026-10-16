@@ -1,7 +1,7 @@
 "use client";
 
 import { listingPresentation } from "@/lib/marketplace/listing-state";
-import { selectMatchingTiers, type MatchAssessment } from "@/lib/marketplace/matching-tiers";
+import { matchesListingRequirements, selectMatchingTiers, type MatchAssessment } from "@/lib/marketplace/matching-tiers";
 import { evaluateEligibility } from "@/lib/vendor-demo/eligibility";
 import { CustomerDialog } from "@/app/components/CustomerDialog";
 import { EventPartsSummary } from "@/app/discover/components/EventParts";
@@ -358,19 +358,6 @@ export function MarketplaceBrowser() {
   const matching = useMemo(() => {
     const assessments = new Map<number,MatchAssessment>();
     const nextItems = providers.filter((item) => {
-      const matchesEvent =
-        selectedEvent === "All" || item.events.includes(selectedEvent);
-      const matchesServices =
-        selectedServices.length === 0 ||
-        itemMatchesServices(item, selectedServices);
-      const isExcluded = excludedServices.some((service) =>
-        itemMatchesServices(item, [service]),
-      );
-      const searchText = `${item.name} ${item.location} ${item.address} ${item.events.join(
-        " ",
-      )} ${item.services.join(" ")} ${(item.tags ?? []).join(" ")} ${item.description} ${(item.languages??[]).join(" ")} ${(item.cultures??[]).join(" ")}`;
-      const matchesQuery =
-        !normalizedQuery || normalizedQuery.split(/\s+/).every(word=>searchText.toLowerCase().includes(word));
       const driveMinutes = eventCoordinates
         ? estimateDriveMinutes(eventCoordinates, item.coordinates)
         : 0;
@@ -409,13 +396,9 @@ export function MarketplaceBrowser() {
 
       const availabilityKnown = item.availability.length > 0;
       const eligible = evaluateEligibility(item.marketplaceRules,undefined,{eventType:selectedEvent === "All" ? undefined : selectedEvent,age:eventIntelligence?.audience.guestAgeMin,distanceMiles:eventCoordinates?miles:undefined}).eligible;
-      const fitsCapacity = !globalQuoteContext.guests || ((!item.maxGuestCount || globalQuoteContext.guests <= item.maxGuestCount) && (!item.minGuestCount || globalQuoteContext.guests >= item.minGuestCount));
       const hardMatch = Boolean(
-        (!language || item.languages?.includes(language)) &&
-        (!specialty || item.tags?.includes(specialty)) &&
-        (!maxEstimate || quoteItem(item,globalQuoteContext) <= Number(maxEstimate)) &&
-        matchesEvent && matchesServices && !isExcluded && matchesQuery &&
-        withinRadius && withinPlannerSearchRegion && eligible && fitsCapacity &&
+        matchesListingRequirements(item,{event:selectedEvent,services:selectedServices,excluded:excludedServices,query:normalizedQuery,language,specialty,maxEstimate:maxEstimate?Number(maxEstimate):undefined,estimate:quoteItem(item,globalQuoteContext),guests:globalQuoteContext.guests}) &&
+        withinRadius && withinPlannerSearchRegion && eligible &&
         !item.blockedDates?.includes(eventDate) && (matchesAvailability || !availabilityKnown) &&
         (!eventCoordinates || item.type === "Venue" || driveMinutes <= 90) &&
         isMarketplaceItemCompatible(item, planningContext)

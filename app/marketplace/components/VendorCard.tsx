@@ -119,7 +119,7 @@ function VendorCardComponent({
         </div>
         <button type="button" onClick={(event) => { event.stopPropagation(); setProfileOpen(true); }} className="mt-4 py-2 text-sm font-semibold underline underline-offset-4 hover:opacity-80">View profile</button>
       </div>
-    </article>{profileOpen ? <ProviderProfile preview={preview} item={item} quote={quote} matchReason={item.services.slice(0, 2).join(" · ") || matchReason} selected={Boolean(disableAdd ?? isSelected)} onAdd={() => { setProfileOpen(false); if (!preview) onAdd(item); }} onClose={() => setProfileOpen(false)} /> : null}</>
+    </article>{profileOpen ? <ProviderProfile preview={preview} item={item} quote={quote} matchReason={preview ? matchReason : item.services.slice(0, 2).join(" · ") || matchReason} selected={Boolean(disableAdd ?? isSelected)} onAdd={() => { setProfileOpen(false); if (!preview) onAdd(item); }} onClose={() => setProfileOpen(false)} /> : null}</>
   );
 }
 
