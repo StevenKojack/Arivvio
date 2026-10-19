@@ -44,6 +44,9 @@ export async function getQuoteThread(
   client: ArivvioSupabaseClient,
   request: string,
 ) {
+  const { data: auth } = await client.auth.getUser();
+  if (!auth.user || auth.user.is_anonymous)
+    throw new Error("Sign in to open this conversation.");
   const { data, error } = await client.rpc("get_quote_thread", { request });
   if (error) throw new Error(error.message);
   return data as unknown as QuoteThread;
