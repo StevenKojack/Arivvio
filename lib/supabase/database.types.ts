@@ -223,6 +223,9 @@ export type Database = {
       };
       quote_requests: {
         Row: RowWithTimestamps & {
+          quote_revision: number;
+          updated_at: string;
+          request_context: Json | null;
           estimated_price: number | null;
           event_id: string;
           guest_count: number | null;
@@ -373,6 +376,14 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      get_quote_thread: {Args:{request:string};Returns:Json};
+      get_request_inbox: {Args:{audience:string};Returns:Json};
+      send_quote_message: {Args:{request:string;message_body:string};Returns:Database["public"]["Tables"]["messages"]["Row"]};
+      send_vendor_quote: {Args:{request:string;price:number;note:string;expected_revision:number};Returns:Database["public"]["Tables"]["quote_requests"]["Row"]};
+      decline_quote: {Args:{request:string;note:string};Returns:Database["public"]["Tables"]["quote_requests"]["Row"]};
+      withdraw_quote_request: {Args:{request:string};Returns:Database["public"]["Tables"]["quote_requests"]["Row"]};
+      accept_quote_and_create_booking: {Args:{request:string;expected_revision:number};Returns:Database["public"]["Tables"]["bookings"]["Row"]};
+      save_booking_note: {Args:{booking:string;note:string};Returns:Database["public"]["Tables"]["bookings"]["Row"]};
       manage_customer_event: { Args: {target_event: string; operation: string}; Returns: boolean };
 
     };

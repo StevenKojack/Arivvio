@@ -79,7 +79,8 @@ export function EventDetail({ eventId }: { eventId: string }) {
     void loadEvent();
     const refresh=()=>void loadEvent();
     window.addEventListener('arivvio:cloud-event-changed',refresh);
-    return()=>window.removeEventListener('arivvio:cloud-event-changed',refresh);
+    window.addEventListener('arivvio:requests-changed',refresh);
+    return()=>{window.removeEventListener('arivvio:cloud-event-changed',refresh);window.removeEventListener('arivvio:requests-changed',refresh);};
   }, [eventId]);
 
   async function saveGuest() {
@@ -209,7 +210,7 @@ export function EventDetail({ eventId }: { eventId: string }) {
         </Panel>
         <Panel title="Quote requests">
           {quotes.length ? (
-            quotes.map(quote=><CloudQuoteCard key={quote.id} quote={quote} eventName={event.title} booking={bookings.find(b=>b.quote_request_id===quote.id)} onBooked={row=>setBookings(current=>[row,...current.filter(b=>b.id!==row.id)])}/>)
+            quotes.map(quote=><CloudQuoteCard key={quote.id} quote={quote} eventName={event.title} booking={bookings.find(b=>b.quote_request_id===quote.id)}/>)
           ) : (
             <Empty text="No quote requests yet. Add providers to the cart, then request quotes." />
           )}
@@ -226,8 +227,7 @@ export function EventDetail({ eventId }: { eventId: string }) {
                   {formatMoney(booking.final_price)} - {booking.booking_status}
                 </p>
                 <p className="mt-1 ui-muted">
-                  Deposit {formatMoney(booking.deposit_amount)} - balance{" "}
-                  {formatMoney(booking.balance_due)} - {booking.payment_status}
+                  No payment collected. Payments are not connected.
                 </p>
               </Link>
             ))

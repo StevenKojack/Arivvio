@@ -1,16 +1,12 @@
-import { createBooking } from "@/lib/repositories/bookingsRepository";
 import {
   markCartItemsQuoteRequested,
   type CartItemQuoteInput,
 } from "@/lib/repositories/cartRepository";
 import {
   createQuoteRequests,
-  updateQuoteRequestResponse,
-  updateQuoteStatus,
   type QuoteRequestRow,
 } from "@/lib/repositories/quotesRepository";
 import type { PublicTableRow } from "@/lib/supabase/database.types";
-import type { QuoteStatus } from "@/lib/types/domain";
 import type { ArivvioSupabaseClient } from "@/lib/repositories/types";
 
 export async function requestQuotesFromCart(
@@ -54,44 +50,14 @@ export async function requestQuotesFromCart(
   return quoteRequests;
 }
 
-export async function respondToQuoteRequest(
-  supabase: ArivvioSupabaseClient,
-  input: {
-    quoteId: string;
-    status: Extract<QuoteStatus, "accepted" | "declined" | "countered">;
-    vendorFinalPrice?: number | null;
-  },
-) {
-  if (input.status === "countered" && !input.vendorFinalPrice) {
-    throw new Error("Add a counter price before sending a counter.");
-  }
-
-  return updateQuoteRequestResponse(supabase, input);
-}
-
 export async function confirmAcceptedQuote(
-  supabase: ArivvioSupabaseClient,
+  client: ArivvioSupabaseClient,
   quote: QuoteRequestRow,
 ) {
-  if (quote.status !== "accepted") {
-    throw new Error("Only accepted quotes can be confirmed.");
-  }
-
-  const finalPrice = Number(quote.vendor_final_price ?? quote.estimated_price ?? 0);
-  const depositAmount = 0; // No deposit terms or payment collection are supported here.
-  const booking = await createBooking(supabase, {
-    balanceDue: Math.max(finalPrice - depositAmount, 0),
-    depositAmount,
-    eventId: quote.event_id,
-    finalPrice,
-    plannerId: quote.planner_id,
-    quoteRequestId: quote.id,
-    serviceId: quote.service_id,
-    vendorId: quote.vendor_id,
-    venueId: quote.venue_id,
+  const { data, error } = await client.rpc("accept_quote_and_create_booking", {
+    request: quote.id,
+    expected_revision: quote.quote_revision,
   });
-
-  await updateQuoteStatus(supabase, quote.id, "accepted");
-
-  return booking;
+  if (error) throw new Error(error.message);
+  return data;
 }

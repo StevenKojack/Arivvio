@@ -12,11 +12,11 @@ import type {
   VendorServiceRow,
 } from "@/lib/repositories/vendorsRepository";
 import type { PublicTableRow } from "@/lib/supabase/database.types";
-import type { PricingType, QuoteStatus } from "@/lib/types/domain";
+import type { PricingType } from "@/lib/types/domain";
 import { formatDate, formatMoney, formatTime } from "@/lib/utils/format";
 
 export type QuoteWithEvent = QuoteRequestRow & {
-  event?: PublicTableRow<"events">;
+  event?: Pick<PublicTableRow<"events">,"title"|"event_type"|"date"|"guest_count">;
 };
 
 export type VendorDashboardTab =
@@ -24,7 +24,7 @@ export type VendorDashboardTab =
   | "Services"
   | "Availability"
   | "Photos"
-  | "Quotes"
+  | "Inquiries"
   | "Bookings"
   | "Profile"
   | "Business Settings"
@@ -35,7 +35,7 @@ export const vendorDashboardTabs: VendorDashboardTab[] = [
   "Services",
   "Availability",
   "Photos",
-  "Quotes",
+  "Inquiries",
   "Bookings",
   "Profile",
   "Business Settings",
@@ -83,11 +83,6 @@ type VendorTabProps = {
   onDeleteAvailability: (availabilityId: string) => Promise<void>;
   onDeletePhoto: (photo: VendorPhotoRow) => Promise<void>;
   onDeleteService: (service: VendorServiceRow) => Promise<void>;
-  onRespondQuote: (
-    quoteId: string,
-    status: Extract<QuoteStatus, "accepted" | "declined" | "countered">,
-    vendorFinalPrice?: number | null,
-  ) => Promise<void>;
   onToggleService: (service: VendorServiceRow) => Promise<void>;
   onToggleVacationMode: (vendor: VendorBusinessRow) => Promise<void>;
   onUpdateBusiness: (vendorId: string, draft: BusinessDraft) => Promise<void>;
@@ -633,81 +628,6 @@ export function PhotosTab({
   );
 }
 
-export function QuotesTab({
-  onRespondQuote,
-  quotes,
-}: Pick<VendorTabProps, "onRespondQuote" | "quotes">) {
-  const [counterPrices, setCounterPrices] = useState<Record<string, string>>({});
-
-  return (
-    <Panel title="Quote requests">
-      {quotes.length ? (
-        quotes.map((quote) => (
-          <div key={quote.id} className="rounded-lg border border-neutral-200 p-4">
-            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-              <div>
-                <p className="font-semibold text-neutral-950">
-                  {quote.event?.title ?? "Planner event"}
-                </p>
-                <p className="mt-1 text-sm text-neutral-500">
-                  {quote.event?.event_type ?? "Event"} -{" "}
-                  {formatDate(quote.event?.date)} -{" "}
-                  {quote.guest_count ?? quote.event?.guest_count ?? 0} guests
-                </p>
-                <p className="mt-2 text-sm text-neutral-600">
-                  Requested: {formatTime(quote.requested_start_time)} to{" "}
-                  {formatTime(quote.requested_end_time)}
-                </p>
-              </div>
-              <span className="w-fit rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
-                {quote.status}
-              </span>
-            </div>
-            <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-end">
-              <div className="min-w-32">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-500">
-                  Estimate
-                </p>
-                <p className="mt-1 text-2xl font-semibold">
-                  {formatMoney(quote.vendor_final_price ?? quote.estimated_price)}
-                </p>
-              </div>
-              <Input
-                label="Counter price"
-                type="number"
-                value={counterPrices[quote.id] ?? ""}
-                onChange={(value) =>
-                  setCounterPrices((current) => ({
-                    ...current,
-                    [quote.id]: value,
-                  }))
-                }
-              />
-              <div className="flex flex-wrap gap-2">
-                <QuoteButton label="Accept" onClick={() => onRespondQuote(quote.id, "accepted", null)} />
-                <QuoteButton
-                  label="Counter"
-                  primary
-                  onClick={() =>
-                    onRespondQuote(
-                      quote.id,
-                      "countered",
-                      Number(counterPrices[quote.id] ?? 0),
-                    )
-                  }
-                />
-                <QuoteButton label="Decline" onClick={() => onRespondQuote(quote.id, "declined", null)} />
-              </div>
-            </div>
-          </div>
-        ))
-      ) : (
-        <EmptyLine text="No incoming quote requests yet." />
-      )}
-    </Panel>
-  );
-}
-
 export function BookingsTab({ bookings }: Pick<VendorTabProps, "bookings">) {
   return (
     <Panel title="Confirmed bookings">
@@ -722,14 +642,12 @@ export function BookingsTab({ bookings }: Pick<VendorTabProps, "bookings">) {
               {formatMoney(booking.final_price)}
             </p>
             <p className="mt-1 text-sm text-neutral-500">
-              {booking.booking_status} - deposit{" "}
-              {formatMoney(booking.deposit_amount)} - balance{" "}
-              {formatMoney(booking.balance_due)}
+              {booking.booking_status} · No payment collected
             </p>
           </Link>
         ))
       ) : (
-        <EmptyLine text="No bookings yet. Accepted quotes become bookings when planners confirm." />
+        <EmptyLine text="No bookings yet. Bookings appear after customers accept a quote." />
       )}
     </Panel>
   );
@@ -910,29 +828,5 @@ function Input({
         className="h-11 rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#0D1321]"
       />
     </label>
-  );
-}
-
-function QuoteButton({
-  label,
-  onClick,
-  primary,
-}: {
-  label: string;
-  onClick: () => void;
-  primary?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`h-10 rounded-full px-4 text-sm font-semibold ${
-        primary
-          ? "bg-[#0D1321] text-white"
-          : "border border-neutral-300 text-neutral-950"
-      }`}
-    >
-      {label}
-    </button>
   );
 }

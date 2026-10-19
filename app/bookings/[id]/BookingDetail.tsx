@@ -1,169 +1,168 @@
 "use client";
-
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   getBookingById,
   updateBookingNotes,
   type BookingRow,
 } from "@/lib/repositories/bookingsRepository";
-import { createBrowserSupabaseClient, hasSupabaseConfig } from "@/lib/supabase/client";
-import { formatDate, formatMoney } from "@/lib/utils/format";
-
-type TimelineItem = {
-  at?: string;
-  label?: string;
-};
-
+import { getCurrentProfile } from "@/lib/repositories/profilesRepository";
+import {
+  createBrowserSupabaseClient,
+  hasSupabaseConfig,
+} from "@/lib/supabase/client";
+import { formatMoney, formatDate } from "@/lib/utils/format";
+import { RequestThread } from "@/app/components/RequestThread";
 export function BookingDetail({ bookingId }: { bookingId: string }) {
   const [booking, setBooking] = useState<BookingRow | null>(null);
-  const [plannerNotes, setPlannerNotes] = useState("");
-  const [vendorNotes, setVendorNotes] = useState("");
-  const [message, setMessage] = useState("Loading booking...");
-
+  const [note, setNote] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
   useEffect(() => {
-    async function loadBooking() {
-      if (!hasSupabaseConfig()) {
-        setMessage("Supabase is not configured yet.");
-        return;
-      }
-
+    let active = true;
+    async function load() {
       try {
-        const supabase = createBrowserSupabaseClient();
-        const bookingRow = await getBookingById(supabase, bookingId);
-
-        setBooking(bookingRow);
-        setPlannerNotes(bookingRow.planner_notes ?? "");
-        setVendorNotes(bookingRow.vendor_notes ?? "");
-        setMessage("");
-      } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Unable to load booking.");
+        if (!hasSupabaseConfig())
+          throw new Error("Account bookings are unavailable here.");
+        const client = createBrowserSupabaseClient();
+        const {
+          data: { user },
+        } = await client.auth.getUser();
+        if (!user) throw new Error("Sign in to open this booking.");
+        const [row, profile] = await Promise.all([
+          getBookingById(client, bookingId),
+          getCurrentProfile(client, user),
+        ]);
+        if (active) {
+          setBooking(row);
+          setNote(
+            (profile?.id === row.planner_id
+              ? row.planner_notes
+              : row.vendor_notes) ?? "",
+          );
+        }
+      } catch (e) {
+        if (active)
+          setError(e instanceof Error ? e.message : "Booking unavailable.");
+      } finally {
+        if (active) setLoading(false);
       }
     }
-
-    loadBooking();
+    void load();
+    const client = hasSupabaseConfig() ? createBrowserSupabaseClient() : null;
+    const subscription = client?.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        active = false;
+        setBooking(null);
+        setNote("");
+        setError("Sign in to open this booking.");
+      }
+    }).data.subscription;
+    return () => {
+      active = false;
+      subscription?.unsubscribe();
+    };
   }, [bookingId]);
-
-  async function saveNotes() {
-    if (!booking) {
-      return;
-    }
-
-    try {
-      const supabase = createBrowserSupabaseClient();
-      const updatedBooking = await updateBookingNotes(supabase, {
-        bookingId: booking.id,
-        plannerNotes,
-        vendorNotes,
-      });
-
-      setBooking(updatedBooking);
-      setMessage("Booking notes saved.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to save notes.");
-    }
-  }
-
-  if (message && !booking) {
+  if (loading) return <p role="status">Loading booking…</p>;
+  if (!booking)
     return (
-      <div className="mx-auto max-w-7xl rounded-lg border border-neutral-200 bg-white p-6">
-        <p className="text-sm font-semibold text-neutral-700">{message}</p>
+      <div className="hub-card p-6">
+        <p role="alert" className="mb-4">
+          {error || "Booking unavailable."}
+        </p>
+        <Link
+          className="hub-primary"
+          href={`/auth/login?next=${encodeURIComponent(`/bookings/${bookingId}`)}`}
+        >
+          Sign in
+        </Link>
       </div>
     );
+  async function save() {
+    setBusy(true);
+    setError("");
+    try {
+      const row = await updateBookingNotes(
+        createBrowserSupabaseClient(),
+        bookingId,
+        note,
+      );
+      setBooking(row);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unable to save your note.");
+    } finally {
+      setBusy(false);
+    }
   }
-
-  if (!booking) {
-    return null;
-  }
-
-  const timeline = Array.isArray(booking.booking_timeline)
-    ? (booking.booking_timeline as TimelineItem[])
-    : [];
-
   return (
-    <div className="mx-auto max-w-7xl">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">
-          Booking detail
-        </p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
-          {formatMoney(booking.final_price)}
+    <div className="mx-auto max-w-5xl space-y-6">
+      <section className="hub-card p-6">
+        <p className="eyebrow">Booking record</p>
+        <h1 className="mt-3 text-3xl font-semibold">
+          {formatMoney(booking.final_price)} ·{" "}
+          {booking.booking_status === "confirmed"
+            ? "Booked"
+            : booking.booking_status}
         </h1>
-        <p className="mt-4 text-lg text-neutral-600">
-          {booking.booking_status} - payment {booking.payment_status}
+        <p className="mt-3 text-sm ui-muted">
+          No payment collected through ARIVVIO. Payments are not connected. Any
+          separate provider agreement may still apply.
         </p>
-      </div>
-
-      {message ? (
-        <p className="mt-6 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm font-semibold text-neutral-700">
-          {message}
+        <p className="mt-3 break-all text-xs ui-muted">
+          Booking {booking.id} · Created{" "}
+          {formatDate(booking.created_at.slice(0, 10))}
         </p>
-      ) : null}
-
-      <div className="mt-10 grid gap-5 lg:grid-cols-3">
-        <Metric label="Deposit" value={formatMoney(booking.deposit_amount)} />
-        <Metric label="Balance" value={formatMoney(booking.balance_due)} />
-        <Metric label="Created" value={formatDate(booking.created_at.slice(0, 10))} />
-      </div>
-
-      <div className="mt-5 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-        <section className="rounded-lg border border-neutral-200 bg-white p-6">
-          <h2 className="text-2xl font-semibold tracking-tight">Notes</h2>
-          <label className="mt-5 grid gap-2 text-sm font-semibold text-neutral-800">
-            Planner notes
-            <textarea
-              value={plannerNotes}
-              onChange={(event) => setPlannerNotes(event.target.value)}
-              className="min-h-32 rounded-lg border border-neutral-300 px-3 py-2"
-            />
-          </label>
-          <label className="mt-5 grid gap-2 text-sm font-semibold text-neutral-800">
-            Vendor notes
-            <textarea
-              value={vendorNotes}
-              onChange={(event) => setVendorNotes(event.target.value)}
-              className="min-h-32 rounded-lg border border-neutral-300 px-3 py-2"
-            />
-          </label>
-          <button
-            type="button"
-            onClick={saveNotes}
-            className="mt-5 h-11 rounded-full bg-[#0D1321] px-5 text-sm font-semibold text-white"
-          >
-            Save notes
-          </button>
-        </section>
-
-        <section className="rounded-lg border border-neutral-200 bg-white p-6">
-          <h2 className="text-2xl font-semibold tracking-tight">Timeline</h2>
-          <div className="mt-5 space-y-3">
-            {timeline.length ? (
-              timeline.map((item, index) => (
-                <div key={`${item.at}-${index}`} className="rounded-lg border border-neutral-200 p-4">
-                  <p className="font-semibold text-neutral-950">
-                    {item.label ?? "Booking activity"}
-                  </p>
-                  <p className="mt-1 text-sm text-neutral-500">
-                    {item.at ? new Date(item.at).toLocaleString() : "No timestamp"}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className="rounded-lg border border-dashed border-neutral-300 p-5 text-sm text-neutral-600">
-                Timeline activity will appear as booking changes are recorded.
-              </p>
-            )}
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-neutral-200 bg-white p-5">
-      <p className="text-sm text-neutral-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-neutral-950">{value}</p>
+      </section>
+      {booking.quote_request_id ? (
+        <RequestThread
+          key={booking.quote_request_id}
+          requestId={booking.quote_request_id}
+        />
+      ) : (
+        <p className="hub-card p-5 ui-muted">
+          This earlier booking has no linked request conversation.
+        </p>
+      )}
+      <section className="hub-card p-6">
+        <h2 className="text-xl font-semibold">Booking notes</h2>
+        <p className="mt-2 text-sm ui-muted">
+          Notes are shared with the other participant. You can edit your own
+          note.
+        </p>
+        {booking.planner_notes && (
+          <p className="mt-4 whitespace-pre-wrap break-words text-sm">
+            Customer: {booking.planner_notes}
+          </p>
+        )}
+        {booking.vendor_notes && (
+          <p className="mt-3 whitespace-pre-wrap break-words text-sm">
+            Provider: {booking.vendor_notes}
+          </p>
+        )}
+        <label className="mt-4 grid gap-2 text-sm font-semibold">
+          Your note
+          <textarea
+            className="min-h-24 rounded-xl border ui-border ui-surface p-3 font-normal"
+            maxLength={4000}
+            value={note}
+            disabled={busy}
+            onChange={(e) => setNote(e.target.value)}
+          />
+        </label>
+        <button
+          className="hub-button mt-4"
+          disabled={busy}
+          onClick={() => void save()}
+        >
+          {busy ? "Saving…" : "Save your note"}
+        </button>
+        {error && (
+          <p role="alert" className="mt-4">
+            {error}
+          </p>
+        )}
+      </section>
     </div>
   );
 }

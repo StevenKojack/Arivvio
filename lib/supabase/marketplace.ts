@@ -309,6 +309,7 @@ function mapServiceToMarketplaceItem(
       lng: vendor.longitude ?? -118.2437 - index * 0.004,
     },
     databaseSource: true,
+    listingState: vendor.owner_id ? "claimed" : "unclaimed",
     description:
       service.description ??
       vendor.description ??

@@ -3,127 +3,66 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { QuoteRequestRow } from "@/lib/repositories/quotesRepository";
 import type { BookingRow } from "@/lib/repositories/bookingsRepository";
-import { confirmAcceptedQuote } from "@/lib/services/quoteService";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-import { formatMoney } from "@/lib/utils/format";
+import { getRequestServiceName } from "@/lib/repositories/messagesRepository";
 import { getProviderName } from "@/lib/customer-cloud/events";
-import { CustomerDialog } from "./CustomerDialog";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { requestStatus } from "@/lib/requests/lifecycle";
+import { formatMoney } from "@/lib/utils/format";
 export function CloudQuoteCard({
   quote,
   eventName,
   booking,
-  onBooked,
 }: {
   quote: QuoteRequestRow;
   eventName: string;
   booking?: BookingRow;
-  onBooked: (booking: BookingRow) => void;
 }) {
-  const offerPrice = quote.vendor_final_price ?? quote.estimated_price;
   const [name, setName] = useState("Provider request");
-  const [confirm, setConfirm] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
+  const [service, setService] = useState("Event service");
   useEffect(() => {
     let active = true;
     const client = createBrowserSupabaseClient();
-    void getProviderName(client,quote.vendor_id,quote.venue_id).then(value=>{if(active)setName(value);}).catch(()=>{if(active)setName("Provider request");});
+    void Promise.all([
+      getProviderName(client, quote.vendor_id, quote.venue_id),
+      getRequestServiceName(client, quote.service_id, quote.venue_id),
+    ])
+      .then(([provider, serviceName]) => {
+        if (active) {
+          setName(provider);
+          setService(serviceName);
+        }
+      })
+      .catch(() => {});
     return () => {
       active = false;
     };
-  }, [quote.vendor_id, quote.venue_id]);
-  async function book() {
-    setBusy(true);
-    setError("");
-    try {
-      const row = await confirmAcceptedQuote(
-        createBrowserSupabaseClient(),
-        quote,
-      );
-      onBooked(row);
-      setConfirm(false);
-    } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : "Unable to confirm. Reload the request and try again.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
+  }, [quote.vendor_id, quote.venue_id, quote.service_id]);
   return (
     <article className="hub-card min-w-0 p-5">
-      <div className="flex flex-wrap justify-between gap-3">
+      <div className="flex flex-wrap justify-between gap-2">
         <h3 className="font-semibold">{name}</h3>
         <span className="text-sm ui-muted">
-          {booking ? "Booked" : quote.status}
+          {requestStatus(quote.status, !!booking, false, quote.quote_revision)}
         </span>
       </div>
-      <Link
-        href={`/events/${quote.event_id}`}
-        className="mt-2 inline-block text-sm underline"
-      >
-        {eventName}
-      </Link>
-      <p className="mt-3 text-lg font-semibold">
-        {offerPrice != null
-          ? `${formatMoney(offerPrice)}${quote.status === "accepted" || quote.vendor_final_price != null ? "" : " estimated"}`
-          : "Awaiting provider price"}
+      <p className="mt-2 text-sm ui-muted">
+        {service} · {eventName}
       </p>
-      {quote.message && (
-        <p className="mt-2 whitespace-pre-wrap text-sm ui-muted">
-          {quote.message}
+      {quote.vendor_final_price != null && (
+        <p className="mt-3 text-lg font-semibold">
+          {formatMoney(quote.vendor_final_price)}
         </p>
       )}
-      {!booking &&
-        quote.status === "accepted" &&
-        offerPrice != null && (
-          <button className="hub-primary mt-4" onClick={() => setConfirm(true)}>
-            Review and confirm offer
-          </button>
-        )}
-      {booking && (
-        <p className="mt-3 text-sm ui-muted">
-          Booking saved. No payment has been collected.
-        </p>
-      )}
-      {confirm && (
-        <CustomerDialog
-          title="Confirm provider offer"
-          onClose={() => {
-            if (!busy) setConfirm(false);
-          }}
-        >
-          <p>
-            Confirm {name} for {eventName} at{" "}
-            {formatMoney(offerPrice)}?
-          </p>
-          <p className="my-4 text-sm ui-muted">
-            This creates an ARIVVIO booking record. It does not collect payment
-            or replace any separate provider agreement.
-          </p>
-          <button
-            className="hub-primary"
-            disabled={busy}
-            onClick={() => void book()}
-          >
-            {busy ? "Saving…" : "Confirm booking without payment"}
-          </button>
-          <button
-            className="hub-button ml-3"
-            disabled={busy}
-            onClick={() => setConfirm(false)}
-          >
-            Keep reviewing
-          </button>
-          {error && (
-            <p className="mt-3" role="alert">
-              {error}
-            </p>
-          )}
-        </CustomerDialog>
-      )}
+      <p className="mt-2 text-xs ui-muted">
+        Updated{" "}
+        {new Date(quote.updated_at ?? quote.created_at).toLocaleString()}
+      </p>
+      <Link
+        className="hub-button mt-4 inline-block"
+        href={`/account/requests/${quote.id}`}
+      >
+        Open request and conversation
+      </Link>
     </article>
   );
 }

@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { eventTypes } from "@/app/data/marketplace";
 import { createBrowserSupabaseClient, hasSupabaseConfig } from "@/lib/supabase/client";
-import { getEventsByIds } from "@/lib/repositories/eventsRepository";
+import { getRequestInbox } from "@/lib/repositories/messagesRepository";
+import { RequestInbox } from "@/app/components/RequestInbox";
 import { ensureCurrentProfile } from "@/lib/repositories/profilesRepository";
 import { getBookingsForVendors, type BookingRow } from "@/lib/repositories/bookingsRepository";
-import { getQuoteRequestsForVendors } from "@/lib/repositories/quotesRepository";
 import {
   createAvailabilityWindow,
   createVendorService,
@@ -27,17 +27,14 @@ import {
   type VendorPhotoRow,
   type VendorServiceRow,
 } from "@/lib/repositories/vendorsRepository";
-import { respondToQuoteRequest } from "@/lib/services/quoteService";
 import { optionalUrl, requirePositiveNumber, requireString } from "@/lib/validators/forms";
 import {
   AnalyticsTab,
   AvailabilityTab,
   BookingsTab,
   BusinessSettingsTab,
-  DashboardTab,
   PhotosTab,
   ProfileTab,
-  QuotesTab,
   ServicesTab,
   vendorDashboardTabs,
   type AvailabilityDraft,
@@ -46,7 +43,6 @@ import {
   type ServiceDraft,
   type VendorDashboardTab,
 } from "./VendorDashboardTabs";
-import type { QuoteStatus } from "@/lib/types/domain";
 
 export function VendorDashboard() {
   const [activeTab, setActiveTab] = useState<VendorDashboardTab>("Dashboard");
@@ -86,26 +82,15 @@ export function VendorDashboard() {
             getVendorServicesByVendorIds(supabase, vendorIds),
             getVendorAvailabilityByVendorIds(supabase, vendorIds),
             getVendorPhotosByVendorIds(supabase, vendorIds),
-            getQuoteRequestsForVendors(supabase, vendorIds),
+            getRequestInbox(supabase, "vendor"),
             getBookingsForVendors(supabase, vendorIds),
           ]);
-        const eventIds = Array.from(new Set(quoteRows.map((quote) => quote.event_id)));
-        const eventRows = await getEventsByIds(supabase, eventIds);
-        const eventsById = new Map(
-          eventRows.map((eventRow) => [eventRow.id, eventRow]),
-        );
-
         setVendors(vendorRows);
         setServices(serviceRows);
         setAvailability(availabilityRows);
         setPhotos(photoRows);
-        setBookings(bookingRows);
-        setQuotes(
-          quoteRows.map((quote) => ({
-            ...quote,
-            event: eventsById.get(quote.event_id),
-          })),
-        );
+        setBookings([...new Map([...bookingRows,...quoteRows.flatMap(row=>row.booking?[row.booking]:[])].map(row=>[row.id,row])).values()]);
+        setQuotes(quoteRows.map(row=>({...row.quote,event:{title:row.context.title,event_type:row.context.event_type,date:row.context.date,guest_count:row.context.guest_count}})));
         setMessage("");
       } catch (error) {
         setMessage(
@@ -283,30 +268,6 @@ export function VendorDashboard() {
     }
   }
 
-  async function handleRespondQuote(
-    quoteId: string,
-    status: Extract<QuoteStatus, "accepted" | "declined" | "countered">,
-    vendorFinalPrice?: number | null,
-  ) {
-    try {
-      const supabase = createBrowserSupabaseClient();
-      const updatedQuote = await respondToQuoteRequest(supabase, {
-        quoteId,
-        status,
-        vendorFinalPrice,
-      });
-
-      setQuotes((current) =>
-        current.map((quote) =>
-          quote.id === quoteId ? { ...quote, ...updatedQuote } : quote,
-        ),
-      );
-      setMessage(`Quote ${status}.`);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to update quote.");
-    }
-  }
-
   async function handleUpdateBusiness(vendorId: string, draft: BusinessDraft) {
     try {
       requireString(draft.businessName, "Business name");
@@ -407,12 +368,7 @@ export function VendorDashboard() {
 
       <div className="mt-6">
         {activeTab === "Dashboard" ? (
-          <DashboardTab
-            bookings={bookings}
-            quotes={quotes}
-            services={services}
-            vendors={vendors}
-          />
+          <RequestInbox audience="vendor" compact />
         ) : null}
         {activeTab === "Services" ? (
           <ServicesTab
@@ -441,8 +397,8 @@ export function VendorDashboard() {
             vendors={vendors}
           />
         ) : null}
-        {activeTab === "Quotes" ? (
-          <QuotesTab onRespondQuote={handleRespondQuote} quotes={quotes} />
+        {activeTab === "Inquiries" ? (
+          <RequestInbox audience="vendor" />
         ) : null}
         {activeTab === "Bookings" ? <BookingsTab bookings={bookings} /> : null}
         {activeTab === "Profile" ? <ProfileTab vendors={vendors} /> : null}

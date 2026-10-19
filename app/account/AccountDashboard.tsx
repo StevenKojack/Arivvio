@@ -12,10 +12,6 @@ import {
   getQuoteRequestsForEvents,
   type QuoteRequestRow,
 } from "@/lib/repositories/quotesRepository";
-import {
-  getBookingsForPlannerEvents,
-  type BookingRow,
-} from "@/lib/repositories/bookingsRepository";
 import { getVendorBusinessesByOwner } from "@/lib/repositories/vendorsRepository";
 import type { PublicTableRow } from "@/lib/supabase/database.types";
 import { eventGroup, profileFromEvent } from "@/lib/customer-cloud/profile";
@@ -24,7 +20,7 @@ import {
   type CustomerEvent,
 } from "@/lib/customer-demo/events";
 import { formatDate } from "@/lib/utils/format";
-import { CloudQuoteCard } from "@/app/components/CloudQuoteCard";
+import { RequestInbox } from "@/app/components/RequestInbox";
 import { pendingSaveKey, SaveEventToAccount } from "@/app/components/SaveEventToAccount";
 import { ThemeControl } from "@/app/components/ThemeControl";
 import { EventAtmosphere } from "@/app/components/EventAtmosphere";
@@ -37,7 +33,6 @@ export function AccountDashboard() {
   );
   const [events, setEvents] = useState<PublicTableRow<"events">[]>([]);
   const [quotes, setQuotes] = useState<QuoteRequestRow[]>([]);
-  const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [local, setLocal] = useState<CustomerEvent[]>([]);
   const [vendor, setVendor] = useState(false);
   const [busy, setBusy] = useState(true);
@@ -65,12 +60,8 @@ export function AccountDashboard() {
           );
         const p = await ensureCurrentProfile(client, user);
         const rows = await getPlannerEvents(client, p.id);
-        const [q, b, v] = await Promise.all([
+        const [q, v] = await Promise.all([
           getQuoteRequestsForEvents(
-            client,
-            rows.map((e) => e.id),
-          ),
-          getBookingsForPlannerEvents(
             client,
             rows.map((e) => e.id),
           ),
@@ -80,7 +71,6 @@ export function AccountDashboard() {
           setProfile(p);
           setEvents(rows);
           setQuotes(q);
-          setBookings(b);
           setVendor(v.length > 0);
         }
       } catch (e) {
@@ -220,31 +210,7 @@ export function AccountDashboard() {
           )}
         </>
       )}
-      {section === "Requests / Vendors" && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {quotes.map((q) => (
-            <CloudQuoteCard
-              key={q.id}
-              quote={q}
-              eventName={
-                events.find((e) => e.id === q.event_id)?.title ?? "Your event"
-              }
-              booking={bookings.find((b) => b.quote_request_id === q.id)}
-              onBooked={(row) =>
-                setBookings((current) => [
-                  row,
-                  ...current.filter((b) => b.id !== row.id),
-                ])
-              }
-            />
-          ))}
-          {!quotes.length && (
-            <p className="hub-card p-6 ui-muted">
-              Choose an account event, then browse providers to request a quote.
-            </p>
-          )}
-        </div>
-      )}
+      {section === "Requests / Vendors" && <RequestInbox audience="customer" />}
       {section === "Account" && (
         <section className="hub-card max-w-2xl p-6">
           <h2 className="text-xl font-semibold">Account details</h2>

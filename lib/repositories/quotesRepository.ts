@@ -1,5 +1,4 @@
 import type { PublicTableRow } from "@/lib/supabase/database.types";
-import type { QuoteStatus } from "@/lib/types/domain";
 import type { ArivvioSupabaseClient } from "./types";
 
 export type QuoteRequestCreateInput = {
@@ -122,48 +121,41 @@ export async function getQuoteRequestsForVendors(
   return data ?? [];
 }
 
-export async function updateQuoteRequestResponse(
-  supabase: ArivvioSupabaseClient,
-  input: {
-    quoteId: string;
-    status: Extract<QuoteStatus, "accepted" | "declined" | "countered">;
-    vendorFinalPrice?: number | null;
-  },
+export async function sendVendorQuote(
+  client: ArivvioSupabaseClient,
+  quote: QuoteRequestRow,
+  price: number,
+  note: string,
 ) {
-  const { data, error } = await supabase
-    .from("quote_requests")
-    .update({
-      status: input.status,
-      vendor_final_price: input.vendorFinalPrice ?? null,
-    })
-    .eq("id", input.quoteId)
-    .select("*")
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
+  const { data, error } = await client.rpc("send_vendor_quote", {
+    request: quote.id,
+    price,
+    note: note.trim(),
+    expected_revision: quote.quote_revision,
+  });
+  if (error) throw new Error(error.message);
   return data;
 }
-
-export async function updateQuoteStatus(
-  supabase: ArivvioSupabaseClient,
-  quoteId: string,
-  status: Extract<QuoteStatus, "accepted" | "declined" | "countered" | "cancelled">,
+export async function declineQuote(
+  client: ArivvioSupabaseClient,
+  request: string,
+  note: string,
 ) {
-  const { data, error } = await supabase
-    .from("quote_requests")
-    .update({ status })
-    .eq("id", quoteId)
-    .select("*")
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
+  const { data, error } = await client.rpc("decline_quote", {
+    request,
+    note: note.trim(),
+  });
+  if (error) throw new Error(error.message);
   return data;
 }
-
+export async function withdrawQuoteRequest(
+  client: ArivvioSupabaseClient,
+  request: string,
+) {
+  const { data, error } = await client.rpc("withdraw_quote_request", {
+    request,
+  });
+  if (error) throw new Error(error.message);
+  return data;
+}
 export type QuoteRequestRow = PublicTableRow<"quote_requests">;
