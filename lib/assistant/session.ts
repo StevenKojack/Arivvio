@@ -4,10 +4,12 @@ import { loadCustomerEvents } from '@/lib/customer-demo/events';
 import { assistantEvents } from './config';
 import type { PageContext } from './context';
 import type { ChatMessage } from './provider';
+import { cloudAssistantEvent } from '../customer-cloud/session';
 let currentPage: PageContext | null = null;
 export function publishAssistantContext(context: PageContext) { currentPage=context; window.dispatchEvent(new Event(assistantEvents.context)); }
 export function getAssistantContext(path: string): PageContext { return currentPage?.path === path ? currentPage : {path}; }
 export function activeAssistantEvent(path: string) {
+ const cloud=cloudAssistantEvent(path); if(cloud)return cloud;
  const eventId=path.match(/^\/account\/demo\/events\/([^/]+)$/)?.[1];
  if(eventId) { const event=loadCustomerEvents().find(e=>e.id===decodeURIComponent(eventId)); return {key:event?.profile?.eventId ?? `event:${eventId}`,profile:event?.profile ?? null,readOnly:!event?.profile,status:event ? `${event.requests.length} saved requests. Submitted snapshots are separate from the current plan.` : 'Event unavailable in this browser'}; }
  const requestId=path.match(/^\/requests\/([^/]+)$/)?.[1];

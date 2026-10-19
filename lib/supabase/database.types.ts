@@ -59,6 +59,8 @@ export type Database = {
           date: string | null;
           end_time: string | null;
           event_profile: Json | null;
+          source_event_id: string | null;
+          profile_revision: number;
           event_type: string;
           formality: string | null;
           guest_count: number | null;
@@ -370,7 +372,10 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      manage_customer_event: { Args: {target_event: string; operation: string}; Returns: boolean };
+
+    };
     Enums: {
       approval_status: ApprovalStatus;
       availability_status: AvailabilityStatus;

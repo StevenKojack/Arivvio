@@ -78,7 +78,7 @@ export async function confirmAcceptedQuote(
   }
 
   const finalPrice = Number(quote.vendor_final_price ?? quote.estimated_price ?? 0);
-  const depositAmount = Math.round(finalPrice * 0.2);
+  const depositAmount = 0; // No deposit terms or payment collection are supported here.
   const booking = await createBooking(supabase, {
     balanceDue: Math.max(finalPrice - depositAmount, 0),
     depositAmount,
