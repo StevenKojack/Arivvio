@@ -1,5 +1,11 @@
 "use client";
 
+import { SaveEventToAccount } from '@/app/components/SaveEventToAccount';
+import { createBrowserSupabaseClient } from '@/lib/supabase/client';
+import { getEventById } from '@/lib/repositories/eventsRepository';
+import { profileFromEvent } from '@/lib/customer-cloud/profile';
+import { updateCloudEvent } from '@/lib/customer-cloud/events';
+import { loadCloudAssistantEvent } from '@/lib/customer-cloud/session';
 import Link from "next/link";
 import { EventPartsEditor, EventPartsSummary } from "./components/EventParts";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -120,6 +126,11 @@ type DemoPlannerSessionState = {
 const steps = ["What", "Confirm", "When", "Where", "Guests", "Review"] as const;
 
 export function EventWizard() {
+  const params = useSearchParams();
+  return <EventWizardBody key={params.get("eventId") ?? "demo"} />;
+}
+
+function EventWizardBody() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("query") ?? "";
   const initialIntelligence = useMemo(
@@ -128,6 +139,10 @@ export function EventWizard() {
   );
   const initialStages = initialIntelligence.stages;
   const sessionRestoredRef = useRef(false);
+  const cloudId=searchParams.get('eventId');
+  const [cloudRevision,setCloudRevision]=useState<number|null>(null);
+  const [cloudSaving,setCloudSaving]=useState(false);
+  const [cloudNotice,setCloudNotice]=useState('');
   const [sessionReady, setSessionReady] = useState(false);
   const [storageNotice, setStorageNotice] = useState("");
   const [step, setStep] = useState(initialQuery && !getDiscoveryFamily(initialQuery) ? 1 : 0);
@@ -164,7 +179,7 @@ export function EventWizard() {
     ...contextPreferences,
   ].map((preference) => [preference.id, preference])).values()), [contextPreferences, planSelections]);
   const eventIntelligence = useMemo(
-    () => ({ ...buildEventIntelligenceProfile({
+    () => ({ ...conversationProfile, ...buildEventIntelligenceProfile({
       audience,
       guestSize: guestCount,
       inferPreferencesFromQuery: false,
@@ -238,8 +253,10 @@ export function EventWizard() {
       params.set("searchRadiusMiles", String(Math.round(metersToMiles(primaryZone.radiusMeters))));
     }
 
+    if(cloudId)params.set('eventId',cloudId);
     return `/marketplace?${params.toString()}`;
   }, [
+    cloudId,
     audience,
     budget,
     durationHours,
@@ -263,6 +280,10 @@ export function EventWizard() {
   useEffect(() => {
     if (sessionRestoredRef.current) return;
     sessionRestoredRef.current = true;
+    if(cloudId){
+      void Promise.resolve().then(()=>getEventById(createBrowserSupabaseClient(),cloudId)).then(row=>{if(['cancelled','completed'].includes(row.status))throw new Error('This event is read only.');restoreConversationProfile(profileFromEvent(row));setCloudRevision(row.profile_revision);setStep(1);setSessionReady(true);}).catch(e=>setStorageNotice(e instanceof Error?e.message:'Unable to open account event.'));
+      return;
+    }
 
     {
       const assistantProfile = loadEventIntelligenceProfile();
@@ -291,10 +312,10 @@ export function EventWizard() {
         });
       } else { queueMicrotask(() => setSessionReady(true)); }
     }
-  }, [initialQuery, searchParams]);
+  }, [initialQuery, searchParams, cloudId]);
 
   useEffect(() => {
-    if (!sessionReady || !query.trim()) return;
+    if (cloudId || !sessionReady || !query.trim()) return;
     saveDemoPlannerSession<DemoPlannerSessionState>({
       confirmedPlanningFields,
       audience,
@@ -309,7 +330,7 @@ export function EventWizard() {
       step,
       timing,
     });
-  }, [sessionReady, audience, budget, contextPreferences, guestCount, isMultiDay, locations, planSelections, query, stages, step, timing, confirmedPlanningFields]);
+  }, [cloudId, sessionReady, audience, budget, contextPreferences, guestCount, isMultiDay, locations, planSelections, query, stages, step, timing, confirmedPlanningFields]);
 
   useEffect(() => {
     const profile = buildLocationProfile(locations[0]);
@@ -320,9 +341,15 @@ export function EventWizard() {
   }, [locations]);
 
   useEffect(() => {
-    if (sessionReady && step > 0) { try { saveEventIntelligenceProfile(eventIntelligence); queueMicrotask(() => setStorageNotice("")); } catch (error) { queueMicrotask(() => setStorageNotice(error instanceof Error ? error.message : "Unable to save this browser plan.")); } }
-  }, [eventIntelligence, sessionReady, step]);
+    if (!cloudId && sessionReady && step > 0) { try { saveEventIntelligenceProfile(eventIntelligence); queueMicrotask(() => setStorageNotice("")); } catch (error) { queueMicrotask(() => setStorageNotice(error instanceof Error ? error.message : "Unable to save this browser plan.")); } }
+  }, [cloudId, eventIntelligence, sessionReady, step]);
 
+  async function saveAccountPlan() {
+    if(!cloudId||cloudRevision===null)throw new Error('Account event has not loaded.');
+    setCloudSaving(true);setCloudNotice('');
+    try {const row=await updateCloudEvent(createBrowserSupabaseClient(),{...eventIntelligence,eventId:cloudId},cloudRevision);setCloudRevision(row.profile_revision);await loadCloudAssistantEvent('/discover');setCloudNotice('Account event saved.');return row;}
+    finally{setCloudSaving(false);}
+  }
   function restoreConversationProfile(profile: EventIntelligenceProfile) {
     setConversationProfile(profile);
     setQuery(profile.plannerIntent.rawText);
@@ -337,10 +364,12 @@ export function EventWizard() {
     setLocations([getLocationForIntelligence(profile)]);
   }
   useEffect(() => {
-    const apply = (event: Event) => restoreConversationProfile((event as CustomEvent<EventIntelligenceProfile>).detail);
+    const apply = (event: Event) => {if(!cloudId)restoreConversationProfile((event as CustomEvent<EventIntelligenceProfile>).detail);};
+    const cloudApply=(e:Event)=>{const row=(e as CustomEvent<import('@/lib/supabase/database.types').PublicTableRow<'events'>>).detail;if(row.id===cloudId){restoreConversationProfile(profileFromEvent(row));setCloudRevision(row.profile_revision);}};
     window.addEventListener("arivvio:assistant-plan", apply);
-    return () => window.removeEventListener("arivvio:assistant-plan", apply);
-  }, []);
+    window.addEventListener('arivvio:cloud-event-changed',cloudApply);
+    return () => {window.removeEventListener("arivvio:assistant-plan", apply);window.removeEventListener('arivvio:cloud-event-changed',cloudApply);};
+  }, [cloudId]);
 
   function continueFromSearch(nextQuery = query, preserveDetails = false) {
     const cleanQuery = nextQuery.trim();
@@ -454,9 +483,12 @@ export function EventWizard() {
     return canOpenMarketplace || Boolean(query.trim() && timing.date && guestCount > 0);
   }
 
+  if(cloudId && !sessionReady)return <section className="hub-card mx-auto my-8 max-w-3xl p-6"><p role="status">{storageNotice||"Loading your account event…"}</p><Link href={`/auth/login?next=${encodeURIComponent(`/discover?eventId=${cloudId}`)}`} className="hub-button mt-4">Sign in to continue</Link></section>;
   return (
     <section className="relative px-4 py-8 sm:px-8 lg:px-12">
       <EventMoment recognition={recognition} active={step === 1} />
+      {cloudId&&<div className="hub-card mx-auto mb-4 flex max-w-5xl flex-wrap items-center gap-3 p-4"><Link href={`/events/${cloudId}`} className="hub-button">Back to Event Hub</Link><button className="hub-primary" disabled={cloudRevision===null||cloudSaving} onClick={()=>void saveAccountPlan().catch(e=>setCloudNotice(e instanceof Error?e.message:'Unable to save.'))}>{cloudSaving?'Saving…':'Save changes to account event'}</button><p role="status" className="text-sm ui-muted">{cloudNotice||'Edits save to your account when you confirm. Demo events stay separate.'}</p></div>}
+      {!cloudId&&step>0&&<div className="mx-auto mb-4 max-w-5xl"><SaveEventToAccount profile={eventIntelligence}/></div>}
       {storageNotice && <p role="alert" className="hub-card mx-auto mb-4 max-w-5xl p-4">{storageNotice}</p>}
       {step > 0 && <p className="intake-personality mx-auto max-w-7xl" data-personality={getEventPersonality(recognition)}>{recognition.identity.selectedDisplayEvent} · One connected plan, shaped around your occasion.</p>}
       <div
@@ -711,7 +743,7 @@ export function EventWizard() {
                   {canOpenMarketplace ? (
                     <Link
                       href={marketplaceHref}
-                      onClick={() => saveLocationProfile(buildLocationProfile(locations[0]))}
+                      onClick={async(e) => {saveLocationProfile(buildLocationProfile(locations[0]));if(cloudId){e.preventDefault();try{await saveAccountPlan();window.location.assign(marketplaceHref);}catch(error){setCloudNotice(error instanceof Error?error.message:'Unable to save.');}}}}
                       className="inline-flex h-12 items-center justify-center rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
                     >
                       Browse matches

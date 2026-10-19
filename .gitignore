@@ -41,3 +41,6 @@ codex-*.log
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local Supabase CLI state
+/supabase/.temp/

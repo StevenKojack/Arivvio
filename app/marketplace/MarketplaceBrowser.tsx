@@ -3,6 +3,10 @@
 import { listingPresentation } from "@/lib/marketplace/listing-state";
 import { matchesListingRequirements, selectMatchingTiers, type MatchAssessment } from "@/lib/marketplace/matching-tiers";
 import { evaluateEligibility } from "@/lib/vendor-demo/eligibility";
+import Link from "next/link";
+import { loadCloudCart, removeCloudCartItem, sendCloudCart } from "@/lib/customer-cloud/marketplace";
+import { SaveEventToAccount } from "@/app/components/SaveEventToAccount";
+import { profileFromEvent } from "@/lib/customer-cloud/profile";
 import { CustomerDialog } from "@/app/components/CustomerDialog";
 import { EventPartsSummary } from "@/app/discover/components/EventParts";
 
@@ -137,7 +141,9 @@ function getInitialCoordinates(searchParams: ReturnType<typeof useSearchParams>)
   return { lat, lng };
 }
 
-export function MarketplaceBrowser() {
+export function MarketplaceBrowser() { const params=useSearchParams();return <MarketplaceBody key={params.get("eventId")??"demo"}/>; }
+function MarketplaceBody() {
+ const [cloudReview,setCloudReview]=useState(false),[cloudSending,setCloudSending]=useState(false),[cloudMessage,setCloudMessage]=useState("");
   const searchParams = useSearchParams();
   const initialCoordinates = getInitialCoordinates(searchParams);
   const initialEvent = searchParams.get("event");
@@ -327,7 +333,7 @@ export function MarketplaceBrowser() {
     : locationProfile?.label ||
       locationProfile?.formattedAddress ||
       initialLocation ||
-      savedEvent?.city ||
+      savedEvent?.address || savedEvent?.city ||
       "Not selected";
   const serviceSummary = selectedServices.length
     ? selectedServices.slice(0, 4).join(", ")
@@ -339,11 +345,11 @@ export function MarketplaceBrowser() {
   const planningContext = useMemo(
     () =>
       derivePlanningContext({
-        budget: initialBudget,
-        eventLabel: initialEventLabel ?? selectedEvent,
+        budget: eventId ? String(eventIntelligence?.planning?.budget??0) : initialBudget,
+        eventLabel: eventIntelligence?.recognition.identity.selectedDisplayEvent ?? initialEventLabel ?? selectedEvent,
         locationContext: initialLocationContext,
         locationText: `${initialLocation} ${homeAddress}`,
-        notes: eventIntelligenceNotes,
+        notes: eventId ? eventIntelligence?.plannerIntent.rawText??"" : eventIntelligenceNotes,
       }),
     [
       homeAddress,
@@ -352,6 +358,8 @@ export function MarketplaceBrowser() {
       initialLocation,
       initialLocationContext,
       eventIntelligenceNotes,
+      eventId,
+      eventIntelligence,
       selectedEvent,
     ],
   );
@@ -537,14 +545,14 @@ export function MarketplaceBrowser() {
   }, [filteredItems, selectedServices, selectedMapItemId]);
   useEffect(() => {
     const refresh = () => {
-      const p=loadEventIntelligenceProfile(); if(!p)return;
+      const p=loadEventIntelligenceProfile(); if(eventId||!p)return;
       setEventIntelligence(p); setExcludedServices(p.excludedServices); setSelectedServices(p.requestedServices);
       if(p.planning){setGuestCount(p.planning.guestCount);setEventDate(p.planning.date);setStartTime(p.planning.startTime);setEndTime(p.planning.endTime);setHomeAddress(p.planning.location);}
       setCartMessage("Plan updated. Review existing cart service windows before sending requests.");
     };
     window.addEventListener("arivvio:assistant-plan",refresh);
     return ()=>window.removeEventListener("arivvio:assistant-plan",refresh);
-  }, []);
+  }, [eventId]);
 
   const setMapHoverItem = useCallback((itemId: number | null) => {
     if (hoverFrameRef.current) {
@@ -557,10 +565,10 @@ export function MarketplaceBrowser() {
   }, []);
 
   useEffect(() => {
-    const storedProfile = searchParams.get("eventProfile") === "session"
+    const storedProfile = !eventId && searchParams.get("eventProfile") === "session"
       ? loadEventIntelligenceProfile()
       : null;
-    const storedCart = loadDemoCart<CartLine[]>();
+    const storedCart = eventId ? [] : loadDemoCart<CartLine[]>();
     queueMicrotask(() => {
       if (storedProfile) {
         setEventIntelligence(storedProfile);
@@ -573,19 +581,20 @@ export function MarketplaceBrowser() {
       if (storedCart?.length) setCart(storedCart);
       setIsCartRestored(true);
     });
-  }, [searchParams]);
+  }, [searchParams,eventId]);
 
   useEffect(() => {
-    if (isCartRestored) saveDemoCart(cart);
-  }, [cart, isCartRestored]);
+    if (isCartRestored && !eventId) saveDemoCart(cart);
+  }, [cart, isCartRestored,eventId]);
 
   useEffect(() => {
+    if(eventId)return;
     const profile = loadLocationProfile();
 
     if (profile) {
       queueMicrotask(() => applyLocationProfile(profile, "Planning location restored."));
     }
-  }, []);
+  }, [eventId]);
 
   useEffect(() => {
     async function loadMarketplace() {
@@ -614,15 +623,18 @@ export function MarketplaceBrowser() {
         if (eventId) {
           const eventRow = await getEventById(supabase, eventId);
           setSavedEvent(eventRow);
+          const canonical=profileFromEvent(eventRow);setEventIntelligence(canonical);setSelectedServices(canonical.requestedServices);setExcludedServices(canonical.excludedServices);
           const savedLocationProfile = getLocationProfileFromEvent(eventRow);
 
           if (savedLocationProfile) {
             applyLocationProfile(savedLocationProfile, "Saved event location restored.");
           }
-          setEventDate(eventRow.date ?? eventDate);
-          setStartTime(eventRow.start_time?.slice(0, 5) ?? startTime);
-          setEndTime(eventRow.end_time?.slice(0, 5) ?? endTime);
-          setGuestCount(eventRow.guest_count ?? guestCount);
+          setEventDate(eventRow.date ?? "");
+          setStartTime(eventRow.start_time?.slice(0, 5) ?? "");
+          setEndTime(eventRow.end_time?.slice(0, 5) ?? "");
+          setGuestCount(eventRow.guest_count ?? 0);
+          setHomeAddress(canonical.planning?.location??eventRow.address??eventRow.city??"");
+          setUseHomeVenue(!canonical.venueRequired);
           if (isEventType(eventRow.event_type)) {
             chooseEventType(eventRow.event_type);
           }
@@ -632,6 +644,7 @@ export function MarketplaceBrowser() {
 
         if (databaseProviders.length) {
           setProviders(databaseProviders);
+          if(eventId){const rows=await loadCloudCart(supabase,eventId);setCart((rows??[]).flatMap((row,index)=>{const item=databaseProviders.find(p=>row.service_id?p.serviceId===row.service_id:p.vendorId===row.vendor_id);return item?[{id:index+1,item,persisted:true,cartItemId:row.id,priceAdjustment:0,serviceId:row.service_id,serviceName:item.services[0],serviceTitle:item.name,serviceStart:row.start_time?.slice(0,5)??'',serviceEnd:row.end_time?.slice(0,5)??''}]:[];}));}
           setMarketplaceMessage(
             "Showing approved database providers from Supabase.",
           );
@@ -645,9 +658,10 @@ export function MarketplaceBrowser() {
       } catch (error) {
         setSessionUserId(null);
         setProfile(null);
-        setProviders(demoItems());
+        setProviders(eventId?[]:demoItems());
+        setSavedEvent(null);
         setMarketplaceMessage(
-          error instanceof Error
+          eventId ? "This account event could not be loaded. Sign in to its owner account and reload." : error instanceof Error
             ? `${error.message}. Showing demo providers until Supabase data is ready.`
             : "Unable to load database providers. Showing demo providers.",
         );
@@ -657,8 +671,24 @@ export function MarketplaceBrowser() {
     }
 
     loadMarketplace();
-    // The initial URL params should seed the browser once when the route loads.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId]);
+
+  useEffect(() => {
+    const refresh = (event: Event) => {
+      const row = (event as CustomEvent<EventRow>).detail;
+      if (!eventId || row.id !== eventId) return;
+      const canonical = profileFromEvent(row);
+      setSavedEvent(row);
+      setEventIntelligence(canonical);
+      setSelectedServices(canonical.requestedServices);
+      setExcludedServices(canonical.excludedServices);
+      setEventDate(row.date ?? "");
+      setStartTime(row.start_time?.slice(0, 5) ?? "");
+      setEndTime(row.end_time?.slice(0, 5) ?? "");
+      setGuestCount(row.guest_count ?? 0);
+    };
+    window.addEventListener("arivvio:cloud-event-changed", refresh);
+    return () => window.removeEventListener("arivvio:cloud-event-changed", refresh);
   }, [eventId]);
 
   useEffect(() => {
@@ -903,6 +933,7 @@ export function MarketplaceBrowser() {
       return;
     }
 
+    if(eventId && (!savedEvent || ["cancelled","completed"].includes(savedEvent.status))){setCartMessage("Open an active account event before selecting providers.");return;}
     const lineId = Date.now();
     const line: CartLine = {
       id: lineId,
@@ -977,6 +1008,7 @@ export function MarketplaceBrowser() {
     startTime,
     isAuthLoading,
     isLoggedIn,
+    eventId,
   ]);
 
   const addToCart = useCallback(async (item: MarketplaceItem) => {
@@ -1003,8 +1035,10 @@ export function MarketplaceBrowser() {
   }, [addCartLine]);
 
   const removeFromCart = useCallback((lineId: number) => {
-    setCart((current) => current.filter((line) => line.id !== lineId));
-  }, []);
+    const line=cart.find(l=>l.id===lineId);
+    if(line?.cartItemId&&savedEvent){void removeCloudCartItem(createBrowserSupabaseClient(),savedEvent.id,line.cartItemId).then(()=>setCart(current=>current.filter(l=>l.id!==lineId))).catch(()=>setCartMessage('Unable to remove the saved item. Please retry.'));}
+    else setCart(current=>current.filter(line=>line.id!==lineId));
+  }, [cart,savedEvent]);
 
   const selectMapItem = useCallback((item: MarketplaceItem) => {
     setSelectedMapItemId(item.id);
@@ -1079,10 +1113,15 @@ export function MarketplaceBrowser() {
 
   function requestQuotes() {
     if (!cart.length) { setCartMessage("Add providers before requesting quotes."); return; }
+    if(eventId && cart.some(line=>line.item.databaseSource)){
+      if(cart.some(line=>!line.item.databaseSource)){setCartMessage("Remove demo providers before sending real requests. Demo inquiries stay separate.");return;}
+      if(cart.some(line=>!line.persisted||!line.cartItemId)){setCartMessage("Some selections have not saved. Remove and add them again before sending.");return;}
+      setCloudReview(true);return;
+    }
     const id = crypto.randomUUID();
     setIsMobileCartOpen(false);
-    setQuoteReview({ id, version: 1, source: "ARIVVIO_DEMO", status: "demo-created", createdAt: new Date().toISOString(), eventId: savedEvent?.id,
-      event: { name: eventIntelligence?.recognition.identity.selectedDisplayEvent ?? initialEventLabel ?? "Your event", date: eventDate, startTime, endTime, location: eventLocationLabel, guestCount, budget: eventIntelligence?.planning?.budget ?? Number(initialBudget || 0), requirements: initialNotes, profile: eventIntelligence },
+    setQuoteReview({ id, version: 1, source: "ARIVVIO_DEMO", status: "demo-created", createdAt: new Date().toISOString(), eventId: eventId ? `demo-for:${eventId}` : undefined,
+      event: { name: eventIntelligence?.recognition.identity.selectedDisplayEvent ?? initialEventLabel ?? "Your event", date: eventDate, startTime, endTime, location: eventLocationLabel, guestCount, budget: eventIntelligence?.planning?.budget ?? Number(initialBudget || 0), requirements: initialNotes, profile: eventId && eventIntelligence ? {...eventIntelligence,eventId:`demo-for:${eventId}`} : eventIntelligence },
       opportunities: cart.map((line) => ({ id: `${id}:${line.id}`, providerId: String(line.item.vendorId ?? line.item.id), providerName: line.item.name, service: line.serviceTitle, startTime: line.serviceStart, endTime: line.serviceEnd, estimate: getLineQuote(line), stageIds: eventIntelligence?.stages.filter((part) => part.services?.includes(line.serviceName)).map((part) => part.id) ?? [], status: "demo-not-sent" })), message: "",
     });
   }
@@ -1096,8 +1135,12 @@ export function MarketplaceBrowser() {
     onClear: () => { setSelectedEvent("All"); setSelectedServices([]); setExcludedServices([]); setLanguage(""); setSpecialty(""); setMaxEstimate(""); setQuery(""); setSort("Recommended"); },
   };
 
+  if(eventId && !savedEvent)return <section className="hub-card m-5 p-6"><p role="status">{isAuthLoading?"Loading your account event…":marketplaceMessage}</p><Link className="hub-button mt-4" href={`/auth/login?next=${encodeURIComponent(`/marketplace?eventId=${eventId}`)}`}>Sign in to continue</Link></section>;
   return (
     <>
+      {cloudReview&&savedEvent&&<CustomerDialog title="Send provider requests" onClose={()=>{if(!cloudSending)setCloudReview(false);}}><p>Send {cart.length} request(s) for {savedEvent.title} to the providers below?</p><ul className="my-4 space-y-2">{cart.map(line=><li key={line.id}>{line.item.name} · {line.serviceTitle}</li>)}</ul><label className="text-sm">Message to providers<textarea className="hub-input mt-2 w-full" value={cloudMessage} onChange={e=>setCloudMessage(e.target.value)} maxLength={2000}/></label><p className="my-4 text-sm ui-muted">Your event name, date, location, guest count and stage schedule will accompany these requests. Providers can respond in their account. This does not book or pay anyone.</p><button className="hub-primary" disabled={cloudSending} onClick={async()=>{setCloudSending(true);try{await sendCloudCart(createBrowserSupabaseClient(),savedEvent.id,cart.map(l=>l.cartItemId!),cloudMessage);setCart([]);setCloudReview(false);setCartMessage("Requests sent. Open your Event Hub to see responses.");}catch(e){setCartMessage(e instanceof Error?e.message:"Unable to send requests.");}finally{setCloudSending(false);}}}>{cloudSending?"Sending…":"Send requests"}</button><p role="status" className="mt-3 text-sm">{cartMessage}</p></CustomerDialog>}
+      {!eventId&&eventIntelligence&&<div className="mb-4"><SaveEventToAccount profile={eventIntelligence}/></div>}
+      {eventId&&<Link className="hub-button mb-4" href={`/events/${eventId}`}>Back to account Event Hub</Link>}
       {quoteReview && <DemoQuoteJourney key={quoteReview.id} request={quoteReview} alreadySubmitted={quoteReview.id === lastRequest?.id} onClose={() => setQuoteReview(null)} onSubmitted={setLastRequest} />}
       <div className="relative min-h-[calc(100vh-5rem)] w-full overflow-x-clip">
         {lastRequest && <button className="hub-button mb-3" onClick={() => setQuoteReview(lastRequest)}>View latest demo request</button>}
