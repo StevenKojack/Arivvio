@@ -36,7 +36,7 @@ export function OccasionHero() {
       <h1>It starts with<br /><em>your occasion.</em></h1>
       <p className="hero-intro">Tell us what you have in mind. Find your people, your place, and a plan for it all.</p>
       <EventDiscoverySearch pageHidden={hidden} />
-      <p className="hero-disclosure">Pre-beta preview · Explore freely. No real bookings or vendor contact.</p>
+      <p className="hero-disclosure">Pre-beta · Plan, find providers and keep it together. Payments are not connected.</p>
     </div>
     <div className="atmosphere-caption">
       <div key={scenes[scene].id}><p>{scenes[scene].label}</p><span>{scenes[scene].phrase}</span></div>

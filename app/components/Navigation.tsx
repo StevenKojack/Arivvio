@@ -74,20 +74,21 @@ export function Navigation() {
   const menuLinks = navState.isLoggedIn
     ? [
         { href: "/account", label: "Account", show: true },
-        { href: "/account/demo", label: "My events on this device", show: true },
+        { href: "/account/demo", label: "Demo events on this device", show: true },
         {
           href: "/vendor/dashboard",
-          label: "Vendor dashboard",
+          label: "Vendor Hub",
           show: navState.hasVendorProfile,
         },
         { href: "/admin", label: "Admin", show: navState.isAdmin },
         { href: "/auth/logout", label: "Log out", show: true },
       ]
     : [
-        { href: "/account/demo", label: "My events", show: true },
+        { href: "/account", label: "My events", show: true },
         { href: "/auth/login", label: "Log in", show: true },
         { href: "/auth/signup", label: "Sign up", show: true },
-        { href: "/?info=1", label: "About this preview", show: true },
+        { href: "/about", label: "About ARIVVIO", show: true },
+        { href: "/claim-business", label: "Claim your business", show: true },
         { href: "/support-project", label: "Contact Arivvio", show: true },
       ];
   const isInternalDemoRoute = pathname !== "/";
@@ -104,7 +105,7 @@ export function Navigation() {
         <Logo />
 
         <div className="hidden items-center gap-1 p-1 text-sm font-semibold ui-muted  backdrop-blur md:flex">
-          {[...centerLinks, {href: "/account/demo", label: "My events"}].map((item) => (
+          {[...centerLinks, {href: "/account", label: "My events"}].map((item) => (
             <Link
               key={item.href}
               href={item.href}

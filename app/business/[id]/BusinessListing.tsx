@@ -109,8 +109,8 @@ export function BusinessListing({
   });
   return (
     <main className="mx-auto max-w-3xl px-5 py-12">
-      <Link href="/marketplace" className="text-sm underline">
-        Back to Marketplace
+      <Link href={initialMode === "claim" ? "/claim-business" : "/marketplace"} className="text-sm underline">
+        {initialMode === "claim" ? "Back to business search" : "Back to Marketplace"}
       </Link>
       {!listing ? (
         <p className="mt-6" role="status">
@@ -140,14 +140,14 @@ export function BusinessListing({
                 <button
                   onClick={() => setMode("request")}
                   aria-pressed={mode === "request"}
-                  className="rounded-lg border p-3"
+                  className="hub-primary"
                 >
                   Request through ARIVVIO
                 </button>
                 <button
                   onClick={() => setMode("claim")}
                   aria-pressed={mode === "claim"}
-                  className="rounded-lg border p-3"
+                  className="text-link px-2 py-3"
                 >
                   Own this business? Claim this listing
                 </button>
@@ -157,7 +157,7 @@ export function BusinessListing({
                   className="mt-6 inline-block underline"
                   href={`/auth/login?next=${encodeURIComponent(`/business/${id}?${next}`)}`}
                 >
-                  Sign in to request or claim this business
+                  {mode === "claim" ? "Sign in to claim this listing" : "Sign in to request through ARIVVIO"}
                 </Link>
               ) : mode === "claim" && claim?.status === "pending" ? (
                 <p className="mt-6">
@@ -305,12 +305,13 @@ export function BusinessListing({
               )}
             </>
           ) : (
-            <p className="mt-6">
-              This business has joined ARIVVIO.{" "}
+            <div className="mt-6 space-y-4">
+              <p>This business is already managed on ARIVVIO.</p>
+              <div className="flex flex-wrap gap-4"><Link className="hub-button" href="/vendor/login">Vendor sign in</Link><Link className="hub-button" href="/support-project">Contact ARIVVIO</Link></div>
               <Link href="/marketplace" className="underline">
                 View services and request a quote in Marketplace.
               </Link>
-            </p>
+            </div>
           )}
           {message && (
             <p role="status" className="mt-6 rounded-xl ui-soft p-4">

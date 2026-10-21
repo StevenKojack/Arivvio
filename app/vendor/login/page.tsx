@@ -18,8 +18,9 @@ export default function VendorLoginPage() {
         <h1 className="mt-3 text-3xl font-semibold tracking-tight">Welcome to your next chapter.</h1>
         <p className="mt-3 text-sm leading-6 ui-muted">Your services, dates, and event opportunities. Together.</p>
         <Suspense fallback={<p className="mt-8">Loading sign in…</p>}><AuthForm mode="login" defaultNext="/vendor/dashboard" /></Suspense>
+        <div className="mt-7 flex flex-wrap justify-center gap-5 text-sm"><Link className="text-link" href="/vendor/onboarding">List your business</Link><Link className="text-link" href="/claim-business">Claim your business</Link></div>
         <div className="mt-7 border-t ui-border pt-6"><Link href="/vendor/demo" className="hub-button w-full">Explore Vendor Demo</Link><p className="mt-3 text-center text-xs leading-5 ui-muted">Try a fictional business, calendar, and services. No account needed.</p></div>
-        <p className="mt-6 text-center text-sm ui-muted">Here to plan an event? <Link href="/demo" className="font-semibold underline">Start here</Link></p>
+        <p className="mt-6 text-center text-sm ui-muted">Here to plan an event? <Link href="/plan" className="font-semibold underline">Start here</Link></p>
       </div>
     </section>
   </main>;

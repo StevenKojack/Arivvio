@@ -105,7 +105,7 @@ export function AuthForm({ mode, defaultNext = "/account" }: AuthFormProps) {
             Your planning account
           </p>
           <p className="mt-1">
-            Save your events and return to continue planning. Demo providers and conversations remain simulated. Payments are not connected.
+            Save events, manage requests and message claimed providers. Demo providers and their conversations are simulated. Payments are not connected.
           </p>
         </div>
       ) : null}
