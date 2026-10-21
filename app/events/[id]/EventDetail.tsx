@@ -1,4 +1,6 @@
 "use client";
+import { ConciergeLeads } from "@/app/components/ConciergeLeads";
+import { listingOperation, type LeadRecord } from "@/lib/repositories/listingsRepository";
 
 import { useRouter } from 'next/navigation';
 import { CloudQuoteCard } from '@/app/components/CloudQuoteCard';
@@ -36,6 +38,7 @@ export function EventDetail({ eventId }: { eventId: string }) {
   const router=useRouter();
   const [confirmRemoval,setConfirmRemoval]=useState(false);
   const [removing,setRemoving]=useState(false);
+  const [hasConcierge,setHasConcierge]=useState(true);
   const [event, setEvent] = useState<EventRow | null>(null);
   const [cartItems, setCartItems] = useState<CartItemRow[]>([]);
   const [quotes, setQuotes] = useState<QuoteRequestRow[]>([]);
@@ -66,6 +69,8 @@ export function EventDetail({ eventId }: { eventId: string }) {
         ]);
 
         setEvent(workspace.event);
+        const concierge=await listingOperation<{leads:LeadRecord[]}>("mine");
+        setHasConcierge(concierge.leads.some(l=>l.event_id===eventId));
         setCartItems(workspace.cartItems);
         setQuotes(workspace.quotes);
         setBookings(workspace.bookings);
@@ -158,9 +163,10 @@ export function EventDetail({ eventId }: { eventId: string }) {
 
   const canonical=profileFromEvent(event);
   const understanding=understandEvent(canonical);
-  const canDelete=['draft','planning'].includes(event.status)&&!quotes.length&&!bookings.length;
+  const canDelete=['draft','planning'].includes(event.status)&&!quotes.length&&!bookings.length&&!hasConcierge;
   return (
     <div className="mx-auto max-w-7xl">
+      <ConciergeLeads eventId={eventId}/>
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">

@@ -101,7 +101,8 @@ export type Database = {
           id: string;
           latitude: number | null;
           longitude: number | null;
-          owner_id: string;
+          claimed_at: string | null;
+          owner_id: string | null;
           phone: string | null;
           service_area_city: string | null;
           service_radius_miles: number;
@@ -111,7 +112,7 @@ export type Database = {
         Insert: Partial<Database["public"]["Tables"]["vendor_businesses"]["Row"]> & {
           business_name: string;
           category: string;
-          owner_id: string;
+          owner_id: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["vendor_businesses"]["Insert"]>;
         Relationships: [];
@@ -376,6 +377,7 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      listing_operation: { Args: {operation: string; payload?: Json}; Returns: Json };
       get_quote_thread: {Args:{request:string};Returns:Json};
       get_request_inbox: {Args:{audience:string};Returns:Json};
       send_quote_message: {Args:{request:string;message_body:string};Returns:Database["public"]["Tables"]["messages"]["Row"]};

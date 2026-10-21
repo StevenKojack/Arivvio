@@ -1,5 +1,6 @@
 "use client";
 
+import { PublicListingOperations } from "./PublicListingOperations";
 import { useEffect, useState } from "react";
 import { isAdminEmail } from "@/lib/auth/roles";
 import {
@@ -83,7 +84,7 @@ export function AdminDashboard() {
     );
   }
 
-  const sections = ["Vendors", "Events", "Quotes", "Bookings", "Users", "Services"];
+  const sections = ["Public Listings", "Leads", "Claims", "Vendors", "Events", "Quotes", "Bookings", "Users", "Services"];
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -134,6 +135,7 @@ export function AdminDashboard() {
       </div>
 
       <div className="mt-6">
+        {["Public Listings","Leads","Claims"].includes(activeSection) && <PublicListingOperations section={activeSection}/>}
         {activeSection === "Vendors" ? (
           <Panel title="Vendor businesses">
             {overview.vendors.map((vendor) => (

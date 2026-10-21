@@ -1,4 +1,5 @@
 "use client";
+import { ConciergeLeads } from "@/app/components/ConciergeLeads";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { isAdminEmail } from "@/lib/auth/roles";
@@ -210,7 +211,7 @@ export function AccountDashboard() {
           )}
         </>
       )}
-      {section === "Requests / Vendors" && <RequestInbox audience="customer" />}
+      {section === "Requests / Vendors" && <><RequestInbox audience="customer" /><ConciergeLeads/></>}
       {section === "Account" && (
         <section className="hub-card max-w-2xl p-6">
           <h2 className="text-xl font-semibold">Account details</h2>

@@ -83,6 +83,8 @@ export type MarketplaceServiceOption = {
 };
 
 export type MarketplaceItem = {
+  pricingKnown?: boolean;
+  coordinatesKnown?: boolean;
   listingState?: "demo" | "unclaimed" | "claimed";
   provenance?: { sourceUrl: string; retrievedAt: string; permittedUse: string; fields: string[] }[];
   claimedAt?: string;

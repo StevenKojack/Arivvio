@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { MarketplaceItem } from "../data/marketplace";
 
 type MarketplaceCardProps = {
@@ -40,9 +41,9 @@ export function MarketplaceCard({
             </h3>
           </div>
           <div className="grid justify-items-end gap-2">
-            <span className="rounded-full bg-[#F6F3EA] px-3 py-1 text-sm font-semibold text-[#0D1321]">
+            {item.rating > 0 && <span className="rounded-full bg-[#F6F3EA] px-3 py-1 text-sm font-semibold text-[#0D1321]">
               {item.rating.toFixed(2)}
-            </span>
+            </span>}
             {!item.databaseSource ? (
               <span className="rounded-full bg-[#FFF8E1] px-3 py-1 text-xs font-semibold text-[#8A6A16]">
                 Demo provider
@@ -88,7 +89,7 @@ export function MarketplaceCard({
                 Quote
               </p>
               <p className="mt-1 text-2xl font-semibold text-neutral-950">
-                ${quote.toLocaleString()}
+                {item.pricingKnown === false ? "Contact for pricing" : `$${quote.toLocaleString()}`}
               </p>
             </div>
             <span
@@ -98,7 +99,7 @@ export function MarketplaceCard({
                   : "bg-amber-50 text-amber-700"
               }`}
             >
-              {available ? "Available" : "Check time"}
+              {item.databaseSource ? "Availability not confirmed" : available ? "Available" : "Check time"}
             </span>
           </div>
           <p className="mt-2 text-xs text-neutral-500">{item.pricing.label}</p>
@@ -129,13 +130,13 @@ export function MarketplaceCard({
             <p className="text-xs text-neutral-500">Listed from</p>
             <p className="text-lg font-semibold text-neutral-950">{item.price}</p>
           </div>
-          <button
+          {item.listingState === "unclaimed" ? <Link href={`/business/${item.vendorId}`} className="underline">Request through ARIVVIO</Link> : <button
             type="button"
             onClick={() => onAdd(item)}
           className="inline-flex h-10 items-center rounded-full bg-[#0D1321] px-5 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(13,19,33,0.18)] transition hover:-translate-y-0.5 hover:bg-[#111A2E]"
           >
             {buttonLabel}
-          </button>
+          </button>}
           </div>
         </div>
       </div>

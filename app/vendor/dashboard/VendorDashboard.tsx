@@ -320,6 +320,7 @@ export function VendorDashboard() {
 
   return (
     <div className="mx-auto max-w-7xl">
+      {vendors.some(v=>v.claimed_at)&&<div className="mb-6 rounded-xl ui-soft p-5"><h2 className="font-semibold">Your ARIVVIO listing is ready.</h2><p className="mt-2 text-sm">Review your business information, services, photos, pricing and availability. Your listing and inquiries stay connected.</p></div>}
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#B88A1D]">

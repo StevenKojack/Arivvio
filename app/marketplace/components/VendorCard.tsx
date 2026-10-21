@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { listingPresentation } from "@/lib/marketplace/listing-state";
 import { memo, useState } from "react";
 import { ListingImage } from "./ListingImage";
@@ -98,10 +99,10 @@ function VendorCardComponent({
               {isDemoProvider ? "Demo estimate" : "Estimated from"}
             </p>
             <p className="text-lg font-semibold ui-text">
-              {preview ? item.serviceOptions?.[0]?.estimateLabel || "Request pricing" : `$${quote.toLocaleString()}`}
+              {item.pricingKnown === false ? "Contact for pricing" : preview ? item.serviceOptions?.[0]?.estimateLabel || "Request pricing" : `$${quote.toLocaleString()}`}
             </p>
           </div>
-          <button
+          {item.listingState === "unclaimed" ? <Link href={`/business/${item.vendorId}?serviceId=${item.serviceId??""}`} onClick={e=>e.stopPropagation()} className="rounded-lg ui-primary px-3 py-2 text-sm">Request through ARIVVIO</Link> : <button
             type="button"
             disabled={!listing.canRequest || (disableAdd ?? isSelected)}
             onClick={(event) => {
@@ -115,7 +116,7 @@ function VendorCardComponent({
             }`}
           >
             {!listing.canRequest ? "Unclaimed listing" : buttonLabel}
-          </button>
+          </button>}
         </div>
         <button type="button" onClick={(event) => { event.stopPropagation(); setProfileOpen(true); }} className="mt-4 py-2 text-sm font-semibold underline underline-offset-4 hover:opacity-80">View profile</button>
       </div>

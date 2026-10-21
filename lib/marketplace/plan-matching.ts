@@ -75,7 +75,7 @@ export function getEventMatchSignals(item: MarketplaceItem, profile: EventIntell
   if (!eligibility.eligible) { score -= 200; concerns.push(...eligibility.reasons); }
   const budget = profile.planning?.budget;
   if (budget && profile.evidence.some(e => e.field === "planning.budget" && e.source !== "default")) {
-    const estimate = quoteItem(item, { guests: guests || 0, startTime: profile.planning?.startTime, endTime: profile.planning?.endTime, durationHours: 0 });
+    const estimate = item.pricingKnown === false ? Number.NaN : quoteItem(item, { guests: guests || 0, startTime: profile.planning?.startTime, endTime: profile.planning?.endTime, durationHours: 0 });
     if (estimate > budget) { score -= 45; concerns.push("This provider's listed estimate exceeds your overall budget."); }
   }
   if (profile.planning?.date && item.databaseSource === true && item.blockedDates?.includes(profile.planning.date)) { score -= 200; concerns.push("The provider lists this date as blocked."); }

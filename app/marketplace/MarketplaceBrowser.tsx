@@ -378,23 +378,23 @@ function MarketplaceBody() {
         item.location.toLowerCase().includes(savedEvent.city.toLowerCase()) ||
         item.address.toLowerCase().includes(savedEvent.city.toLowerCase());
       const withinRadius =
-        !eventCoordinates ||
+        !eventCoordinates || item.coordinatesKnown === false ||
         item.type === "Venue" ||
         !item.serviceRadiusMiles ||
         miles <= item.serviceRadiusMiles;
       const withinSavedSearchZone =
-        !searchZone ||
+        !searchZone || item.coordinatesKnown === false ||
         item.type !== "Venue" ||
         zoneContainsPoint(searchZone, item.coordinates);
       const withinPlannerSearchRegion =
         withinSavedSearchZone &&
-        (!eventCoordinates ||
+        (!eventCoordinates || item.coordinatesKnown === false ||
           item.type !== "Venue" ||
           !Number.isFinite(initialSearchRadiusMiles) ||
           initialSearchRadiusMiles <= 0 ||
           miles <= initialSearchRadiusMiles);
       const isNearEnough =
-        !eventCoordinates || item.type === "Venue" || driveMinutes <= 60;
+        !eventCoordinates || item.coordinatesKnown === false || item.type === "Venue" || driveMinutes <= 60;
       const matchesAvailability = isAvailableAt(
         item,
         eventDate,
@@ -408,7 +408,7 @@ function MarketplaceBody() {
         matchesListingRequirements(item,{event:selectedEvent,services:selectedServices,excluded:excludedServices,query:normalizedQuery,language,specialty,maxEstimate:maxEstimate?Number(maxEstimate):undefined,estimate:quoteItem(item,globalQuoteContext),guests:globalQuoteContext.guests}) &&
         withinRadius && withinPlannerSearchRegion && eligible &&
         !item.blockedDates?.includes(eventDate) && (matchesAvailability || !availabilityKnown) &&
-        (!eventCoordinates || item.type === "Venue" || driveMinutes <= 90) &&
+        (!eventCoordinates || item.coordinatesKnown === false || item.type === "Venue" || driveMinutes <= 90) &&
         isMarketplaceItemCompatible(item, planningContext)
       );
       assessments.set(item.id,{hardMatch,localMatch:matchesCity && isNearEnough,availabilityKnown,broaderReason:(!matchesCity?"Based outside your event city.":"Beyond the default one-hour estimated travel area.") + (item.serviceRadiusMiles?" Within the listed service radius.":" Service area is not specified.")});

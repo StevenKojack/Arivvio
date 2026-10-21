@@ -104,7 +104,7 @@ export async function getMarketplaceProviders(supabase: TypedSupabaseClient) {
   const vendorById = new Map(vendors.map((vendor) => [vendor.id, vendor]));
 
   return services
-    .map((service, index) => {
+    .map((service) => {
       const vendor = vendorById.get(service.vendor_id);
 
       if (!vendor) {
@@ -121,7 +121,6 @@ export async function getMarketplaceProviders(supabase: TypedSupabaseClient) {
           ...(tagsByService.get(service.id) ?? []),
         ],
         services.filter((candidate) => candidate.vendor_id === vendor.id),
-        index,
       );
     })
     .filter((item): item is MarketplaceItem => Boolean(item));
@@ -278,14 +277,13 @@ function mapServiceToMarketplaceItem(
   photos: VendorPhotoRow[],
   tags: string[],
   vendorServices: VendorServiceRow[],
-  index: number,
 ): MarketplaceItem {
   const type = toServiceName(service.category);
   const serviceOptions = vendorServices.map((vendorService) => ({
     description:
       vendorService.description ??
       `${vendor.business_name} offers ${vendorService.service_name}.`,
-    estimateLabel: priceLabel(toPricingModel(vendorService)),
+    estimateLabel: !vendor.owner_id || (vendorService.base_price === null && vendorService.hourly_rate === null) ? "Contact for pricing" : priceLabel(toPricingModel(vendorService)),
     service: toServiceName(vendorService.category),
     serviceId: vendorService.id,
     title: vendorService.service_name,
@@ -295,18 +293,22 @@ function mapServiceToMarketplaceItem(
       eventTypes.includes(eventType as EventType),
     );
   const pricing = toPricingModel(service);
-  const city = vendor.service_area_city ?? "Los Angeles";
-  const basePrice = priceLabel(pricing);
+  const city = vendor.service_area_city ?? "Service area not confirmed";
+  const pricingKnown = Boolean(vendor.owner_id) && (service.base_price !== null || service.hourly_rate !== null);
+  const basePrice = pricingKnown ? priceLabel(pricing) : "Contact for pricing";
+  if (!pricingKnown) pricing.label = "Contact for pricing";
 
   return {
     address: vendor.base_address ?? city,
-    availability: toAvailabilityWindows(availability),
+    availability: vendor.owner_id ? toAvailabilityWindows(availability) : [],
+    pricingKnown,
+    coordinatesKnown: vendor.latitude !== null && vendor.longitude !== null,
     blockedDates: availability
       .filter((row) => row.status === "blocked")
       .map((row) => row.date),
     coordinates: {
-      lat: vendor.latitude ?? 34.0522 + index * 0.004,
-      lng: vendor.longitude ?? -118.2437 - index * 0.004,
+      lat: vendor.latitude ?? Number.NaN,
+      lng: vendor.longitude ?? Number.NaN,
     },
     databaseSource: true,
     listingState: vendor.owner_id ? "claimed" : "unclaimed",
@@ -314,17 +316,17 @@ function mapServiceToMarketplaceItem(
       service.description ??
       vendor.description ??
       `${vendor.business_name} offers ${service.service_name} for local events.`,
-    events: events.length ? events : eventTypes,
+    events,
     id: numericId(service.id),
     location: city,
     name: service.service_name || vendor.business_name,
     photoUrl: photos[0]?.image_url ?? null,
     price: basePrice,
     pricing,
-    rating: 4.85,
-    reviewCount: 1,
+    rating: 0,
+    reviewCount: 0,
     serviceId: service.id,
-    serviceRadiusMiles: vendor.service_radius_miles,
+    serviceRadiusMiles: vendor.owner_id ? vendor.service_radius_miles : undefined,
     serviceOptions: serviceOptions.length > 1 ? serviceOptions : undefined,
     services: Array.from(new Set(vendorServices.map((vendorService) => toServiceName(vendorService.category)))),
     sourceLabel: vendor.website_url ? "Vendor website" : "Database vendor",
@@ -482,16 +484,6 @@ function toAvailabilityWindows(
   availability: VendorAvailabilityRow[],
 ): AvailabilityWindow[] {
   const availableWindows = availability.filter((row) => row.status === "available");
-
-  if (!availableWindows.length) {
-    return [
-      {
-        days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        end: "23:00",
-        start: "08:00",
-      },
-    ];
-  }
 
   return availableWindows.map((row) => ({
     days: [
