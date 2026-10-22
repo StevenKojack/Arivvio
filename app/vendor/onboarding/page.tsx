@@ -11,11 +11,12 @@ export default function VendorOnboardingPage() {
             Vendor onboarding
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
-            Create your first provider listing.
+            Find your business.
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-neutral-600">
-            Add your business profile and one starter service. Admin approval
-            and richer service management come next.
+            Search for your existing listing first. If your business is new to
+            ARIVVIO, save a private candidate and verify your authority before
+            publication.
           </p>
         </div>
         <VendorOnboardingForm />

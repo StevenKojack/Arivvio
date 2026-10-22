@@ -312,6 +312,7 @@ function mapServiceToMarketplaceItem(
     },
     databaseSource: true,
     listingState: vendor.owner_id ? "claimed" : "unclaimed",
+    verificationStatus: vendor.verification_status,
     description:
       service.description ??
       vendor.description ??

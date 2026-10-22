@@ -77,7 +77,7 @@ export function ClaimSearch() {
     <div className="mt-8">
       <form onSubmit={submit} role="search" className="hub-card p-5 sm:p-6">
         <label htmlFor="claim-search" className="block font-semibold">
-          Business name, city or service
+          Business name, city, address, website, phone or service
         </label>
         <div className="mt-3 flex flex-col gap-3 sm:flex-row">
           <input
@@ -123,6 +123,7 @@ export function ClaimSearch() {
                     {row.category} ·{" "}
                     {row.service_area_city || "Location not confirmed"}
                   </p>
+                  <p className="mt-2 text-sm ui-muted">{row.location_name} {row.base_address} {row.website_url}</p>
                   {row.owner_id && (
                     <p className="mt-3 text-sm ui-muted">
                       This business is already managed on ARIVVIO.
@@ -143,8 +144,8 @@ export function ClaimSearch() {
               {row.owner_id && (
                 <p className="mt-4 text-sm ui-muted">
                   Ownership doesn’t look right?{" "}
-                  <Link className="underline" href="/support-project">
-                    Contact ARIVVIO
+                  <Link className="underline" href={`/business/${row.id}?mode=claim`}>
+                    Request help with business access
                   </Link>
                 </p>
               )}

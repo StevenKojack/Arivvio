@@ -102,6 +102,9 @@ export type Database = {
           latitude: number | null;
           longitude: number | null;
           claimed_at: string | null;
+          verification_status: string;
+          verified_at: string | null;
+          location_name: string | null;
           owner_id: string | null;
           phone: string | null;
           service_area_city: string | null;
@@ -377,6 +380,8 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      trust_operation: {Args:{operation:string;payload?:Json};Returns:Json};
+      business_matches: {Args:{payload:Json};Returns:Json};
       listing_operation: { Args: {operation: string; payload?: Json}; Returns: Json };
       get_quote_thread: {Args:{request:string};Returns:Json};
       get_request_inbox: {Args:{audience:string};Returns:Json};

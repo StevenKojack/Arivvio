@@ -115,7 +115,7 @@ function VendorCardComponent({
                 : "ui-primary hover:opacity-90"
             }`}
           >
-            {!listing.canRequest ? "Public business listing" : buttonLabel}
+            {!listing.canRequest ? "Verification review required" : buttonLabel}
           </button>}
         </div>
         <button type="button" onClick={(event) => { event.stopPropagation(); setProfileOpen(true); }} className="mt-4 py-2 text-sm font-semibold underline underline-offset-4 hover:opacity-80">View profile</button>

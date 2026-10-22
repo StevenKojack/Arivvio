@@ -1,6 +1,6 @@
 const distinctions = [
   [
-    "Claimed providers",
+    "Verified claimed providers",
     "Use your account to save events, request quotes, message participating providers and record bookings on ARIVVIO.",
   ],
   [

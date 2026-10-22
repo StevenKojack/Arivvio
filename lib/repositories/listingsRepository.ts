@@ -13,12 +13,19 @@ export type ListingRecord = {
   owner_id: string | null;
   approval_status: string;
   claimed_at?: string | null;
+  verification_status?: string;
+  verified_at?: string | null;
+  location_name?: string | null;
+  official_domain?: string | null;
+  official_phone?: string | null;
+  identity_source_url?: string | null;
 };
 export type ClaimRecord = {
   id: string;
   vendor_id: string;
   status: string;
   relationship: string;
+  location_scope?: string;
   business_email: string | null;
   business_phone: string | null;
   verification_note: string | null;

@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import {AccessRequest} from "@/app/vendor/verification/AccessRequest";
+import {AuthorityFields} from "@/app/vendor/verification/AuthorityFields";
 import { useEffect, useState, type FormEvent } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import {
@@ -120,7 +122,7 @@ export function BusinessListing({
         <>
           <p className="mt-8 text-sm ui-muted">
             {listing.owner_id
-              ? "Business-managed listing"
+              ? listing.verification_status === "verified" ? "Verified business" : "Business-managed listing"
               : "Public business listing"}
           </p>
           <h1 className="mt-2 text-3xl font-semibold">
@@ -128,7 +130,7 @@ export function BusinessListing({
           </h1>
           <p className="mt-3">{listing.description}</p>
           <p className="mt-2 ui-muted">
-            {listing.service_area_city || "Service area not confirmed"}
+            {listing.location_name} {listing.service_area_city || "Service area not confirmed"} {listing.base_address}
           </p>
           {!listing.owner_id ? (
             <>
@@ -161,7 +163,7 @@ export function BusinessListing({
                 </Link>
               ) : mode === "claim" && claim?.status === "pending" ? (
                 <p className="mt-6">
-                  Claim submitted. Your claim is awaiting review.
+                  Claim submitted. Your claim is awaiting review. <Link href="/vendor/verification" className="underline">Continue verification</Link>
                 </p>
               ) : (
                 <form onSubmit={submit} className="mt-6 space-y-5">
@@ -249,46 +251,7 @@ export function BusinessListing({
                     </>
                   ) : (
                     <>
-                      <label className="block">
-                        Your relationship to the business
-                        <input
-                          name="relationship"
-                          required
-                          maxLength={200}
-                          className={field}
-                        />
-                      </label>
-                      <label className="block">
-                        Business email
-                        <input
-                          name="business_email"
-                          type="email"
-                          maxLength={254}
-                          className={field}
-                        />
-                      </label>
-                      <label className="block">
-                        Business phone
-                        <input
-                          name="business_phone"
-                          type="tel"
-                          maxLength={80}
-                          className={field}
-                        />
-                      </label>
-                      <label className="block">
-                        How can we verify your ownership?
-                        <textarea
-                          name="verification_note"
-                          maxLength={2000}
-                          rows={4}
-                          className={field}
-                        />
-                      </label>
-                      <p className="text-sm ui-muted">
-                        Provide a business email or phone. Submitting a claim
-                        does not grant editing access.
-                      </p>
+                      <AuthorityFields />
                     </>
                   )}
                   <button
@@ -306,7 +269,7 @@ export function BusinessListing({
             </>
           ) : (
             <div className="mt-6 space-y-4">
-              <p>This business is already managed on ARIVVIO.</p>
+              <p>This business is already managed on ARIVVIO.</p><AccessRequest vendorId={id}/>
               <div className="flex flex-wrap gap-4"><Link className="hub-button" href="/vendor/login">Vendor sign in</Link><Link className="hub-button" href="/support-project">Contact ARIVVIO</Link></div>
               <Link href="/marketplace" className="underline">
                 View services and request a quote in Marketplace.

@@ -4,7 +4,8 @@ import {
   searchTerm,
   type ClaimSearchListing,
 } from "../public-navigation/claim-search";
-const fields = "id,business_name,category,service_area_city,owner_id";
+const fields =
+  "id,business_name,category,service_area_city,owner_id,base_address,website_url,location_name";
 const pageSize = 20;
 export async function searchClaimListings(
   client: ArivvioSupabaseClient,
@@ -14,6 +15,9 @@ export async function searchClaimListings(
   const term = searchTerm(input);
   if (!term) return { listings: [] as ClaimSearchListing[], hasMore: false };
   const pattern = `*${term}*`;
+  const digits = term.replace(/[^0-9]/g, "");
+  const phoneFilter =
+    digits.length >= 7 ? `,normalized_phone.ilike.*${digits}*` : "";
   const start = Math.max(0, page) * pageSize;
   // Search businesses and active services independently; published-only filters
   // apply even when an owner/admin session can read additional private records.
@@ -23,7 +27,7 @@ export async function searchClaimListings(
       .select(fields)
       .eq("approval_status", "approved")
       .or(
-        `business_name.ilike.${pattern},service_area_city.ilike.${pattern},category.ilike.${pattern}`,
+        `business_name.ilike.${pattern},service_area_city.ilike.${pattern},category.ilike.${pattern},base_address.ilike.${pattern},website_url.ilike.${pattern},phone.ilike.${pattern},location_name.ilike.${pattern}${phoneFilter}`,
       )
       .order("business_name")
       .order("id")

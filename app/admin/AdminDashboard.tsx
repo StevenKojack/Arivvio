@@ -3,16 +3,14 @@
 import { PublicListingOperations } from "./PublicListingOperations";
 import { useEffect, useState } from "react";
 import { isAdminEmail } from "@/lib/auth/roles";
+import { getAdminOverview } from "@/lib/repositories/adminRepository";
 import {
-  getAdminOverview,
-  updateVendorApprovalStatus,
-} from "@/lib/repositories/adminRepository";
-import type { PublicTableRow } from "@/lib/supabase/database.types";
-import { createBrowserSupabaseClient, hasSupabaseConfig } from "@/lib/supabase/client";
+  createBrowserSupabaseClient,
+  hasSupabaseConfig,
+} from "@/lib/supabase/client";
 import { formatDate, formatMoney } from "@/lib/utils/format";
 
 type AdminOverview = Awaited<ReturnType<typeof getAdminOverview>>;
-type VendorRow = PublicTableRow<"vendor_businesses">;
 
 export function AdminDashboard() {
   const [overview, setOverview] = useState<AdminOverview | null>(null);
@@ -45,36 +43,16 @@ export function AdminDashboard() {
         setOverview(adminOverview);
         setMessage("");
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Unable to load admin dashboard.");
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to load admin dashboard.",
+        );
       }
     }
 
     loadAdmin();
   }, []);
-
-  async function updateVendor(vendor: VendorRow, status: "approved" | "rejected") {
-    try {
-      const supabase = createBrowserSupabaseClient();
-      const updatedVendor = await updateVendorApprovalStatus(supabase, {
-        status,
-        vendorId: vendor.id,
-      });
-
-      setOverview((current) =>
-        current
-          ? {
-              ...current,
-              vendors: current.vendors.map((item) =>
-                item.id === vendor.id ? updatedVendor : item,
-              ),
-            }
-          : current,
-      );
-      setMessage(`Vendor ${status}.`);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to update vendor.");
-    }
-  }
 
   if (!overview) {
     return (
@@ -84,7 +62,17 @@ export function AdminDashboard() {
     );
   }
 
-  const sections = ["Public Listings", "Leads", "Claims", "Vendors", "Events", "Quotes", "Bookings", "Users", "Services"];
+  const sections = [
+    "Public Listings",
+    "Leads",
+    "Claims",
+    "Vendors",
+    "Events",
+    "Quotes",
+    "Bookings",
+    "Users",
+    "Services",
+  ];
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -135,14 +123,21 @@ export function AdminDashboard() {
       </div>
 
       <div className="mt-6">
-        {["Public Listings","Leads","Claims"].includes(activeSection) && <PublicListingOperations section={activeSection}/>}
+        {["Public Listings", "Leads", "Claims"].includes(activeSection) && (
+          <PublicListingOperations section={activeSection} />
+        )}
         {activeSection === "Vendors" ? (
           <Panel title="Vendor businesses">
             {overview.vendors.map((vendor) => (
-              <div key={vendor.id} className="rounded-lg border border-neutral-200 p-4">
+              <div
+                key={vendor.id}
+                className="rounded-lg border border-neutral-200 p-4"
+              >
                 <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
                   <div>
-                    <p className="font-semibold text-neutral-950">{vendor.business_name}</p>
+                    <p className="font-semibold text-neutral-950">
+                      {vendor.business_name}
+                    </p>
                     <p className="mt-1 text-sm text-neutral-500">
                       {vendor.category} - {vendor.approval_status} -{" "}
                       {vendor.service_area_city ?? "No city"}
@@ -151,17 +146,10 @@ export function AdminDashboard() {
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => updateVendor(vendor, "approved")}
-                      className="rounded-full bg-[#0D1321] px-3 py-2 text-xs font-semibold text-white"
+                      onClick={() => setActiveSection("Claims")}
+                      className="hub-button"
                     >
-                      Approve
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateVendor(vendor, "rejected")}
-                      className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold text-red-700"
-                    >
-                      Reject
+                      Review verification evidence
                     </button>
                   </div>
                 </div>
@@ -238,7 +226,13 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Panel({ children, title }: { children: React.ReactNode; title: string }) {
+function Panel({
+  children,
+  title,
+}: {
+  children: React.ReactNode;
+  title: string;
+}) {
   return (
     <section className="rounded-lg border border-neutral-200 bg-white p-6">
       <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>

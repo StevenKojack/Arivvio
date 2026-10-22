@@ -1,5 +1,10 @@
 "use client";
 import Link from "next/link";
+import { BusinessVerificationReview } from "./BusinessVerificationReview";
+import {
+  findBusinessMatches,
+  type BusinessMatch,
+} from "@/lib/repositories/businessTrustRepository";
 import { useEffect, useState, type FormEvent } from "react";
 import { allServices, eventTypes } from "@/app/data/marketplace";
 import {
@@ -11,6 +16,9 @@ import {
 const blank = {
   id: "",
   business_name: "",
+  location_name: "",
+  postal_code: "",
+  separate_reason: "",
   category: "DJ",
   description: "",
   city: "",
@@ -33,6 +41,7 @@ export function PublicListingOperations({ section }: { section: string }) {
     [revision, setRevision] = useState(0),
     [draft, setDraft] = useState(blank),
     [step, setStep] = useState(0),
+    [matches, setMatches] = useState<BusinessMatch[]>([]),
     [notes, setNotes] = useState<Record<string, string>>({});
   useEffect(() => {
     let live = true;
@@ -90,6 +99,25 @@ export function PublicListingOperations({ section }: { section: string }) {
   }
   async function save(e: FormEvent) {
     e.preventDefault();
+    let found: BusinessMatch[];
+    try {
+      found = await findBusinessMatches(draft);
+      setMatches(found);
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "Unable to check existing listings.",
+      );
+      return;
+    }
+    if (
+      found.some((m) => m.score >= 60) &&
+      draft.separate_reason.trim().length < 10
+    ) {
+      setError(
+        "Possible existing match. Review the matches and explain why this is a separate business before saving.",
+      );
+      return;
+    }
     const ok = await act("save_listing", {
       ...draft,
       id: draft.id || undefined,
@@ -159,6 +187,7 @@ export function PublicListingOperations({ section }: { section: string }) {
                 {step === 0 && (
                   <>
                     {input("business_name", "Business name")}
+                    {input("location_name", "Specific location or branch")}
                     {input("website_url", "Business website", "url")}
                     {input("phone", "Public business phone", "tel")}
                     {input("email", "Public business email", "email")}
@@ -199,6 +228,40 @@ export function PublicListingOperations({ section }: { section: string }) {
                       Select only event types supported by your sources. Leave
                       unknown details blank.
                     </p>
+                    {matches.length > 0 && (
+                      <div className="rounded-xl ui-soft p-4">
+                        <h3 className="font-semibold">
+                          Possible existing matches
+                        </h3>
+                        {matches.map((m) => (
+                          <p key={m.id}>
+                            {m.business_name} · {m.service_area_city} ·{" "}
+                            {m.base_address} · {m.website_url}{" "}
+                            <Link
+                              className="underline"
+                              href={`/business/${m.id}`}
+                            >
+                              Open existing listing
+                            </Link>
+                          </p>
+                        ))}
+                        {input(
+                          "separate_reason",
+                          "Continue as a separate business: explain the location or identity difference",
+                        )}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className="hub-button"
+                      onClick={() => {
+                        void findBusinessMatches(draft)
+                          .then(setMatches)
+                          .catch((e) => setError(e.message));
+                      }}
+                    >
+                      Check for existing matches
+                    </button>
                     <div className="flex flex-wrap gap-3">
                       {eventTypes.map((e) => (
                         <label key={e} className="text-sm">
@@ -224,6 +287,7 @@ export function PublicListingOperations({ section }: { section: string }) {
                   <>
                     {input("city", "Known service city")}
                     {input("address", "Public address, when appropriate")}
+                    {input("postal_code", "Postal code")}
                     <p className="text-sm ui-muted">
                       No radius, coordinates, capacity or availability will be
                       invented.
@@ -344,68 +408,10 @@ export function PublicListingOperations({ section }: { section: string }) {
             </>
           )}
           {section === "Claims" && (
-            <div className="mt-5 space-y-4">
-              {!data.claims.length && <p>No claims awaiting review.</p>}
-              {data.claims.map((c) => (
-                <article key={c.id} className="rounded-xl border p-4">
-                  <h3 className="font-semibold">
-                    {business(c.vendor_id)?.business_name}
-                  </h3>
-                  <p className="text-sm">
-                    {c.status} · {c.created_at.slice(0, 10)}
-                  </p>
-                  <p>
-                    {c.claimant_email} · {c.relationship}
-                  </p>
-                  <p>
-                    {c.business_email} · {c.business_phone}
-                  </p>
-                  <p className="mt-2 whitespace-pre-wrap">
-                    {c.verification_note}
-                  </p>
-                  {data.sources
-                    .filter((s) => s.vendor_id === c.vendor_id)
-                    .map((s) => (
-                      <p key={s.id} className="mt-2 break-words text-sm">
-                        <a
-                          href={s.source_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="underline"
-                        >
-                          {s.source_url}
-                        </a>{" "}
-                        · {s.supported_fields.join(", ")}
-                      </p>
-                    ))}
-                  {c.status === "pending" && (
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      {["approved", "rejected"].map((status) => (
-                        <button
-                          disabled={busy}
-                          key={status}
-                          className="rounded-lg border px-4 py-2"
-                          onClick={() => {
-                            if (
-                              confirm(
-                                status === "approved"
-                                  ? "Have you verified ownership? Approve this claim and grant access to the existing listing?"
-                                  : "Reject this ownership claim?",
-                              )
-                            )
-                              void act("review_claim", { id: c.id, status });
-                          }}
-                        >
-                          {status === "approved"
-                            ? "Approve verified claim"
-                            : "Reject claim"}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </article>
-              ))}
-            </div>
+            <BusinessVerificationReview
+              workspace={data}
+              onChanged={() => setRevision((x) => x + 1)}
+            />
           )}
           {section === "Leads" && (
             <div className="mt-5 space-y-4">

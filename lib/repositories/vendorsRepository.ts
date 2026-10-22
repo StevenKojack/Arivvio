@@ -3,7 +3,6 @@ import type { PricingType } from "@/lib/types/domain";
 import type { ArivvioSupabaseClient } from "./types";
 
 export type VendorBusinessCreateInput = {
-  approvalStatus?: "pending" | "approved" | "rejected" | "suspended";
   businessName: string;
   category: string;
   city?: string | null;
@@ -39,27 +38,9 @@ export async function createVendorBusiness(
   supabase: ArivvioSupabaseClient,
   input: VendorBusinessCreateInput,
 ) {
-  const { data, error } = await supabase
-    .from("vendor_businesses")
-    .insert({
-      approval_status: input.approvalStatus ?? "approved",
-      business_name: input.businessName,
-      category: input.category,
-      description: input.description ?? null,
-      email: input.email ?? null,
-      owner_id: input.ownerId,
-      phone: input.phone ?? null,
-      service_area_city: input.city ?? null,
-      service_radius_miles: input.radius,
-      website_url: input.websiteUrl ?? null,
-    })
-    .select("*")
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
+  // Compatibility entry point. Backend always creates a private, ownerless candidate.
+  const {data,error}=await supabase.rpc("trust_operation",{operation:"candidate",payload:{business_name:input.businessName,category:input.category,city:input.city??"",description:input.description??"",website_url:input.websiteUrl??"",phone:input.phone??"",relationship:"Authorized representative",location_scope:input.city??""}});
+  if(error) throw new Error(error.message);
   return data;
 }
 
@@ -123,17 +104,10 @@ export async function getVendorBusinessesByOwner(
   supabase: ArivvioSupabaseClient,
   ownerId: string,
 ) {
-  const { data, error } = await supabase
-    .from("vendor_businesses")
-    .select("*")
-    .eq("owner_id", ownerId)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    throw error;
-  }
-
-  return data ?? [];
+  void ownerId;
+  const {data,error}=await supabase.rpc("trust_operation",{operation:"mine",payload:{}});
+  if(error)throw new Error(error.message);
+  return (data as unknown as {businesses:VendorBusinessRow[]}).businesses;
 }
 
 export async function createVendorService(
