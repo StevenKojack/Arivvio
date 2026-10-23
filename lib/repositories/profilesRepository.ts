@@ -55,6 +55,8 @@ export async function ensureCurrentProfile(
   const existingProfile = await getCurrentProfile(supabase, user);
 
   if (existingProfile) {
+    const { error } = await supabase.rpc("complete_legal_acceptance", {});
+    if (error) throw error;
     return existingProfile;
   }
 
@@ -62,10 +64,13 @@ export async function ensureCurrentProfile(
     typeof user.user_metadata.full_name === "string"
       ? user.user_metadata.full_name
       : null;
-  return upsertProfile(supabase, {
+  const profile = await upsertProfile(supabase, {
     email: user.email ?? "",
     fullName,
     phone: null,
     userId: user.id,
   });
+  const { error } = await supabase.rpc("complete_legal_acceptance", {});
+  if (error) throw error;
+  return profile;
 }

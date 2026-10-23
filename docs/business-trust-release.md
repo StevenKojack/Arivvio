@@ -1,6 +1,6 @@
 # Business trust release
 
-Status: prepared for review, not deployed. Automatic approval review blocked the production migration pending explicit authorization. Do not merge the application before the database migration is applied.
+Status: deployed after explicit authorization. Production commit `4196895469c25601a926c574d1de05dcf761dca0`, Vercel deployment `dpl_GBBsUHovQFeX11YrXnbeQPMFRLMi` READY. Both migrations below were applied successfully.
 
 ## Release contents
 
@@ -16,14 +16,14 @@ Status: prepared for review, not deployed. Automatic approval review blocked the
 
 Target: ARIVVIO Supabase project `hfkgqgdtotslloeuskii`.
 
-1. `20261021180518_trusted_business_intake.sql`: adds trust tables and fields, backfills legacy membership and pending review claims, replaces authorization policies and functions, restricts direct writes, and adds auditable review operations.
-2. `20261021232809_local_business_pilot.sql`: adds three publicly sourced, unclaimed venue listings with provenance. No fabricated prices, ratings, availability or owners. Duplicate detection aborts conflicting imports.
+1. `20261022201835_trusted_business_intake.sql`: adds trust tables and fields, backfills legacy membership and pending review claims, replaces authorization policies and functions, restricts direct writes, and adds auditable review operations.
+2. `20261022201843_local_business_pilot.sql`: adds three publicly sourced, unclaimed venue listings with provenance. No fabricated prices, ratings, availability or owners. Duplicate detection aborts conflicting imports.
 3. Release the reviewed application commit only after database success. Verify intake, admin review, membership, revocation and request routing against production accounts before announcing availability.
 
-The last production read found zero businesses, claims, concierge leads, quote requests and bookings. Recheck before execution. Schema and access-control changes affect live authorization. Use a database backup and a forward corrective migration for recovery, not destructive table drops. Keep the prior application deployment available, but assess compatibility before rolling it back.
+The pre-migration production read found zero businesses, claims, concierge leads, quote requests and bookings. The post-migration read confirmed three unclaimed, unverified pilot listings with no owner. Schema and access-control changes affect live authorization. Use a database backup and a forward corrective migration for recovery, not destructive table drops. Keep the prior application deployment available, but assess compatibility before rolling it back.
 
 ## Validation and remaining work
 
-145 automated tests pass, including migrations, legacy backfill, approval evidence, takeover prevention, role boundaries, invitation binding, revocation, disputes, anonymous isolation, concierge handoff and pilot provenance. Type checking, lint and production compilation are release gates. No new live browser flow has been verified because this release is not deployed.
+145 automated tests pass, including migrations, legacy backfill, approval evidence, takeover prevention, role boundaries, invitation binding, revocation, disputes, anonymous isolation, concierge handoff and pilot provenance. Type checking, lint and production compilation are release gates. Live public claim search and NOOR profile were verified. Authenticated role and request boundaries were tested against a local database, not a live signed-in browser session.
 
 DNS verification and external registry automation are deferred. Manual independent-source review is supported. Existing leaked-password protection is an Auth configuration follow-up. No outreach has been sent.

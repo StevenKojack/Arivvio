@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { createBrowserSupabaseClient, hasSupabaseConfig } from "@/lib/supabase/client";
-import { upsertProfile } from "@/lib/repositories/profilesRepository";
+import { ensureCurrentProfile } from "@/lib/repositories/profilesRepository";
+
+import { legalVersions } from "@/lib/privacy/config";
 
 type AuthFormProps = {
   mode: "login" | "signup";
@@ -22,6 +24,8 @@ export function AuthForm({ mode, defaultNext = "/account" }: AuthFormProps) {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [accepted,setAccepted] = useState(false);
+  const [adult,setAdult] = useState(false);
   const isSignup = mode === "signup";
 
   async function submitAuth(event: FormEvent<HTMLFormElement>) {
@@ -36,6 +40,7 @@ export function AuthForm({ mode, defaultNext = "/account" }: AuthFormProps) {
       return;
     }
 
+    if (isSignup && (!accepted || !adult)) { setError("Confirm the Terms, Privacy acknowledgement and age 18+ before creating an account."); return; }
     setIsSubmitting(true);
 
     try {
@@ -48,6 +53,7 @@ export function AuthForm({ mode, defaultNext = "/account" }: AuthFormProps) {
           options: {
             data: {
               full_name: fullName,
+              legal_acceptance: { terms_version: legalVersions.terms, privacy_version: legalVersions.privacy, accepted, adult },
             },
           },
         });
@@ -57,11 +63,7 @@ export function AuthForm({ mode, defaultNext = "/account" }: AuthFormProps) {
         }
 
         if (data.user && data.session) {
-          await upsertProfile(supabase, {
-            email,
-            fullName: fullName || null,
-            userId: data.user.id,
-          });
+          await ensureCurrentProfile(supabase, data.user);
         }
 
         setStatus(
@@ -72,7 +74,7 @@ export function AuthForm({ mode, defaultNext = "/account" }: AuthFormProps) {
         return;
       }
 
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signedIn, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -81,6 +83,7 @@ export function AuthForm({ mode, defaultNext = "/account" }: AuthFormProps) {
         throw signInError;
       }
 
+      if (signedIn.user) await ensureCurrentProfile(supabase, signedIn.user);
       router.push(nextPath);
       router.refresh();
     } catch (authError) {
@@ -143,13 +146,14 @@ export function AuthForm({ mode, defaultNext = "/account" }: AuthFormProps) {
           placeholder="At least 6 characters"
         />
       </label>
+      {isSignup && <fieldset className="space-y-4 text-sm"><legend className="sr-only">Account agreements</legend><label className="flex items-start gap-3"><input type="checkbox" required checked={accepted} onChange={e=>setAccepted(e.target.checked)}/><span>I accept the <Link href="/terms" target="_blank" className="underline">Terms of Use (new tab)</Link> and acknowledge the <Link href="/privacy" target="_blank" className="underline">Privacy Policy (new tab)</Link>.</span></label><label className="flex items-start gap-3"><input type="checkbox" required checked={adult} onChange={e=>setAdult(e.target.checked)}/><span>I am at least 18 years old.</span></label></fieldset>}
       {error ? (
-        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
           {error}
         </p>
       ) : null}
       {status ? (
-        <p className="rounded-lg bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+        <p role="status" className="rounded-lg bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
           {status}
         </p>
       ) : null}

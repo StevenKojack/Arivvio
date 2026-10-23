@@ -25,6 +25,7 @@ export function LocationPreviewMap({ coordinates, label }: LocationPreviewMapPro
 
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
     const map = new mapboxgl.Map({
+        performanceMetricsCollection: false,
       attributionControl: false,
       center: [center.lng, center.lat],
       container: containerRef.current,

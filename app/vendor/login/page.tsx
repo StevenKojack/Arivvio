@@ -6,7 +6,7 @@ import { Logo } from "../../components/Logo";
 import { EventAtmosphere } from "../../components/EventAtmosphere";
 
 export default function VendorLoginPage() {
-  return <main className="customer-experience vendor-entry min-h-screen ui-page ui-text lg:grid lg:grid-cols-2">
+  return <main id="main-content" tabIndex={-1} className="customer-experience vendor-entry min-h-screen ui-page ui-text lg:grid lg:grid-cols-2">
     <aside className="vendor-entry-photo relative overflow-hidden">
       <EventAtmosphere priority />
       <div className="event-photo-caption"><p className="text-xs uppercase tracking-[.2em]">For the people behind the occasion</p><h2 className="mt-4 max-w-lg text-3xl font-medium leading-tight sm:text-5xl">You make the moments.<br />We help bring them together.</h2></div>

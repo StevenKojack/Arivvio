@@ -10,7 +10,7 @@ import { PlatformStatus } from "./PlatformStatus";
 import { CustomerDialog } from "./CustomerDialog";
 export function PreBetaGateway() {
   const [showSupport, setShowSupport] = useState(false);
-  return <main className="customer-experience customer-home ui-page min-h-screen"><Navigation />
+  return <main id="main-content" tabIndex={-1} className="customer-experience customer-home ui-page min-h-screen"><Navigation />
     <OccasionHero />
     <OccasionDiscovery />
     <HowItWorks />

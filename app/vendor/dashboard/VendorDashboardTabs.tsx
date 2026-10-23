@@ -87,7 +87,7 @@ type VendorTabProps = {
   onToggleVacationMode: (vendor: VendorBusinessRow) => Promise<void>;
   onUpdateBusiness: (vendorId: string, draft: BusinessDraft) => Promise<void>;
   onUpdateService: (serviceId: string, draft: ServiceDraft) => Promise<void>;
-  onUploadPhoto: (vendorId: string, file: File) => Promise<void>;
+  onUploadPhoto: (vendorId: string, file: File) => Promise<boolean>;
   photos: VendorPhotoRow[];
   quotes: QuoteWithEvent[];
   services: VendorServiceRow[];
@@ -542,28 +542,42 @@ export function PhotosTab({
 >) {
   const [vendorId, setVendorId] = useState(vendors[0]?.id ?? "");
   const [fileName, setFileName] = useState("");
+  const [pendingFile, setPendingFile] = useState<File>();
+  const [rightsAccepted, setRightsAccepted] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const selectedVendor = vendors.find((vendor) => vendor.id === vendorId);
 
   async function uploadFile(file: File | undefined) {
-    if (!file || !vendorId) {
+    if (!file || !vendorId || !rightsAccepted || uploading) {
       return;
     }
 
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setFileName("Choose a JPEG, PNG, or WebP photo.");
+      return;
+    }
     if (file.size > 5 * 1024 * 1024) {
       setFileName("Photo uploads must be 5MB or smaller.");
       return;
     }
 
     setFileName(file.name);
-    await onUploadPhoto(vendorId, file);
+    setUploading(true);
+    try {
+      if (await onUploadPhoto(vendorId, file)) {
+        setPendingFile(undefined);
+        setRightsAccepted(false);
+      }
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
     <Panel title="Photos">
       <div className="grid gap-3 rounded-lg border border-dashed border-neutral-300 p-5 text-sm text-neutral-600">
         <p>
-          Upload JPEG, PNG, or WebP images up to 5MB. Photos are saved in
-          Supabase Storage and written to vendor_photos.
+          Upload JPEG, PNG, or WebP images up to 5MB. Photos appear on your public business profile.
         </p>
         <label className="grid gap-2 text-sm font-semibold text-neutral-800">
           Vendor
@@ -579,18 +593,28 @@ export function PhotosTab({
             ))}
           </select>
         </label>
-        <label className="flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white">
-          Upload photo
+        <label className="flex h-12 cursor-pointer items-center justify-center rounded-full focus-within:outline-2 focus-within:outline-offset-4 bg-[#0D1321] px-4 text-sm font-semibold text-white">
+          Choose photo
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp"
             className="sr-only"
             onChange={(event) => {
-              void uploadFile(event.target.files?.[0]);
+              const file = event.target.files?.[0];
+              setPendingFile(file);
+              setFileName(file?.name ?? "");
+              setRightsAccepted(false);
               event.target.value = "";
             }}
           />
         </label>
+        <label className="flex items-start gap-2">
+          <input type="checkbox" checked={rightsAccepted} onChange={(event) => setRightsAccepted(event.target.checked)} />
+          I own this photo or have permission to publish it, including permission from identifiable people shown.
+        </label>
+        <button type="button" disabled={!pendingFile || !vendorId || !rightsAccepted || uploading} onClick={() => void uploadFile(pendingFile)} className="rounded-full bg-[#0D1321] px-4 py-3 font-semibold text-white disabled:opacity-50">
+          {uploading ? "Uploading…" : "Upload photo"}
+        </button>
         {fileName ? (
           <p className="text-xs font-semibold text-neutral-500">
             Last selected: {fileName}
@@ -604,6 +628,8 @@ export function PhotosTab({
             .map((photo) => (
               <div key={photo.id} className="overflow-hidden rounded-lg border border-neutral-200">
                 <div
+                  role="img"
+                  aria-label={`Photo for ${selectedVendor.business_name}`}
                   className="h-40 bg-cover bg-center"
                   style={{ backgroundImage: `url(${photo.image_url})` }}
                 />

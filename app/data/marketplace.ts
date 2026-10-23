@@ -49,11 +49,14 @@ export type Coordinates = {
 export type PricingModel =
   | {
       kind: "flat";
+      setupFee?: number;
+      travelFee?: number;
       basePrice: number;
       label: string;
     }
   | {
       kind: "hourly";
+      travelFee?: number;
       hourlyRate: number;
       minHours: number;
       setupFee?: number;
@@ -61,6 +64,7 @@ export type PricingModel =
     }
   | {
       kind: "perGuest";
+      travelFee?: number;
       perGuest: number;
       minimum: number;
       serviceFee?: number;
@@ -408,19 +412,19 @@ export function quoteItem(item: MarketplaceItem, context: QuoteContext) {
       : context.durationHours;
 
   if (item.pricing.kind === "flat") {
-    return item.pricing.basePrice;
+    return item.pricing.basePrice + (item.pricing.setupFee ?? 0) + (item.pricing.travelFee ?? 0);
   }
 
   if (item.pricing.kind === "hourly") {
     const billableHours = Math.max(durationHours, item.pricing.minHours);
 
-    return billableHours * item.pricing.hourlyRate + (item.pricing.setupFee ?? 0);
+    return billableHours * item.pricing.hourlyRate + (item.pricing.setupFee ?? 0) + (item.pricing.travelFee ?? 0);
   }
 
   return Math.max(
     context.guests * item.pricing.perGuest + (item.pricing.serviceFee ?? 0),
     item.pricing.minimum,
-  );
+  ) + (item.pricing.travelFee ?? 0);
 }
 
 export function isAvailableAt(

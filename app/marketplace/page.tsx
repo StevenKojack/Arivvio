@@ -4,7 +4,7 @@ import { MarketplaceBrowser } from "./MarketplaceBrowser";
 
 export default function MarketplacePage() {
   return (
-    <main className="customer-experience min-h-screen ui-page">
+    <main id="main-content" tabIndex={-1} className="customer-experience min-h-screen ui-page">
       <Navigation />
       <section className="mx-auto max-w-[1600px] px-4 pb-4 pt-5 sm:px-8">
         <Suspense fallback={<MarketplaceLoading />}>

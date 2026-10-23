@@ -140,6 +140,7 @@ export function MarketplaceMap({
 
     try {
       map = new mapboxgl.Map({
+        performanceMetricsCollection: false,
         attributionControl: false,
         center: [initialCenterRef.current.lng, initialCenterRef.current.lat],
         container: mapContainerRef.current,
@@ -670,9 +671,7 @@ function getPopupHtml(item: MarketplaceItem) {
           <p style="margin: 0; font-size: 15px; line-height: 1.25; font-weight: 800; color: #0D1321;">${escapeHtml(
             item.name,
           )}</p>
-          <p style="margin: 1px 0 0; white-space: nowrap; font-size: 13px; font-weight: 700; color: #8A6A16;">${item.rating.toFixed(
-            1,
-          )}</p>
+          <span style="font-size:12px;color:#555">${item.databaseSource === false ? "Demo provider" : "Business listing"}</span>
         </div>
         <p style="margin: 7px 0 0; font-size: 13px; line-height: 1.45; color: #666;">${escapeHtml(
           item.location,

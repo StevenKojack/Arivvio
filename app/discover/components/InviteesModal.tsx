@@ -1,9 +1,8 @@
 "use client";
-import { CalendarPicker } from "./CalendarPicker";
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { AudienceGender, AudienceProfile, AudienceType, EventRecognition, GenderContext } from "@/lib/event-intelligence/types";
+import type { AudienceProfile, AudienceType, EventRecognition } from "@/lib/event-intelligence/types";
 import { getFeaturedPersonPolicy } from "@/lib/event-intelligence/featured-person";
 
 const ageOptions: Array<{ label: string; value: AudienceType }> = [
@@ -15,20 +14,8 @@ const ageOptions: Array<{ label: string; value: AudienceType }> = [
   { label: "Custom Age Range", value: "custom" },
 ];
 
-const audienceGenderOptions: Array<{ label: string; value: AudienceGender }> = [
-  { label: "All Genders", value: "all-genders" },
-  { label: "Mostly Male", value: "mostly-male" },
-  { label: "Mostly Female", value: "mostly-female" },
-  { label: "Mixed", value: "mixed" },
-];
 
-const honoreeGenderOptions: Array<{ label: string; value: GenderContext }> = [
-  { label: "Female", value: "female" },
-  { label: "Male", value: "male" },
-  { label: "Nonbinary", value: "nonbinary" },
-  { label: "Prefer to self-describe", value: "self-described" },
-  { label: "Prefer not to say", value: "prefer-not-to-say" },
-];
+
 
 export function InviteesModal({
   onClose,
@@ -93,14 +80,6 @@ export function InviteesModal({
             ) : null}
           </section>
 
-          <section className="mt-7 border-t border-neutral-200 pt-6">
-            <h4 className="text-base font-semibold text-[#0D1321]">Audience gender</h4>
-            <p className="mt-1 text-sm leading-6 text-neutral-600">Optional context for matching. It never removes services.</p>
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {audienceGenderOptions.map((option) => <ChoiceButton key={option.value} label={option.label} selected={draft.audienceGender === option.value} onClick={() => setDraft((current) => ({ ...current, audienceGender: option.value }))} />)}
-            </div>
-          </section>
-
           {featuredPerson ? (
             <section className="mt-7 border-t border-neutral-200 pt-6">
               <h4 className="text-base font-semibold text-[#0D1321]">{featuredPerson.question}</h4>
@@ -119,35 +98,13 @@ export function InviteesModal({
                 </div>
               ) : null}
 
-              {featuredPerson.dueDateQuestion ? (
-                <div className="mt-5"><CalendarPicker label={featuredPerson.dueDateQuestion} value={draft.honoreeDueDate ?? ""} onChange={value => setDraft(current => ({...current, honoreeDueDate:value}))} /></div>
-              ) : featuredPerson.ageQuestion ? (
-                <label className="mt-5 block text-sm font-semibold text-[#0D1321]">{featuredPerson.ageQuestion}
-                  <input type="number" min="0" max="120" value={draft.honoreeAge ?? ""} onChange={(event) => setDraft((current) => ({ ...current, honoreeAge: event.target.value ? Number(event.target.value) : undefined }))} placeholder="Optional" className="mt-2 h-12 w-full rounded-xl border border-neutral-300 px-4 text-sm outline-none focus:border-[#D4AF37]" />
-                </label>
-              ) : null}
-
-              {featuredPerson.askGender ? (
-                <div className="mt-5">
-                  <p className="text-sm font-semibold text-[#0D1321]">About the person we&apos;re celebrating <span className="font-normal text-neutral-500">(optional)</span></p>
-                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {honoreeGenderOptions.map((option) => <ChoiceButton key={option.value} label={option.label} selected={normalizeGender(draft.honoreeGender ?? draft.genderContext) === option.value} onClick={() => setDraft((current) => ({ ...current, genderContext: undefined, honoreeGender: option.value }))} />)}
-                  </div>
-                  {draft.honoreeGender === "self-described" ? (
-                    <label className="mt-4 block text-sm font-semibold text-[#0D1321]">How would they describe themselves?
-                      <input value={draft.genderDescription ?? ""} onChange={(event) => setDraft((current) => ({ ...current, genderDescription: event.target.value }))} placeholder="Optional" className="mt-2 h-12 w-full rounded-xl border border-neutral-300 px-4 text-sm outline-none focus:border-[#D4AF37]" />
-                    </label>
-                  ) : null}
-                </div>
-              ) : null}
-
-              {draft.honoreeAge !== undefined && draft.honoreeAge < 18 ? <p className="mt-5 rounded-2xl bg-[#FFF8E1] px-4 py-3 text-xs leading-5 text-neutral-600">Any bookings or purchases should be reviewed and approved by a legal adult.</p> : null}
+              <p className="mt-4 text-sm ui-muted">Broad audience context is enough. Do not add children’s precise ages, contact details or personal identifiers.</p>
             </section>
           ) : null}
         </div>
 
         <footer className="flex justify-end border-t border-neutral-200 bg-[#FFFCF7] px-5 py-4 sm:px-6">
-          <button type="button" onClick={() => { onSave(draft); onClose(); }} className="h-11 rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white outline-none transition hover:-translate-y-0.5 hover:bg-[#16233B] focus-visible:ring-2 focus-visible:ring-[#D4AF37] focus-visible:ring-offset-2">Save invitee details</button>
+          <button type="button" onClick={() => { onSave({...draft, honoreeAge:undefined, honoreeDueDate:undefined, honoreeGender:undefined, genderContext:undefined, genderDescription:undefined, audienceGender:undefined}); onClose(); }} className="h-11 rounded-full bg-[#0D1321] px-6 text-sm font-semibold text-white outline-none transition hover:-translate-y-0.5 hover:bg-[#16233B] focus-visible:ring-2 focus-visible:ring-[#D4AF37] focus-visible:ring-offset-2">Save invitee details</button>
         </footer>
       </div>
     </div>,
@@ -157,10 +114,4 @@ export function InviteesModal({
 
 function ChoiceButton({ label, onClick, selected }: { label: string; onClick: () => void; selected: boolean }) {
   return <button type="button" aria-pressed={selected} onClick={onClick} className={`min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-[#0D1321] ${selected ? "border-[#2E7D5B] bg-[#EFF8F3] text-[#285E49]" : "border-neutral-200 bg-white text-neutral-700 hover:border-[#D4AF37]"}`}>{selected ? <span aria-hidden="true">✓ </span> : null}{label}</button>;
-}
-
-function normalizeGender(value?: GenderContext): GenderContext | undefined {
-  if (value === "girl") return "female";
-  if (value === "boy") return "male";
-  return value;
 }

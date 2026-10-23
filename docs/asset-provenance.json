@@ -1,0 +1,179 @@
+{
+  "reviewed": "2026-10-22",
+  "fonts": {
+    "family": "System UI: system-ui, Apple system, Segoe UI, sans-serif",
+    "source": "Installed platform fonts rendered by browser",
+    "license_basis": "Fonts supplied under the user platform license. No binaries bundled or redistributed. Internal Next devtools font dependency removed."
+  },
+  "images": [
+    {
+      "source": "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/event-intelligence/atmosphere.ts",
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1470337458703-46ad1756a187",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/event-intelligence/atmosphere.ts",
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1501386761578-eac5c94b800a",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1505373877841-8d25f7d46678",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1511527844068-006b95d162c2",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/event-intelligence/atmosphere.ts",
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/event-intelligence/atmosphere.ts",
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1519167758481-83f550bb49b3",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/event-intelligence/atmosphere.ts",
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1525609004556-c46c7d6cf023",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1526047932273-341f2a7631f9",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/event-intelligence/atmosphere.ts",
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1527529482837-4698179dc6ce",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/event-intelligence/atmosphere.ts",
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1555244162-803834f70033",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1556761175-b413da4baf72",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1560250097-0b93528c311a",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1560506840-ec148e82a604",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    },
+    {
+      "source": "https://images.unsplash.com/photo-1581578731548-c64695cc6952",
+      "license_basis": "Unsplash License https://unsplash.com/license. Existing generic illustration, not business photography. Individual photographer/source-page attribution remains to be recovered before any local asset repackaging. No claim of model, property or trademark clearance.",
+      "used_in": [
+        "lib/marketplace/vendorImages.ts"
+      ]
+    }
+  ],
+  "future": "Keep current atmosphere. Migrate to controlled assets only after individual provenance and required rights are confirmed. Vendor uploads require rights attestation."
+}

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function SupportProjectPage() {
   return (
-    <main className="min-h-screen bg-[#F7F4EC] px-5 py-8 text-[#0D1321] sm:px-8 lg:px-12">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#F7F4EC] px-5 py-8 text-[#0D1321] sm:px-8 lg:px-12">
       <div className="mx-auto max-w-4xl">
         <Link
           href="/about"

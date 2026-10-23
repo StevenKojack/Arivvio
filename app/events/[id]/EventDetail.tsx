@@ -244,7 +244,7 @@ export function EventDetail({ eventId }: { eventId: string }) {
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-        <Panel title="Add guest">
+        <Panel title="Add guest"><p className="mb-4 text-sm ui-muted">Only add guest contact information you are authorized to use. Email and phone are optional. Avoid children’s contact details and personal identifiers.</p>
           <div className="grid gap-3">
             <GuestInput
               label="Name"

@@ -1,13 +1,13 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
 import { createProjectInquiry } from "@/lib/repositories/projectInquiriesRepository";
 import {
   createBrowserSupabaseClient,
   hasSupabaseConfig,
 } from "@/lib/supabase/client";
 
-const CONTACT_EMAIL = "stevenkojack2003@gmail.com";
+import { businessContact } from "@/lib/privacy/config";
 
 const interestOptions = [
   "Invest",
@@ -36,23 +36,6 @@ export function SupportProjectForm({
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const mailtoHref = useMemo(() => {
-    const subject = encodeURIComponent("Arivvio project inquiry");
-    const body = encodeURIComponent(
-      [
-        `Name: ${fullName}`,
-        `Email: ${email}`,
-        `Organization: ${organization || "Not provided"}`,
-        `Interest: ${interestTypes.join(", ") || "Not selected"}`,
-        `Preferred contact: ${preferredContactMethod || "Not provided"}`,
-        "",
-        message,
-      ].join("\n"),
-    );
-
-    return `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
-  }, [email, fullName, interestTypes, message, organization, preferredContactMethod]);
 
   function toggleInterest(interest: string) {
     setInterestTypes((current) =>
@@ -114,10 +97,7 @@ export function SupportProjectForm({
       setPreferredContactMethod("");
       setMessage("");
     } catch {
-      setStatus(
-        "The inquiry database is not ready yet. Your email app will open with the message prepared.",
-      );
-      window.location.href = mailtoHref;
+      setError("Your inquiry was not sent. Please try again. Your message remains here.");
     } finally {
       setIsSubmitting(false);
     }
@@ -125,10 +105,12 @@ export function SupportProjectForm({
 
   return (
     <form onSubmit={submitInquiry} className="grid gap-4">
+      {businessContact.email && <a href={`mailto:${businessContact.email}`} className="underline">Email ARIVVIO</a>}
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-2 text-sm font-semibold text-neutral-800">
           Full name
           <input
+            required maxLength={120}
             value={fullName}
             onChange={(event) => setFullName(event.target.value)}
             className="h-12 rounded-2xl border border-[#D4AF37]/20 bg-white px-4 text-sm outline-none transition focus:border-[#D4AF37]"
@@ -138,6 +120,7 @@ export function SupportProjectForm({
         <label className="grid gap-2 text-sm font-semibold text-neutral-800">
           Email
           <input
+            required maxLength={254}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             className="h-12 rounded-2xl border border-[#D4AF37]/20 bg-white px-4 text-sm outline-none transition focus:border-[#D4AF37]"
@@ -197,6 +180,7 @@ export function SupportProjectForm({
       <label className="grid gap-2 text-sm font-semibold text-neutral-800">
         Short message
         <textarea
+          required minLength={10} maxLength={4000}
           value={message}
           onChange={(event) => setMessage(event.target.value)}
           className="min-h-32 resize-y rounded-2xl border border-[#D4AF37]/20 bg-white px-4 py-3 text-sm leading-6 outline-none transition focus:border-[#D4AF37]"
@@ -205,20 +189,19 @@ export function SupportProjectForm({
       </label>
 
       {error ? (
-        <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+        <p role="alert" className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
           {error}
         </p>
       ) : null}
       {status ? (
-        <p className="rounded-2xl bg-[#FFF8E1] px-4 py-3 text-sm font-semibold text-[#8A6A16]">
+        <p role="status" className="rounded-2xl bg-[#FFF8E1] px-4 py-3 text-sm font-semibold text-[#8A6A16]">
           {status}
         </p>
       ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs leading-5 text-neutral-500">
-          If the inquiry database is unavailable, this form opens a prepared
-          email instead.
+          We use your information to respond to this inquiry. No marketing consent is required. Do not include passwords or sensitive documents.
         </p>
         <button
           type="submit"

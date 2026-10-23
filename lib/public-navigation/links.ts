@@ -36,6 +36,8 @@ export const footerGroups = [
     "Legal",
     [
       ["Privacy", "/privacy"],
+      ["Cookies & Storage", "/cookies"],
+      ["Privacy & Data", "/account/privacy"],
       ["Terms of Use", "/terms"],
       ["Marketplace & Pre-Beta Information", "/legal"],
     ],

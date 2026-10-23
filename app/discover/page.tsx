@@ -4,7 +4,7 @@ import { EventWizard } from "./EventWizard";
 
 export default function DiscoverPage() {
   return (
-    <main className="customer-experience min-h-screen ui-page ui-text">
+    <main id="main-content" tabIndex={-1} className="customer-experience min-h-screen ui-page ui-text">
       <Navigation />
       <Suspense fallback={<DiscoveryLoading />}>
         <EventWizard />

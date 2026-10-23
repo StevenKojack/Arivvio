@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 export default function ClaimBusinessPage() {
   return (
-    <main className="customer-experience min-h-screen ui-page ui-text">
+    <main id="main-content" tabIndex={-1} className="customer-experience min-h-screen ui-page ui-text">
       <Navigation />
       <div className="mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
         <p className="eyebrow">For business owners</p>

@@ -40,6 +40,8 @@ export function AuthorityFields() {
           className="mt-1 w-full rounded-xl border p-3 ui-surface"
         />
       </label>
+      <label className="flex items-start gap-3"><input type="checkbox" required name="authority_attested" value="true"/><span>I confirm this information is accurate to the best of my knowledge and I am authorized to request access to this business.</span></label>
+      <label className="flex items-start gap-3"><input type="checkbox" required name="adult_attested" value="true"/><span>I am at least 18 years old.</span></label>
       <p className="text-sm ui-muted">
         Choose official-domain account email or manual public phone / public
         record review in the verification center. Your role declaration does not

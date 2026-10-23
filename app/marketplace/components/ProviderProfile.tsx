@@ -1,5 +1,6 @@
 "use client";
 
+import { PricingDisclosure } from "./PricingDisclosure";
 import Link from "next/link";
 import { listingPresentation } from "@/lib/marketplace/listing-state";
 import { useEffect, useRef } from "react";
@@ -23,10 +24,11 @@ export function ProviderProfile({ item, quote, matchReason, selected, onAdd, onC
   }, [item, preview]);
   useEffect(() => {
     const element = dialog.current;
+    const previous = document.activeElement as HTMLElement | null;
     const overflow = document.body.style.overflow;
     element?.showModal();
     document.body.style.overflow = "hidden";
-    return () => { element?.close(); document.body.style.overflow = overflow; };
+    return () => { element?.close(); document.body.style.overflow = overflow; previous?.focus(); };
   }, []);
   return <dialog ref={dialog} onCancel={onClose} aria-labelledby={`provider-title-${item.id}`} className="context-reveal fixed inset-0 m-auto max-h-[94dvh] w-[min(960px,96vw)] overflow-y-auto rounded-3xl ui-soft p-0 ui-text shadow-2xl backdrop:bg-black/50">
     <header className="sticky top-0 z-10 flex items-center justify-between border-b ui-border ui-surface px-5 py-4"><button onClick={onClose} className="rounded-lg border px-4 py-2 text-sm font-semibold">{preview ? "Close preview" : "← Back to marketplace"}</button><span className="text-xs ui-muted">Meet your event team</span></header>
@@ -42,7 +44,7 @@ export function ProviderProfile({ item, quote, matchReason, selected, onAdd, onC
         {!!item.galleryUrls?.length && <section className="mt-8"><h3 className="text-lg font-semibold">Gallery</h3><div className="mt-3 grid grid-cols-2 gap-3">{item.galleryUrls.map((src,i)=><div className="relative aspect-[4/3] overflow-hidden rounded-xl" key={i}><Image src={src} alt={`${item.name} gallery photo ${i+1}`} fill unoptimized sizes="350px" className="object-cover" /></div>)}</div></section>}
         <section className="mt-8"><h3 className="text-lg font-semibold">Availability</h3><p className="mt-3 text-sm leading-7 ui-muted">Availability is not confirmed. An inquiry does not reserve a date.</p></section>
       </div>
-      <aside className="h-fit rounded-2xl border ui-border ui-surface p-5 md:sticky md:top-24"><p className="text-xs ui-muted">{demo ? "Demo estimate" : "Estimated price"}</p><p className="mt-2 text-3xl font-semibold">{item.pricingKnown === false ? "Contact for pricing" : preview ? "See packages" : <>${quote.toLocaleString()}</>}</p><p className="mt-2 text-xs ui-muted">{preview ? "Pricing is shown for each service." : item.pricing.label}</p><div className="my-5 border-y py-4"><h3 className="text-sm font-semibold">{preview ? "A closer look" : "Your event fit"}</h3><p className="mt-2 text-sm leading-6 ui-muted">{matchReason}</p></div>{item.listingState === "unclaimed" ? <Link className="block rounded-lg ui-primary px-4 py-3 text-center text-sm font-semibold" href={`/business/${item.vendorId}?serviceId=${item.serviceId??""}`}>Request through ARIVVIO</Link> : <button disabled={selected || preview || !listing.canRequest} onClick={onAdd} className="w-full rounded-lg ui-primary px-4 py-3 text-sm font-semibold disabled:opacity-60">{!listing.canRequest ? "Requests not open yet" : preview ? "Add to quote cart · preview" : selected ? "Added to your quote cart" : "Add to quote cart"}</button>}{!preview&&<AskArivvioButton />}<p className="mt-3 text-xs leading-5 ui-muted">Compare your selections in the marketplace cart. No payment is taken and no booking is confirmed.</p></aside>
+      <aside className="h-fit rounded-2xl border ui-border ui-surface p-5 md:sticky md:top-24"><p className="text-xs ui-muted">{demo ? "Demo estimate" : "Estimated price"}</p><p className="mt-2 text-3xl font-semibold">{item.pricingKnown === false ? "Contact for pricing" : preview ? "See packages" : <>${quote.toLocaleString()}</>}</p><p className="mt-2 text-xs ui-muted">{preview ? "Pricing is shown for each service." : item.pricing.label}</p><PricingDisclosure item={item}/><div className="my-5 border-y py-4"><h3 className="text-sm font-semibold">{preview ? "A closer look" : "Your event fit"}</h3><p className="mt-2 text-sm leading-6 ui-muted">{matchReason}</p></div>{item.listingState === "unclaimed" ? <Link className="block rounded-lg ui-primary px-4 py-3 text-center text-sm font-semibold" href={`/business/${item.vendorId}?serviceId=${item.serviceId??""}`}>Request through ARIVVIO</Link> : <button disabled={selected || preview || !listing.canRequest} onClick={onAdd} className="w-full rounded-lg ui-primary px-4 py-3 text-sm font-semibold disabled:opacity-60">{!listing.canRequest ? "Requests not open yet" : preview ? "Add to quote cart · preview" : selected ? "Added to your quote cart" : "Add to quote cart"}</button>}{!preview&&<AskArivvioButton />}<p className="mt-3 text-xs leading-5 ui-muted">Compare your selections in the marketplace cart. No payment is taken and no booking is confirmed.</p></aside>
     </div>
   </dialog>;
 }

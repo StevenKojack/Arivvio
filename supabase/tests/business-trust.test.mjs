@@ -61,7 +61,7 @@ test("trusted business intake, evidence and membership security", async (t) => {
     );
     await db.exec(
       readFileSync(
-        "supabase/migrations/20261021180518_trusted_business_intake.sql",
+        "supabase/migrations/20261022201835_trusted_business_intake.sql",
         "utf8",
       ),
     );
@@ -484,7 +484,7 @@ test("trusted business intake, evidence and membership security", async (t) => {
     });
     await t.test("pilot migration stores sourced unclaimed identities without pricing or availability",async()=>{
       await db.exec('reset role');
-      await db.exec(readFileSync('supabase/migrations/20261021232809_local_business_pilot.sql','utf8'));
+      await db.exec(readFileSync('supabase/migrations/20261022201843_local_business_pilot.sql','utf8'));
       const rows=(await db.query("select b.owner_id,b.verification_status,b.verified_at,s.base_price,s.hourly_rate from vendor_businesses b join vendor_services s on s.vendor_id=b.id where b.business_name in ('Scooter''s Jungle','The Ebell of Los Angeles','NOOR')")).rows;
       assert.equal(rows.length,3);assert.ok(rows.every(r=>r.owner_id===null&&r.verification_status==='unverified'&&r.verified_at===null&&r.base_price===null&&r.hourly_rate===null));
     });

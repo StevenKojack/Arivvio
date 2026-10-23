@@ -120,6 +120,7 @@ export function ZoneMapEditor({
 
     try {
       map = new mapboxgl.Map({
+        performanceMetricsCollection: false,
         attributionControl: false,
         center: [anchor.lng, anchor.lat],
         container: mapContainerRef.current,

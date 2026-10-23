@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import localFont from "next/font/local";
-
-const arivvioSans = localFont({ src: "../node_modules/next/dist/next-devtools/server/font/geist-latin.woff2", variable: "--font-arivvio", display: "swap", weight: "100 900" });
 import { Footer } from "./components/Footer";
 import { EventAssistant } from "./components/EventAssistant";
 import { ThemeInitializer } from "./components/ThemeControl";
@@ -26,10 +23,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${arivvioSans.variable} h-full antialiased`}
+      className="h-full antialiased"
       data-build-commit={process.env.VERCEL_GIT_COMMIT_SHA ?? "local"}
     >
-      <body className="min-h-full flex flex-col">{children}<Footer /><ThemeInitializer /><EventAssistant /></body>
+      <body className="min-h-full flex flex-col"><a className="skip-link" href="#main-content">Skip to main content</a>{children}<Footer /><ThemeInitializer /><EventAssistant /></body>
     </html>
   );
 }

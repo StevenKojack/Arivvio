@@ -380,6 +380,9 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      privacy_operation: { Args: { operation: string; payload?: Json }; Returns: Json };
+      contact_control: { Args: { operation: string; payload?: Json }; Returns: Json };
+      complete_legal_acceptance: { Args: Record<string, never>; Returns: undefined };
       trust_operation: {Args:{operation:string;payload?:Json};Returns:Json};
       business_matches: {Args:{payload:Json};Returns:Json};
       listing_operation: { Args: {operation: string; payload?: Json}; Returns: Json };

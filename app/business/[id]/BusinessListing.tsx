@@ -110,7 +110,7 @@ export function BusinessListing({
     ...(initialServiceId ? { serviceId: initialServiceId } : {}),
   });
   return (
-    <main className="mx-auto max-w-3xl px-5 py-12">
+    <main id="main-content" tabIndex={-1} className="mx-auto max-w-3xl px-5 py-12">
       <Link href={initialMode === "claim" ? "/claim-business" : "/marketplace"} className="text-sm underline">
         {initialMode === "claim" ? "Back to business search" : "Back to Marketplace"}
       </Link>

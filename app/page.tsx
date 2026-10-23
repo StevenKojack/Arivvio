@@ -18,7 +18,7 @@ export default function PreBetaGatewayPage() {
 
 function GatewayFallback() {
   return (
-    <main className="min-h-screen bg-[#F7F4EC] text-[#0D1321]">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#F7F4EC] text-[#0D1321]">
       <div className="mx-auto flex min-h-screen max-w-7xl items-center px-6">
         <p className="rounded-full border border-[#D4AF37]/20 bg-white px-5 py-3 text-sm font-semibold shadow-[0_18px_50px_rgba(13,19,33,0.08)]">
           Loading Arivvio Pre-Beta Demo...

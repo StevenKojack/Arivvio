@@ -457,6 +457,7 @@ function toPricingModel(service: VendorServiceRow): PricingModel {
       label: `$${hourlyRate.toLocaleString()} / hour, ${minHours} hour minimum`,
       minHours,
       setupFee: Number(service.setup_fee ?? 0),
+      travelFee: Number(service.travel_fee ?? 0),
     };
   }
 
@@ -469,6 +470,7 @@ function toPricingModel(service: VendorServiceRow): PricingModel {
       minimum: perGuest,
       perGuest,
       serviceFee: Number(service.setup_fee ?? 0),
+      travelFee: Number(service.travel_fee ?? 0),
     };
   }
 
@@ -476,6 +478,8 @@ function toPricingModel(service: VendorServiceRow): PricingModel {
 
   return {
     basePrice,
+    setupFee: Number(service.setup_fee ?? 0),
+    travelFee: Number(service.travel_fee ?? 0),
     kind: "flat",
     label: `$${basePrice.toLocaleString()} flat estimate`,
   };
@@ -499,11 +503,11 @@ function toAvailabilityWindows(
 
 function priceLabel(pricing: PricingModel) {
   if (pricing.kind === "flat") {
-    return `$${pricing.basePrice.toLocaleString()} estimate`;
+    return `$${(pricing.basePrice + (pricing.setupFee ?? 0) + (pricing.travelFee ?? 0)).toLocaleString()} estimate`;
   }
 
   if (pricing.kind === "hourly") {
-    const total = pricing.hourlyRate * pricing.minHours + (pricing.setupFee ?? 0);
+    const total = pricing.hourlyRate * pricing.minHours + (pricing.setupFee ?? 0) + (pricing.travelFee ?? 0);
 
     return `$${total.toLocaleString()} / ${pricing.minHours} hours`;
   }

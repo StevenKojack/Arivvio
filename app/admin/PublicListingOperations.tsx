@@ -1,4 +1,5 @@
 "use client";
+import { ContactPreference } from "./ContactPreference";
 import Link from "next/link";
 import { BusinessVerificationReview } from "./BusinessVerificationReview";
 import {
@@ -387,7 +388,7 @@ export function PublicListingOperations({ section }: { section: string }) {
                   .filter((v) => !v.owner_id)
                   .map((v) => (
                     <article key={v.id} className="rounded-xl border p-4">
-                      <h3 className="font-semibold">{v.business_name}</h3>
+                      <h3 className="font-semibold">{v.business_name}</h3><ContactPreference vendorId={v.id}/>
                       <p className="text-sm">
                         {v.approval_status === "approved"
                           ? "Public"
@@ -445,7 +446,7 @@ export function PublicListingOperations({ section }: { section: string }) {
                     <p className="mt-3 whitespace-pre-wrap">
                       {l.customer_note}
                     </p>
-                    <p className="mt-3 font-medium">{leadLabel(l.status)}</p>
+                    <p className="mt-3 font-medium">{leadLabel(l.status)}</p><ContactPreference vendorId={l.vendor_id}/>
                     {data.notes
                       .filter((n) => n.lead_id === l.id)
                       .map((n) => (

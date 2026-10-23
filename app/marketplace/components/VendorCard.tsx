@@ -1,5 +1,6 @@
 "use client";
 
+import { PricingDisclosure } from "./PricingDisclosure";
 import Link from "next/link";
 import { listingPresentation } from "@/lib/marketplace/listing-state";
 import { memo, useState } from "react";
@@ -50,18 +51,8 @@ function VendorCardComponent({
 
   return (
     <><article
-      onClick={() => onSelect?.(item)}
-      onKeyDown={(event) => {
-        if (event.target !== event.currentTarget) return;
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onSelect?.(item);
-        }
-      }}
       onMouseEnter={() => onHover?.(item.id)}
       onMouseLeave={() => onHover?.(null)}
-      role="button"
-      tabIndex={0}
       data-selected={isSelected}
       className={`provider-card w-full overflow-hidden rounded-xl transition ${isHighlighted ? "outline outline-1" : ""}`}
 
@@ -69,7 +60,7 @@ function VendorCardComponent({
       <div className="relative aspect-[4/3] overflow-hidden bg-[#f2f0ec]">
         <ListingImage
           src={imageUrl}
-          alt={`${item.type} illustrative image`}
+          alt={item.photoUrl && item.databaseSource ? `Photo supplied for ${item.name}` : `Illustrative photo for ${item.type} listings`}
           sizes="(max-width: 768px) 74vw, 326px"
           className="object-cover transition duration-500 hover:scale-105"
         />
@@ -118,6 +109,8 @@ function VendorCardComponent({
             {!listing.canRequest ? "Verification review required" : buttonLabel}
           </button>}
         </div>
+        {onSelect && <button type="button" onClick={()=>onSelect(item)} className="hub-button mt-3">Select {item.name}</button>}
+        <PricingDisclosure item={item}/>
         <button type="button" onClick={(event) => { event.stopPropagation(); setProfileOpen(true); }} className="mt-4 py-2 text-sm font-semibold underline underline-offset-4 hover:opacity-80">View profile</button>
       </div>
     </article>{profileOpen ? <ProviderProfile preview={preview} item={item} quote={quote} matchReason={preview ? matchReason : item.services.slice(0, 2).join(" · ") || matchReason} selected={Boolean(disableAdd ?? isSelected)} onAdd={() => { setProfileOpen(false); if (!preview) onAdd(item); }} onClose={() => setProfileOpen(false)} /> : null}</>

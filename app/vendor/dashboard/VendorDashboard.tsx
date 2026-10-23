@@ -252,8 +252,10 @@ export function VendorDashboard() {
 
       setPhotos((current) => [result.photo, ...current]);
       setMessage("Photo uploaded.");
+      return true;
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to upload photo.");
+      return false;
     }
   }
 

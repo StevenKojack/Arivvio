@@ -133,6 +133,7 @@ export function AccountDashboard() {
         </Link>
       </header>
       {pending&&<div className="my-5"><SaveEventToAccount profile={pending} initiallyOpen /></div>}
+      <Link href="/account/privacy" className="hub-button mt-5">Privacy &amp; Data</Link>
       <nav aria-label="Account sections" className="my-6 flex flex-wrap gap-2">
         {["Events", "Requests / Vendors", "Account"].map((s) => (
           <button

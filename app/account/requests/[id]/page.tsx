@@ -7,7 +7,7 @@ export default async function RequestPage({
 }) {
   const { id } = await params;
   return (
-    <main className="min-h-screen ui-soft ui-text">
+    <main id="main-content" tabIndex={-1} className="min-h-screen ui-soft ui-text">
       <Navigation />
       <section className="px-4 py-10 sm:px-8">
         <RequestThread key={id} requestId={id} />

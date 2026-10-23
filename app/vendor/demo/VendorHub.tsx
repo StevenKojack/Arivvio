@@ -57,7 +57,7 @@ export function VendorHub() {
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  if (!state) return <main className="min-h-screen ui-soft p-8"><Logo /><p className="mt-10" role="status">Opening your Vendor Demo…</p></main>;
+  if (!state) return <main id="main-content" tabIndex={-1} className="min-h-screen ui-soft p-8"><Logo /><p className="mt-10" role="status">Opening your Vendor Demo…</p></main>;
   const today = dateKey(new Date());
   const sorted = [...state.events].sort((a,b) => `${a.date}${a.start}`.localeCompare(`${b.date}${b.start}`));
   const upcoming = sorted.filter(e => e.date >= today);

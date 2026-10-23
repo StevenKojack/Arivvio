@@ -1,5 +1,6 @@
 "use client";
 
+import { PrivacyRequests } from "./PrivacyRequests";
 import { PublicListingOperations } from "./PublicListingOperations";
 import { useEffect, useState } from "react";
 import { isAdminEmail } from "@/lib/auth/roles";
@@ -63,6 +64,7 @@ export function AdminDashboard() {
   }
 
   const sections = [
+    "Privacy Requests",
     "Public Listings",
     "Leads",
     "Claims",
@@ -126,7 +128,8 @@ export function AdminDashboard() {
         {["Public Listings", "Leads", "Claims"].includes(activeSection) && (
           <PublicListingOperations section={activeSection} />
         )}
-        {activeSection === "Vendors" ? (
+        {activeSection === "Privacy Requests" && <PrivacyRequests />}
+      {activeSection === "Vendors" ? (
           <Panel title="Vendor businesses">
             {overview.vendors.map((vendor) => (
               <div

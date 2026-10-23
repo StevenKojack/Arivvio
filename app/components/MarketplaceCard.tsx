@@ -41,9 +41,7 @@ export function MarketplaceCard({
             </h3>
           </div>
           <div className="grid justify-items-end gap-2">
-            {item.rating > 0 && <span className="rounded-full bg-[#F6F3EA] px-3 py-1 text-sm font-semibold text-[#0D1321]">
-              {item.rating.toFixed(2)}
-            </span>}
+
             {!item.databaseSource ? (
               <span className="rounded-full bg-[#FFF8E1] px-3 py-1 text-xs font-semibold text-[#8A6A16]">
                 Demo provider

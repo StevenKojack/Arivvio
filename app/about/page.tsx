@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 export default function AboutPage() {
   return (
-    <main className="customer-experience min-h-screen ui-page ui-text">
+    <main id="main-content" tabIndex={-1} className="customer-experience min-h-screen ui-page ui-text">
       <Navigation />
       <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8 sm:py-20">
         <header className="max-w-3xl">
