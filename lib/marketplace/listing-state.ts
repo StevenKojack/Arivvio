@@ -8,35 +8,35 @@ export function listingPresentation(
 ) {
   if (item.listingState === "unclaimed")
     return {
-      label: "Public business listing",
+      label: "Unclaimed Business",
       description:
         "This business has not claimed its ARIVVIO profile yet. Pricing, availability and responses have not been confirmed.",
       canRequest: false,
     };
   if (item.listingState === "demo" || item.databaseSource === false)
     return {
-      label: "Demo listing",
+      label: "Fictional Demo Provider",
       description:
-        "Pricing, capabilities and scheduling are illustrative, not a verified business offer.",
+        "Fictional example business. Prices and schedules are illustrative. Requests and responses are simulated. No real provider is contacted.",
       canRequest: true,
     };
   if (item.listingState === "claimed" && item.verificationStatus === "verified")
     return {
-      label: "Verified business",
+      label: "Verified Business",
       description:
-        "ARIVVIO reviewed business authority. Verification does not endorse service quality. Confirm pricing and availability with the provider.",
+        "ARIVVIO reviewed business authority. Verification does not guarantee quality, licensing, insurance, availability or fulfillment. Confirm pricing and availability with the provider.",
       canRequest: true,
     };
   if (item.listingState === "claimed")
     return {
-      label: "Business-managed listing",
+      label: "Business-Managed · Verification Pending",
       description:
         "Business verification review required. Direct requests are unavailable until review is complete.",
       canRequest: false,
     };
   return {
-    label: "Provider listing",
-    description: "Contact the provider to confirm pricing and availability.",
-    canRequest: true,
+    label: "Business-Managed · Verification Pending",
+    description: "Authority verification is pending. Direct requests are unavailable.",
+    canRequest: false,
   };
 }

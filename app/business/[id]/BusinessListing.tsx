@@ -122,8 +122,8 @@ export function BusinessListing({
         <>
           <p className="mt-8 text-sm ui-muted">
             {listing.owner_id
-              ? listing.verification_status === "verified" ? "Verified business" : "Business-managed listing"
-              : "Public business listing"}
+              ? listing.verification_status === "verified" ? "Verified Business" : "Business-Managed · Verification Pending"
+              : "Unclaimed Business"}
           </p>
           <h1 className="mt-2 text-3xl font-semibold">
             {listing.business_name}

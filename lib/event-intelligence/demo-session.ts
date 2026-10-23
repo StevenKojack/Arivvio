@@ -9,12 +9,12 @@ export function saveDemoPlannerSession<T>(state: T) {
   saveStoredValue(plannerKey, state);
 }
 
-export function loadDemoCart<T>() {
-  return loadStoredValue<T>(cartKey);
+export function loadDemoCart<T>(eventId?: string) {
+  return loadStoredValue<T>(eventId ? `${cartKey}:event:${eventId}` : cartKey);
 }
 
-export function saveDemoCart<T>(cart: T) {
-  saveStoredValue(cartKey, cart);
+export function saveDemoCart<T>(cart: T, eventId?: string) {
+  saveStoredValue(eventId ? `${cartKey}:event:${eventId}` : cartKey, cart);
 }
 
 function loadStoredValue<T>(key: string) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { listingPresentation } from "@/lib/marketplace/listing-state";
 import Link from "next/link";
 import type { MarketplaceItem } from "../data/marketplace";
 
@@ -30,7 +31,7 @@ export function MarketplaceCard({
       ) : (
         <div className="h-2 bg-[#D4AF37]" />
       )}
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-1 flex-col p-5"><p className="mb-3 text-xs font-semibold">{listingPresentation(item).label}</p>
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#B88A1D]">
@@ -97,7 +98,7 @@ export function MarketplaceCard({
                   : "bg-amber-50 text-amber-700"
               }`}
             >
-              {item.databaseSource ? "Availability not confirmed" : available ? "Available" : "Check time"}
+              {item.databaseSource ? "Availability not confirmed" : available ? "Illustrative schedule" : "Check sample time"}
             </span>
           </div>
           <p className="mt-2 text-xs text-neutral-500">{item.pricing.label}</p>
@@ -116,7 +117,7 @@ export function MarketplaceCard({
               rel="noreferrer"
               className="mb-4 inline-flex text-xs font-semibold text-[#8A6A16] transition hover:text-neutral-950"
             >
-              Verify: {item.sourceLabel}
+              {item.databaseSource ? "Source information" : "Explore the Demo"}
             </a>
           ) : (
             <p className="mb-4 text-xs font-semibold text-neutral-500">

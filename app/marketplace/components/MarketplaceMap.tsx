@@ -1,4 +1,5 @@
 "use client";
+import { listingPresentation } from "@/lib/marketplace/listing-state";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl, {
@@ -105,7 +106,7 @@ export function MarketplaceMap({
   const isSheet = layout === "sheet";
   const isSticky = layout === "sticky";
   const pinsWithCoordinates = useMemo(
-    () => pins.filter((pin) => isValidCoordinates(pin.item.coordinates)),
+    () => pins.filter((pin) => pin.item.type === "Venue" && pin.item.coordinatesKnown !== false && isValidCoordinates(pin.item.coordinates)),
     [pins],
   );
   const eventPoint = isValidCoordinates(eventCoordinates) ? eventCoordinates : undefined;
@@ -565,6 +566,7 @@ function FallbackMap({
           <button
             key={pin.item.id}
             type="button"
+            aria-label={`${pin.item.name}, ${listingPresentation(pin.item).label}${pin.item.databaseSource === false ? ", illustrative location" : ""}`}
             onClick={() => onSelectItem(pin.item)}
             onMouseEnter={() => onHoverItem(pin.item.id)}
             onMouseLeave={() => onHoverItem(null)}
@@ -671,7 +673,7 @@ function getPopupHtml(item: MarketplaceItem) {
           <p style="margin: 0; font-size: 15px; line-height: 1.25; font-weight: 800; color: #0D1321;">${escapeHtml(
             item.name,
           )}</p>
-          <span style="font-size:12px;color:#555">${item.databaseSource === false ? "Demo provider" : "Business listing"}</span>
+          <span style="font-size:12px;color:#555">${escapeHtml(listingPresentation(item).label)}${item.databaseSource === false ? " · Illustrative location" : ""}</span>
         </div>
         <p style="margin: 7px 0 0; font-size: 13px; line-height: 1.45; color: #666;">${escapeHtml(
           item.location,

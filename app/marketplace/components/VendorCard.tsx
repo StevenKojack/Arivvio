@@ -11,6 +11,7 @@ import type { MarketplaceItem } from "@/app/data/marketplace";
 import { getVendorImage } from "@/lib/marketplace/vendorImages";
 
 type VendorCardProps = {
+  eventId?: string;
   preview?: boolean;
   buttonLabel?: string;
   disableAdd?: boolean;
@@ -26,6 +27,7 @@ type VendorCardProps = {
 };
 
 function VendorCardComponent({
+  eventId,
   preview = false,
   buttonLabel = "Add to quote",
   disableAdd,
@@ -67,7 +69,7 @@ function VendorCardComponent({
         {isSelected && <span className="absolute left-3 top-3 rounded-md ui-primary px-3 py-1 text-xs font-semibold">Selected</span>}
 
       </div>
-      <div className="p-4">{matchLabel && <div className="mb-3 text-xs"><p className="font-semibold">{matchLabel}</p><p className="mt-1 leading-5 ui-muted">{matchReason}</p></div>}
+      <div className="p-4"><p className="mb-3 text-xs font-semibold ui-text" data-provider-status>{listing.label}</p>{matchLabel && <div className="mb-3 text-xs"><p className="font-semibold">{matchLabel}</p><p className="mt-1 leading-5 ui-muted">{matchReason}</p></div>}
         <div className="flex items-start justify-between gap-3">
           {item.profileImageUrl && <Image src={item.profileImageUrl} alt={`${item.name} logo`} width={44} height={44} unoptimized className="shrink-0 rounded-lg object-contain" />}
           <div>
@@ -93,7 +95,7 @@ function VendorCardComponent({
               {item.pricingKnown === false ? "Contact for pricing" : preview ? item.serviceOptions?.[0]?.estimateLabel || "Request pricing" : `$${quote.toLocaleString()}`}
             </p>
           </div>
-          {item.listingState === "unclaimed" ? <Link href={`/business/${item.vendorId}?serviceId=${item.serviceId??""}`} onClick={e=>e.stopPropagation()} className="rounded-lg ui-primary px-3 py-2 text-sm">Request through ARIVVIO</Link> : <button
+          {item.listingState === "unclaimed" ? <Link href={`/business/${item.vendorId}?serviceId=${item.serviceId??""}${eventId ? `&eventId=${encodeURIComponent(eventId)}` : ""}`} onClick={e=>e.stopPropagation()} className="rounded-lg ui-primary px-3 py-2 text-sm">Request through ARIVVIO</Link> : <button
             type="button"
             disabled={!listing.canRequest || (disableAdd ?? isSelected)}
             onClick={(event) => {
@@ -113,7 +115,7 @@ function VendorCardComponent({
         <PricingDisclosure item={item}/>
         <button type="button" onClick={(event) => { event.stopPropagation(); setProfileOpen(true); }} className="mt-4 py-2 text-sm font-semibold underline underline-offset-4 hover:opacity-80">View profile</button>
       </div>
-    </article>{profileOpen ? <ProviderProfile preview={preview} item={item} quote={quote} matchReason={preview ? matchReason : item.services.slice(0, 2).join(" · ") || matchReason} selected={Boolean(disableAdd ?? isSelected)} onAdd={() => { setProfileOpen(false); if (!preview) onAdd(item); }} onClose={() => setProfileOpen(false)} /> : null}</>
+    </article>{profileOpen ? <ProviderProfile eventId={eventId} preview={preview} item={item} quote={quote} matchReason={preview ? matchReason : item.services.slice(0, 2).join(" · ") || matchReason} selected={Boolean(disableAdd ?? isSelected)} onAdd={() => { setProfileOpen(false); if (!preview) onAdd(item); }} onClose={() => setProfileOpen(false)} /> : null}</>
   );
 }
 

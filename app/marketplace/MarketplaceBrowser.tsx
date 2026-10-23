@@ -1,7 +1,8 @@
 "use client";
 
+import { composeProviders, marketplaceMode, listingType, sourcePriority, selectMarketplaceMatches, cartGroups, discoveryGroups, discoveryGroup, type ListingType } from "@/lib/marketplace/sources";
 import { listingPresentation } from "@/lib/marketplace/listing-state";
-import { matchesListingRequirements, selectMatchingTiers, type MatchAssessment } from "@/lib/marketplace/matching-tiers";
+import { matchesListingRequirements, type MatchAssessment } from "@/lib/marketplace/matching-tiers";
 import { evaluateEligibility } from "@/lib/vendor-demo/eligibility";
 import Link from "next/link";
 import { loadCloudCart, removeCloudCartItem, sendCloudCart } from "@/lib/customer-cloud/marketplace";
@@ -23,6 +24,7 @@ import {
   isAvailableAt,
   allServices,
   marketplaceItems,
+  showcaseItems,
   marketplaceTypes,
   quoteItem,
   type Coordinates,
@@ -99,7 +101,7 @@ type CartLine = {
 type MarketplaceEntryMode = "browse" | "category" | "event" | "service";
 
 function demoItems() {
-  return marketplaceItems.map((item) => ({
+  return showcaseItems.map((item) => ({
     ...item,
     databaseSource: false,
   }));
@@ -153,6 +155,8 @@ function MarketplaceBody() {
     .get("services")
     ?.split(",")
     .filter(isServiceName);
+  const sourceMode = marketplaceMode(searchParams.get("mode") ?? undefined);
+  const [sourceFilter, setSourceFilter] = useState<ListingType>("all");
   const entryMode = getEntryMode(searchParams.get("entryMode"));
   const initialEventType = isEventType(initialEvent) ? initialEvent : "All";
   const initialGuests = Number(searchParams.get("guests") ?? 40);
@@ -172,7 +176,7 @@ function MarketplaceBody() {
   const initialSearchRadiusMiles = Number(searchParams.get("searchRadiusMiles") ?? 0);
   const initialRecommendedServices =
     initialEventType === "All" ? [] : eventPlanPresets[initialEventType].recommended;
-  const [providers, setProviders] = useState<MarketplaceItem[]>(demoItems);
+  const [providers, setProviders] = useState<MarketplaceItem[]>(() => composeProviders([], demoItems(), sourceMode));
   const [marketplaceMessage, setMarketplaceMessage] = useState(
     "Loading marketplace providers...",
   );
@@ -213,6 +217,7 @@ function MarketplaceBody() {
   const [searchZone, setSearchZone] = useState<PlanningZone | null>(null);
   const [isZoneEditorOpen, setIsZoneEditorOpen] = useState(false);
   const [locationStatus, setLocationStatus] = useState("");
+  const nextCartLineId = useRef(0);
   const [cart, setCart] = useState<CartLine[]>([]);
   const [isCartRestored, setIsCartRestored] = useState(false);
   const [eventIntelligence, setEventIntelligence] = useState<EventIntelligenceProfile | null>(null);
@@ -405,7 +410,7 @@ function MarketplaceBody() {
       const availabilityKnown = item.availability.length > 0;
       const eligible = evaluateEligibility(item.marketplaceRules,undefined,{eventType:selectedEvent === "All" ? undefined : selectedEvent,age:eventIntelligence?.audience.guestAgeMin,distanceMiles:eventCoordinates?miles:undefined}).eligible;
       const hardMatch = Boolean(
-        matchesListingRequirements(item,{event:selectedEvent,services:selectedServices,excluded:excludedServices,query:normalizedQuery,language,specialty,maxEstimate:maxEstimate?Number(maxEstimate):undefined,estimate:quoteItem(item,globalQuoteContext),guests:globalQuoteContext.guests}) &&
+        (sourceFilter === "all" || listingType(item) === sourceFilter) && matchesListingRequirements(item,{event:selectedEvent,services:selectedServices,excluded:excludedServices,query:normalizedQuery,language,specialty,maxEstimate:maxEstimate?Number(maxEstimate):undefined,estimate:quoteItem(item,globalQuoteContext),guests:globalQuoteContext.guests}) &&
         withinRadius && withinPlannerSearchRegion && eligible &&
         !item.blockedDates?.includes(eventDate) && (matchesAvailability || !availabilityKnown) &&
         (!eventCoordinates || item.coordinatesKnown === false || item.type === "Venue" || driveMinutes <= 90) &&
@@ -417,7 +422,7 @@ function MarketplaceBody() {
 
     if (selectedEvent === "All") {
       const contextRanked = rankByPlanningContext(nextItems, planningContext);
-      return selectMatchingTiers(eventIntelligence ? rankMarketplaceItemsForPlan(contextRanked,eventIntelligence) : contextRanked,assessments);
+      return selectMarketplaceMatches(eventIntelligence ? rankMarketplaceItemsForPlan(contextRanked,eventIntelligence) : contextRanked,assessments);
     }
 
     const profile = getProfileByMarketplaceType(selectedEvent);
@@ -434,7 +439,7 @@ function MarketplaceBody() {
       rankedItems.map((rankedItem) => rankedItem.item),
       planningContext,
     );
-    return selectMatchingTiers(eventIntelligence ? rankMarketplaceItemsForPlan(contextRanked,eventIntelligence) : contextRanked,assessments);
+    return selectMarketplaceMatches(eventIntelligence ? rankMarketplaceItemsForPlan(contextRanked,eventIntelligence) : contextRanked,assessments);
   }, [
     endTime,
     eventCoordinates,
@@ -442,7 +447,7 @@ function MarketplaceBody() {
     eventIntelligence,
     globalQuoteContext,
     normalizedQuery,
-    language, specialty, maxEstimate,
+    language, specialty, maxEstimate, sourceFilter,
     providers,
     initialSearchRadiusMiles,
     planningContext,
@@ -552,7 +557,7 @@ function MarketplaceBody() {
     };
     window.addEventListener("arivvio:assistant-plan",refresh);
     return ()=>window.removeEventListener("arivvio:assistant-plan",refresh);
-  }, [eventId]);
+  }, [eventId, sourceMode]);
 
   const setMapHoverItem = useCallback((itemId: number | null) => {
     if (hoverFrameRef.current) {
@@ -568,7 +573,7 @@ function MarketplaceBody() {
     const storedProfile = !eventId && searchParams.get("eventProfile") === "session"
       ? loadEventIntelligenceProfile()
       : null;
-    const storedCart = eventId ? [] : loadDemoCart<CartLine[]>();
+    const storedCart = (loadDemoCart<CartLine[]>(eventId ?? undefined) ?? []).flatMap(line => { const item = marketplaceItems.find(p => p.id === line.item.id && !line.item.databaseSource); return item ? [{...line,item,persisted:false,cartItemId:undefined}] : []; });
     queueMicrotask(() => {
       if (storedProfile) {
         setEventIntelligence(storedProfile);
@@ -584,8 +589,8 @@ function MarketplaceBody() {
   }, [searchParams,eventId]);
 
   useEffect(() => {
-    if (isCartRestored && !eventId) saveDemoCart(cart);
-  }, [cart, isCartRestored,eventId]);
+    if (isCartRestored && !isAuthLoading) saveDemoCart(eventId ? cart.filter(line=>!line.item.databaseSource) : cart, eventId ?? undefined);
+  }, [cart, isCartRestored,eventId,isAuthLoading]);
 
   useEffect(() => {
     if(eventId)return;
@@ -594,15 +599,15 @@ function MarketplaceBody() {
     if (profile) {
       queueMicrotask(() => applyLocationProfile(profile, "Planning location restored."));
     }
-  }, [eventId]);
+  }, [eventId, sourceMode]);
 
   useEffect(() => {
     async function loadMarketplace() {
       if (!hasSupabaseConfig()) {
         setIsAuthLoading(false);
-        setProviders(demoItems());
+        setProviders(composeProviders([],demoItems(),sourceMode));
         setMarketplaceMessage(
-          "Supabase needs a real project URL. Showing demo providers until the database is connected.",
+          "Real listings are unavailable in this environment. Fictional examples are labeled individually.",
         );
         return;
       }
@@ -637,28 +642,22 @@ function MarketplaceBody() {
           setUseHomeVenue(!canonical.venueRequired);
           if (isEventType(eventRow.event_type)) {
             chooseEventType(eventRow.event_type);
+            setSelectedServices(canonical.requestedServices);
+            setExcludedServices(canonical.excludedServices);
           }
         }
 
         const databaseProviders = await getMarketplaceProviders(supabase);
 
-        if (databaseProviders.length) {
-          setProviders(databaseProviders);
-          if(eventId){const rows=await loadCloudCart(supabase,eventId);setCart((rows??[]).flatMap((row,index)=>{const item=databaseProviders.find(p=>row.service_id?p.serviceId===row.service_id:p.vendorId===row.vendor_id);return item?[{id:index+1,item,persisted:true,cartItemId:row.id,priceAdjustment:0,serviceId:row.service_id,serviceName:item.services[0],serviceTitle:item.name,serviceStart:row.start_time?.slice(0,5)??'',serviceEnd:row.end_time?.slice(0,5)??''}]:[];}));}
-          setMarketplaceMessage(
-            "Showing approved database providers from Supabase.",
-          );
-          return;
-        }
-
-        setProviders(demoItems());
-        setMarketplaceMessage(
-          "No approved database providers were found. Showing demo providers with clear demo labels.",
-        );
+        const composed = composeProviders(databaseProviders,demoItems(),sourceMode);
+        setProviders(composed);
+        if(!eventId){const restored=loadDemoCart<CartLine[]>()??[];setCart(current=>[...current.filter(l=>!l.item.databaseSource),...restored.filter(l=>l.item.databaseSource).flatMap(line=>{const item=composed.find(p=>p.databaseSource&&p.vendorId===line.item.vendorId&&p.serviceId===line.item.serviceId);return item?[{...line,item,persisted:false,cartItemId:undefined}]:[];})]);}
+        if(eventId){const rows=await loadCloudCart(supabase,eventId);const realLines=(rows??[]).flatMap((row,index)=>{const item=composed.find(p=>p.databaseSource && (row.service_id?p.serviceId===row.service_id:p.vendorId===row.vendor_id));return item?[{id:-(index+1),item,persisted:true,cartItemId:row.id,priceAdjustment:0,serviceId:row.service_id,serviceName:item.services[0],serviceTitle:item.name,serviceStart:row.start_time?.slice(0,5)??'',serviceEnd:row.end_time?.slice(0,5)??''}]:[];});setCart(current=>[...current.filter(l=>!l.item.databaseSource),...realLines]);}
+        setMarketplaceMessage("");
       } catch (error) {
         setSessionUserId(null);
         setProfile(null);
-        setProviders(eventId?[]:demoItems());
+        setProviders(composeProviders([],demoItems(),sourceMode));
         setSavedEvent(null);
         setMarketplaceMessage(
           eventId ? "This account event could not be loaded. Sign in to its owner account and reload." : error instanceof Error
@@ -671,7 +670,7 @@ function MarketplaceBody() {
     }
 
     loadMarketplace();
-  }, [eventId]);
+  }, [eventId, sourceMode]);
 
   useEffect(() => {
     const refresh = (event: Event) => {
@@ -689,7 +688,7 @@ function MarketplaceBody() {
     };
     window.addEventListener("arivvio:cloud-event-changed", refresh);
     return () => window.removeEventListener("arivvio:cloud-event-changed", refresh);
-  }, [eventId]);
+  }, [eventId, sourceMode]);
 
   useEffect(() => {
     if (!hasSupabaseConfig()) {
@@ -934,7 +933,7 @@ function MarketplaceBody() {
     }
 
     if(eventId && (!savedEvent || ["cancelled","completed"].includes(savedEvent.status))){setCartMessage("Open an active account event before selecting providers.");return;}
-    const lineId = Date.now();
+    const lineId = nextCartLineId.current = Math.max(Date.now(), nextCartLineId.current + 1);
     const line: CartLine = {
       id: lineId,
       item,
@@ -950,12 +949,12 @@ function MarketplaceBody() {
     setCart((current) => [...current, line]);
 
     if (!profile || !savedEvent) {
-      setCartMessage(getCartAuthMessage(isAuthLoading, isLoggedIn, Boolean(savedEvent)));
+      setCartMessage(item.databaseSource ? "Choose a saved account event from My events before sending real business requests." : getCartAuthMessage(isAuthLoading, isLoggedIn, Boolean(savedEvent)));
       return;
     }
 
     if (!item.databaseSource) {
-      setCartMessage("Demo providers stay local. Add a database provider to save quote cart items.");
+      setCartMessage("Fictional provider selected. Demo requests stay on this device and never contact a business.");
       return;
     }
 
@@ -989,7 +988,7 @@ function MarketplaceBody() {
             : currentLine,
         ),
       );
-      setCartMessage("Quote cart item saved to Supabase.");
+      setCartMessage("Real business selection saved to your event.");
     } catch (error) {
       setCartMessage(
         error instanceof Error
@@ -1111,34 +1110,40 @@ function MarketplaceBody() {
     }
   }
 
-  function requestQuotes() {
-    if (!cart.length) { setCartMessage("Add providers before requesting quotes."); return; }
-    if(eventId && cart.some(line=>line.item.databaseSource)){
-      if(cart.some(line=>!line.item.databaseSource)){setCartMessage("Remove demo providers before sending real requests. Demo inquiries stay separate.");return;}
-      if(cart.some(line=>!line.persisted||!line.cartItemId)){setCartMessage("Some selections have not saved. Remove and add them again before sending.");return;}
-      setCloudReview(true);return;
+  function requestQuotes(kind?: "real" | "demo") {
+    const groups = cartGroups(cart);
+    if(groups.blocked.length){setCartMessage("Some selections require concierge or verification. Remove them and use their profile action.");return;}
+    const lines = kind === "real" ? groups.real : kind === "demo" ? groups.demo : cart;
+    if(!kind && groups.real.length && groups.demo.length){setCartMessage("Choose Real business requests or Demo requests below. They are submitted separately.");return;}
+    if(lines.some(l=>l.item.databaseSource) && !savedEvent){setCartMessage("Open a saved account event before sending real business requests.");return;}
+    if (!lines.length) { setCartMessage("Add providers before requesting quotes."); return; }
+    if(eventId && lines.some(line=>line.item.databaseSource)){
+      if(lines.some(line=>!line.item.databaseSource)){setCartMessage("Remove demo providers before sending real requests. Demo inquiries stay separate.");return;}
+      if(lines.some(line=>!line.persisted||!line.cartItemId)){setCartMessage("Some selections have not saved. Remove and add them again before sending.");return;}
+      setIsMobileCartOpen(false);setCloudReview(true);return;
     }
     const id = crypto.randomUUID();
     setIsMobileCartOpen(false);
     setQuoteReview({ id, version: 1, source: "ARIVVIO_DEMO", status: "demo-created", createdAt: new Date().toISOString(), eventId: eventId ? `demo-for:${eventId}` : undefined,
       event: { name: eventIntelligence?.recognition.identity.selectedDisplayEvent ?? initialEventLabel ?? "Your event", date: eventDate, startTime, endTime, location: eventLocationLabel, guestCount, budget: eventIntelligence?.planning?.budget ?? Number(initialBudget || 0), requirements: initialNotes, profile: eventId && eventIntelligence ? {...eventIntelligence,eventId:`demo-for:${eventId}`} : eventIntelligence },
-      opportunities: cart.map((line) => ({ id: `${id}:${line.id}`, providerId: String(line.item.vendorId ?? line.item.id), providerName: line.item.name, service: line.serviceTitle, startTime: line.serviceStart, endTime: line.serviceEnd, estimate: getLineQuote(line), stageIds: eventIntelligence?.stages.filter((part) => part.services?.includes(line.serviceName)).map((part) => part.id) ?? [], status: "demo-not-sent" })), message: "",
+      opportunities: lines.map((line) => ({ id: `${id}:${line.id}`, providerId: String(line.item.vendorId ?? line.item.id), providerName: line.item.name, service: line.serviceTitle, startTime: line.serviceStart, endTime: line.serviceEnd, estimate: getLineQuote(line), stageIds: eventIntelligence?.stages.filter((part) => part.services?.includes(line.serviceName)).map((part) => part.id) ?? [], status: "demo-not-sent" })), message: "",
     });
   }
 
   const filterProps = {
+    sourceFilter, onSourceFilterChange: setSourceFilter,
     eventTypes, query, selectedEvent, selectedServices, excludedServices, serviceOptions: allServices,
     language, specialty, maxEstimate, sort, languages: availableLanguages, specialties: availableSpecialties,
     location: eventLocationLabel, onEventChange: setSelectedEvent, onQueryChange: setQuery,
     onToggleExcludedService: toggleExcludedService, onToggleService: toggleService,
     onLanguageChange: setLanguage, onSpecialtyChange: setSpecialty, onMaxEstimateChange: setMaxEstimate, onSortChange: setSort,
-    onClear: () => { setSelectedEvent("All"); setSelectedServices([]); setExcludedServices([]); setLanguage(""); setSpecialty(""); setMaxEstimate(""); setQuery(""); setSort("Recommended"); },
+    onClear: () => { setSourceFilter("all"); setSelectedEvent("All"); setSelectedServices([]); setExcludedServices([]); setLanguage(""); setSpecialty(""); setMaxEstimate(""); setQuery(""); setSort("Recommended"); },
   };
 
   if(eventId && !savedEvent)return <section className="hub-card m-5 p-6"><p role="status">{isAuthLoading?"Loading your account event…":marketplaceMessage}</p><Link className="hub-button mt-4" href={`/auth/login?next=${encodeURIComponent(`/marketplace?eventId=${eventId}`)}`}>Sign in to continue</Link></section>;
   return (
     <>
-      {cloudReview&&savedEvent&&<CustomerDialog title="Send provider requests" onClose={()=>{if(!cloudSending)setCloudReview(false);}}><p>Send {cart.length} request(s) for {savedEvent.title} to the providers below?</p><ul className="my-4 space-y-2">{cart.map(line=><li key={line.id}>{line.item.name} · {line.serviceTitle}</li>)}</ul><label className="text-sm">Message to providers<textarea className="hub-input mt-2 w-full" value={cloudMessage} onChange={e=>setCloudMessage(e.target.value)} maxLength={2000}/></label><p className="my-4 text-sm ui-muted">Your event name, date, location, guest count and stage schedule will accompany these requests. Providers can respond in their account. This does not book or pay anyone.</p><button className="hub-primary" disabled={cloudSending} onClick={async()=>{setCloudSending(true);try{await sendCloudCart(createBrowserSupabaseClient(),savedEvent.id,cart.map(l=>l.cartItemId!),cloudMessage);setCart([]);setCloudReview(false);setCartMessage("Requests sent. Open your Event Hub to see responses.");}catch(e){setCartMessage(e instanceof Error?e.message:"Unable to send requests.");}finally{setCloudSending(false);}}}>{cloudSending?"Sending…":"Send requests"}</button><p role="status" className="mt-3 text-sm">{cartMessage}</p></CustomerDialog>}
+      {cloudReview&&savedEvent&&<CustomerDialog title="Send provider requests" onClose={()=>{if(!cloudSending)setCloudReview(false);}}><p>Send {cartGroups(cart).real.length} real request(s) for {savedEvent.title} to the providers below?</p><ul className="my-4 space-y-2">{cartGroups(cart).real.map(line=><li key={line.id}>{line.item.name} · {line.serviceTitle}</li>)}</ul><label className="text-sm">Message to providers<textarea className="hub-input mt-2 w-full" value={cloudMessage} onChange={e=>setCloudMessage(e.target.value)} maxLength={2000}/></label><p className="my-4 text-sm ui-muted">Your event name, date, location, guest count and stage schedule will accompany these requests. Providers can respond in their account. This does not book or pay anyone.</p><button className="hub-primary" disabled={cloudSending} onClick={async()=>{setCloudSending(true);try{await sendCloudCart(createBrowserSupabaseClient(),savedEvent.id,cartGroups(cart).real.map(l=>l.cartItemId!),cloudMessage);setCart(current=>current.filter(l=>!l.item.databaseSource));setCloudReview(false);setCartMessage("Requests sent. Open your Event Hub to see responses.");}catch(e){setCartMessage(e instanceof Error?e.message:"Unable to send requests.");}finally{setCloudSending(false);}}}>{cloudSending?"Sending…":"Send requests"}</button><p role="status" className="mt-3 text-sm">{cartMessage}</p></CustomerDialog>}
       {!eventId&&eventIntelligence&&<div className="mb-4"><SaveEventToAccount profile={eventIntelligence}/></div>}
       {eventId&&<Link className="hub-button mb-4" href={`/events/${eventId}`}>Back to account Event Hub</Link>}
       {quoteReview && <DemoQuoteJourney key={quoteReview.id} request={quoteReview} alreadySubmitted={quoteReview.id === lastRequest?.id} onClose={() => setQuoteReview(null)} onSubmitted={setLastRequest} />}
@@ -1211,10 +1216,12 @@ function MarketplaceBody() {
           </button>
 
           <header className="flex flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-semibold">Find your event team</h1><p className="hub-muted mt-1 text-sm">{matching.exactCount} match selected filters{filteredItems.length > matching.exactCount ? ` · ${filteredItems.length - matching.exactCount} labeled alternatives` : ""} · Confirm availability</p></div><div className="flex gap-2"><button className="hub-button lg:hidden" onClick={()=>setIsFilterDrawerOpen(true)}>Filters</button><button className="hub-button" onClick={()=>setIsMobileMapOpen(true)}>Show map</button></div></header>
+          <div className="marketplace-intro"><p className="text-sm ui-muted">{sourceMode === "showcase" ? "Showcase Marketplace. Discover real businesses alongside fictional examples of what you can plan with ARIVVIO." : sourceMode === "real" ? "Real Marketplace. Explore sourced businesses and their current listing status." : "Demo Experience. Explore fictional providers and simulated requests."}</p><p className="mt-2 text-xs font-semibold ui-muted">{providers.filter(i=>i.databaseSource).length} real listings · {providers.filter(i=>!i.databaseSource).length} fictional examples</p><details className="mt-3 text-sm"><summary className="cursor-pointer font-semibold">About Marketplace listings</summary><dl className="mt-3 grid gap-3 sm:grid-cols-2">{[{databaseSource:false,listingState:"demo" as const},{databaseSource:true,listingState:"unclaimed" as const},{databaseSource:true,listingState:"claimed" as const,verificationStatus:"verified"},{databaseSource:true,listingState:"claimed" as const}].map(state=>{const info=listingPresentation(state);return <div key={info.label}><dt className="font-semibold">{info.label}</dt><dd className="mt-1 ui-muted">{info.description}</dd></div>})}</dl></details></div>
+          {filteredItems.length > 0 && filteredItems.every(i=>!i.databaseSource) && sourceMode!=="demo" && sourceFilter!=="demo" && <p role="status" className="hub-card p-4 text-sm">We don’t have a matching real provider listed in this area yet. Explore these fictional examples to see how ARIVVIO works.</p>}
           <div className="hub-card flex flex-wrap items-center gap-3 p-3"><input aria-label="Search providers" className="hub-input min-w-0 flex-1" placeholder="Name, location or specialty" value={query} onChange={e=>setQuery(e.target.value)} /><span className="hub-muted text-xs">{selectedServices.length ? selectedServices.join(", ") : "All services"}</span></div>
 
           {filteredItems.length > matching.exactCount && <p className="hub-card p-4 text-sm" role="status">{matching.exactCount ? "Limited exact inventory." : "We don’t have an exact match for these filters yet."} These alternatives keep your service, event, capacity and explicit filters. Differences are labeled on each listing.</p>}
-          {filteredItems.length ? <div className="listing-grid" data-marketplace-row="best-matches">{[...filteredItems].sort((a,b)=>matching.details[a.id].order - matching.details[b.id].order || (sort === "Price: low to high" ? quoteItem(a,globalQuoteContext)-quoteItem(b,globalQuoteContext) : sort === "Name" ? a.name.localeCompare(b.name) : 0)).map(item=><div key={item.id} data-vendor-id={item.id} data-row-id="best-matches" id={`vendor-card-best-matches-${item.id}`}><VendorCard item={item} quote={quoteItem(item,globalQuoteContext)} isSelected={cartedIds.includes(item.id)} disableAdd={cart.filter(line=>line.item.id===item.id).length >= (item.serviceOptions?.length ?? item.services.length)} buttonLabel={cartedIds.includes(item.id)?"Added ✓":"Add to quote"} matchLabel={matching.details[item.id]?.label} matchReason={matching.details[item.id]?.tier !== "exact" ? matching.details[item.id]?.reason : planMatchReasons[item.id] ?? matching.details[item.id]?.reason} onAdd={addToCart} onSelect={selectMapItem} onHover={setMapHoverItem} /></div>)}</div> : <div className="hub-card p-8 text-center"><h2 className="text-xl font-semibold">No exact match here yet</h2><p className="hub-muted mt-2">We haven’t found a defensible alternative within your requirements. Your filters are still applied.</p><div className="mt-5 flex flex-wrap justify-center gap-2">{query&&<button className="hub-button" onClick={()=>setQuery("")}>Clear search text</button>}{language&&<button className="hub-button" onClick={()=>setLanguage("")}>Remove language filter</button>}{specialty&&<button className="hub-button" onClick={()=>setSpecialty("")}>Remove specialty filter</button>}{maxEstimate&&<button className="hub-button" onClick={()=>setMaxEstimate("")}>Remove price limit</button>}<button className="hub-button" onClick={()=>setIsFilterDrawerOpen(true)}>Adjust filters and area</button></div></div>}
+          {filteredItems.length ? <div className="space-y-10">{discoveryGroups.map(group=>{const groupItems=filteredItems.filter(item=>discoveryGroup(item).title===group.title).sort((a,b)=>sourcePriority(a)-sourcePriority(b) || matching.details[a.id].order-matching.details[b.id].order || (sort==="Price: low to high"?quoteItem(a,globalQuoteContext)-quoteItem(b,globalQuoteContext):sort==="Name"?a.name.localeCompare(b.name):0));return groupItems.length ? <section key={group.title} aria-label={group.title}><div className="mb-4 flex items-baseline justify-between gap-3"><h2 className="text-xl font-semibold">{group.title}</h2><span className="text-xs ui-muted">{groupItems.length} listings</span></div><div className="listing-grid" data-marketplace-row="best-matches">{groupItems.map(item=><div key={item.sourceKey ?? item.id} data-vendor-id={item.id} data-row-id="best-matches" id={`vendor-card-best-matches-${item.id}`}><VendorCard eventId={eventId ?? undefined} item={item} quote={quoteItem(item,globalQuoteContext)} isSelected={cartedIds.includes(item.id)} disableAdd={cart.filter(line=>line.item.id===item.id).length >= (item.serviceOptions?.length ?? item.services.length)} buttonLabel={cartedIds.includes(item.id)?"Added ✓":item.databaseSource?"Request Quote":"Add Demo to cart"} matchLabel={matching.details[item.id]?.label} matchReason={matching.details[item.id]?.tier !== "exact" ? matching.details[item.id]?.reason : planMatchReasons[item.id] ?? matching.details[item.id]?.reason} onAdd={addToCart} onSelect={selectMapItem} onHover={setMapHoverItem} /></div>)}</div></section>:null;})}</div> : <div className="hub-card p-8 text-center"><h2 className="text-xl font-semibold">No exact match here yet</h2><p className="hub-muted mt-2">We haven’t found a defensible alternative within your requirements. Your filters are still applied.</p><div className="mt-5 flex flex-wrap justify-center gap-2">{query&&<button className="hub-button" onClick={()=>setQuery("")}>Clear search text</button>}{language&&<button className="hub-button" onClick={()=>setLanguage("")}>Remove language filter</button>}{specialty&&<button className="hub-button" onClick={()=>setSpecialty("")}>Remove specialty filter</button>}{maxEstimate&&<button className="hub-button" onClick={()=>setMaxEstimate("")}>Remove price limit</button>}<button className="hub-button" onClick={()=>setIsFilterDrawerOpen(true)}>Adjust filters and area</button></div></div>}
 
         </section>
 
