@@ -87,7 +87,7 @@ function VendorCardComponent({
         <div className="mt-4 flex items-end justify-between gap-3">
           <div>
             <p className="text-xs ui-muted">
-              {isDemoProvider ? "Demo estimate" : "Estimated from"}
+              {item.pricingKnown === false ? "Pricing" : isDemoProvider ? "Demo estimate" : "Estimated from"}
             </p>
             <p className="text-lg font-semibold ui-text">
               {item.pricingKnown === false ? "Contact for pricing" : preview ? item.serviceOptions?.[0]?.estimateLabel || "Request pricing" : `$${quote.toLocaleString()}`}

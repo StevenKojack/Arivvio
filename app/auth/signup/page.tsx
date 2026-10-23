@@ -15,9 +15,8 @@ export default function SignupPage() {
             Create your Arivvio account.
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-neutral-600">
-            This account currently provides access to the Arivvio Pre-Beta demo.
-            Full booking, payment, vendor, and planning services are not yet
-            available.
+            Save event plans, manage requests and contact claimed providers during
+            the ARIVVIO pre-beta. Payments are not connected.
           </p>
           <Suspense fallback={<div className="mt-10 text-sm font-semibold text-neutral-500">Loading signup...</div>}>
             <AuthForm mode="signup" />

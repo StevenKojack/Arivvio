@@ -1,5 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
+
+// Reuse auth storage and listeners within a browser tab. Never share a server client.
+let browserClient: SupabaseClient<Database> | undefined;
 
 export function hasSupabaseConfig() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -23,5 +26,8 @@ export function createBrowserSupabaseClient() {
     );
   }
 
-  return createClient<Database>(supabaseUrl, supabaseAnonKey);
+  if (typeof window !== "undefined" && browserClient) return browserClient;
+  const client = createClient<Database>(supabaseUrl, supabaseAnonKey);
+  if (typeof window !== "undefined") browserClient = client;
+  return client;
 }

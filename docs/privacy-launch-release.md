@@ -34,15 +34,15 @@ This is product and engineering work, not a legal compliance certification. Poli
 | Content rights | Narrow operational license in Terms. Explicit upload-rights confirmation and file type/size checks. |
 | Font / image licensing | System font stack replaces framework-internal font files. `docs/asset-provenance.json` inventories existing Unsplash image IDs and source locations. Individual photographer/source-page attribution and model/property clearance are not claimed complete and require review before commercial repackaging. |
 | Accessibility | Skip navigation, main targets, visible focus, reduced motion, improved gold contrast, explicit card controls, form labels and statuses. This is a targeted pass, not WCAG certification. |
-| Keyboard / focus | Removed nested article-button semantics. Provider dialog restores prior focus. Native controls retain keyboard behavior. Browser verification recorded separately at release. |
+| Keyboard / focus | Removed nested article-button semantics. Provider dialog restores prior focus. Native controls retain keyboard behavior. Live keyboard checks verified skip-to-main focus, provider modal Enter/Escape and restored focus. |
 | Contrast | Dark/light gold tokens adjusted and placeholders use explicit muted color. Full route/state contrast matrix remains outside this targeted pass. |
 | Alt text | Illustrative imagery identified separately from business photography. Uploaded photo gallery has business-specific accessible descriptions. |
 | Security headers | Nosniff, strict-origin referrer policy, SAMEORIGIN framing and limited camera/microphone/geolocation permissions. No untested CSP added. |
 | RLS / privacy security | Own-profile reads, admin queue, private internal notes, no direct writes, anonymous denial, daily request cap and duplicate-open guard. No self-attestation grants business ownership. |
-| Tests | 168 automated tests pass, including local PostgreSQL privacy isolation, immutable acceptance, authority declarations and suppression enforcement. |
+| Tests | 169 automated tests pass, including local PostgreSQL privacy isolation, immutable acceptance, authority declarations and suppression enforcement. |
 | Typecheck / lint / build | Passed during preparation. Final release check results recorded in the release response. |
-| Commit SHA / deployment | Database migration `20261023022245_privacy_launch_controls` applied successfully. Application release in progress. See final release response for exact SHA and Vercel deployment. |
-| Live verification / runtime errors | Phase A verified as above. Phase B deployment and live checks pending. No live signed-in user flow is claimed. |
+| Commit SHA / deployment | Database migration `20261023022245_privacy_launch_controls` applied. Initial Phase B release `f71942b564921117a0b682a6695e3c7dc1af1af2` deployed READY as `dpl_55t8NJ1hPSRu9okqR9MubKkBAxCm`. The follow-up commit reuses the browser auth client and synchronizes the storage summary. Its final SHA/deployment is recorded in the release response. |
+| Live verification / runtime errors | Phase A verified as above. Twelve public routes returned HTTP 200 and security headers were verified. Privacy center, storage notice, unchecked signup consent, marketplace and keyboard dialog/skip behavior verified live. Fresh browser reported zero readable cookies and no sign-in/Mapbox storage. Map showed a preview with zero pins, so third-party Mapbox activity was not verified. No Vercel error/fatal logs found for the initial Phase B deployment in the checked window. Browser duplicate-auth-client warning prompted the follow-up fix. No live signed-in user flow is claimed. |
 | Counsel review required | Privacy/terms, retention and deletion handling, consent applicability, age policy, business identity, licensing, fee disclosures and future marketing/payment requirements. |
 | Deferred | Automated deletion, payments, reviews, marketing, parental consent, bulk listing ingestion, automated external verification and complete accessibility certification. |
 | Next recommended pass | Operator-supplied legal identity/contact details, authenticated user acceptance testing, image provenance completion and counsel-led commercial launch review. |
@@ -50,3 +50,7 @@ This is product and engineering work, not a legal compliance certification. Poli
 ## Deployment order and rollback
 
 Apply the reviewed `privacy_launch_controls` migration only after the application build passes. It adds new tables and wrappers and requires current signup declarations. Deploy the paired application immediately afterward to minimize the interval in which old signup forms cannot create accounts. Existing accounts remain usable. Do not roll back to an old signup form without a coordinated forward database change. No user, booking, request or audit history is removed.
+
+## Security advisory follow-up
+
+The existing [leaked-password protection warning](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) remains an Auth configuration follow-up. The two [RLS-without-policy informational notices](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) concern private internal notes and contact suppression. They intentionally deny direct API access and are accessed only through authorization-checked functions. No permissive policy was added merely to hide these notices.
