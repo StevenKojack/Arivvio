@@ -612,13 +612,17 @@ export function BusinessAcquisition({
                   before mentioning customer interest.
                 </p>
                 <details>
+                  <summary>Related concierge leads</summary>
+                  {workspace.leads.filter(l => l.vendor_id === v.id).map(l => <p key={l.id}>{l.event_title} · {l.event_city} · {l.service_name ?? "Business inquiry"} · {l.status.replaceAll("_", " ")}</p>)}
+                </details>
+                <details>
                   <summary>Sources</summary>
                   {workspace.sources
                     .filter((s) => s.vendor_id === v.id)
                     .map((s) => (
                       <p key={s.id}>
                         <a
-                          className="underline"
+                          className="underline break-all"
                           href={s.source_url}
                           target="_blank"
                           rel="noopener noreferrer"

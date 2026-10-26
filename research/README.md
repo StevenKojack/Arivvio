@@ -28,3 +28,5 @@ Production public UI was inspected before release and showed 3 real listings and
 Security advisor: existing informational notices for two private RPC-only tables and existing leaked-password-protection warning. No credential/authentication settings were changed.
 
 Next focused work: verify authenticated Admin workflow on desktop/mobile, confirm licensed fixed-location map coordinates, then manually invite the sourced businesses and measure claims. Do not start automated outreach.
+
+Post-release public browser check: Marketplace loaded 21 real service listings and 48 fictional examples. DJ search showed VOX alongside fictional DJs. VOX's profile displayed its three services, Unclaimed Business, Contact for pricing, unconfirmed availability and illustrative imagery. Its claim link retained the business UUID and required sign-in. Logged-out Admin showed its access gate. Vercel production was READY on the acquisition release and its error/fatal runtime query returned no matching logs. A follow-up adds the official website directly to the Marketplace profile and related-lead details to Admin.
