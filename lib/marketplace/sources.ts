@@ -31,7 +31,7 @@ export function composeProviders(real: MarketplaceItem[], demo: MarketplaceItem[
 }
 export function selectMarketplaceMatches(items:MarketplaceItem[],assessments:Map<number,MatchAssessment>) {
  // Known fictional schedules must not hide genuine businesses with unconfirmed schedules.
- const real=selectMatchingTiers(items.filter(i=>listingType(i)!=='demo'),assessments);
+ const real=selectMatchingTiers(items.filter(i=>listingType(i)!=='demo'),assessments,3,Infinity);
  const demo=selectMatchingTiers(items.filter(i=>listingType(i)==='demo'),assessments);
  return {items:[...real.items,...demo.items].sort((a,b)=>sourcePriority(a)-sourcePriority(b)),exactCount:real.exactCount+demo.exactCount,details:{...real.details,...demo.details}};
 }

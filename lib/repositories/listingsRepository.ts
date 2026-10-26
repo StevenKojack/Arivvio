@@ -16,6 +16,9 @@ export type ListingRecord = {
   verification_status?: string;
   verified_at?: string | null;
   location_name?: string | null;
+  postal_code?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   official_domain?: string | null;
   official_phone?: string | null;
   identity_source_url?: string | null;
@@ -52,7 +55,11 @@ export type LeadRecord = {
 };
 export type ListingWorkspace = {
   listings: ListingRecord[];
-  services: { vendor_id: string; event_types_supported: string[] }[];
+  services: {
+    vendor_id: string;
+    category?: string;
+    event_types_supported: string[];
+  }[];
   tags: { vendor_id: string; tag: string }[];
   claims: ClaimRecord[];
   leads: LeadRecord[];
@@ -60,6 +67,8 @@ export type ListingWorkspace = {
     id: string;
     vendor_id: string;
     source_url: string;
+    reviewed_on?: string | null;
+    recorded_at?: string;
     supported_fields: string[];
     note: string;
   }[];
@@ -78,7 +87,7 @@ export async function listingOperation<T>(
 }
 export const leadLabel = (status: string) =>
   ({
-    new: "ARIVVIO is reaching out",
+    new: "ARIVVIO is reviewing your request",
     contacted: "Business contacted",
     interested: "Business interested",
     declined: "Business unavailable",

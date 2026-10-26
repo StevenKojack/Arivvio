@@ -1,4 +1,5 @@
 "use client";
+import { BusinessAcquisition } from "./BusinessAcquisition";
 import { ContactPreference } from "./ContactPreference";
 import Link from "next/link";
 import { BusinessVerificationReview } from "./BusinessVerificationReview";
@@ -80,6 +81,8 @@ export function PublicListingOperations({ section }: { section: string }) {
       id: v.id,
       business_name: v.business_name,
       category: v.category,
+      location_name: v.location_name ?? "",
+      postal_code: v.postal_code ?? "",
       description: v.description ?? "",
       city: v.service_area_city ?? "",
       address: v.base_address ?? "",
@@ -165,6 +168,10 @@ export function PublicListingOperations({ section }: { section: string }) {
         <>
           {section === "Public Listings" && (
             <>
+              <BusinessAcquisition
+                workspace={data}
+                onChanged={() => setRevision((x) => x + 1)}
+              />
               <form onSubmit={save} className="mt-5 space-y-4">
                 <div className="flex flex-wrap gap-2">
                   {[
@@ -388,7 +395,8 @@ export function PublicListingOperations({ section }: { section: string }) {
                   .filter((v) => !v.owner_id)
                   .map((v) => (
                     <article key={v.id} className="rounded-xl border p-4">
-                      <h3 className="font-semibold">{v.business_name}</h3><ContactPreference vendorId={v.id}/>
+                      <h3 className="font-semibold">{v.business_name}</h3>
+                      <ContactPreference vendorId={v.id} />
                       <p className="text-sm">
                         {v.approval_status === "approved"
                           ? "Public"
@@ -446,7 +454,8 @@ export function PublicListingOperations({ section }: { section: string }) {
                     <p className="mt-3 whitespace-pre-wrap">
                       {l.customer_note}
                     </p>
-                    <p className="mt-3 font-medium">{leadLabel(l.status)}</p><ContactPreference vendorId={l.vendor_id}/>
+                    <p className="mt-3 font-medium">{leadLabel(l.status)}</p>
+                    <ContactPreference vendorId={l.vendor_id} />
                     {data.notes
                       .filter((n) => n.lead_id === l.id)
                       .map((n) => (

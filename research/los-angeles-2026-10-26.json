@@ -1,0 +1,540 @@
+[
+  {
+    "business_name": "VOX DJs",
+    "city": "Torrance",
+    "website_url": "https://voxdjs.com/",
+    "description": "DJ and MC services from a Torrance office, with live music and photo booth options for events.",
+    "services": [
+      {
+        "category": "DJ",
+        "event_types": [
+          "Wedding",
+          "Corporate",
+          "Birthday",
+          "Private Party"
+        ]
+      },
+      {
+        "category": "Live Music",
+        "event_types": [
+          "Wedding",
+          "Corporate",
+          "Birthday",
+          "Private Party"
+        ]
+      },
+      {
+        "category": "Photo Booth",
+        "event_types": [
+          "Wedding",
+          "Corporate",
+          "Birthday",
+          "Private Party"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://voxdjs.com/contact-us/",
+        "type": "official website",
+        "facts": [
+          "business name",
+          "Torrance office address",
+          "phone",
+          "DJ and MC services",
+          "live music",
+          "photo booths",
+          "weddings",
+          "corporate events",
+          "birthday parties"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ],
+    "address": "2909 Oregon Court, Suite B2, Torrance, CA 90503",
+    "phone": "310-372-2222",
+    "location_name": "Los Angeles office"
+  },
+  {
+    "business_name": "Heirloom LA",
+    "city": "Los Angeles",
+    "website_url": "https://heirloomla.com/",
+    "description": "Los Angeles catering business accepting full-service event and pickup or drop-off inquiries.",
+    "services": [
+      {
+        "category": "Catering",
+        "event_types": []
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://heirloomla.com/contact-us",
+        "type": "official website",
+        "facts": [
+          "business name",
+          "address",
+          "phone",
+          "full-service event inquiries",
+          "pickup and drop-off inquiries"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      },
+      {
+        "url": "https://heirloomla.com/",
+        "type": "official website",
+        "facts": [
+          "event catering"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ],
+    "address": "3232 ½ N Figueroa Street, Los Angeles, CA 90065",
+    "phone": "855-456-6652"
+  },
+  {
+    "business_name": "Town & Country Event Rentals",
+    "city": "Van Nuys",
+    "website_url": "https://www.townandcountry.com/",
+    "description": "Event rentals from a Van Nuys design center, including furniture, tabletop pieces, tents and event equipment.",
+    "services": [
+      {
+        "category": "Rentals",
+        "event_types": []
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://www.townandcountry.com/los-angeles-design-center",
+        "type": "official website",
+        "facts": [
+          "business name",
+          "Van Nuys address",
+          "phone",
+          "event rentals",
+          "furniture",
+          "tabletop",
+          "tenting"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ],
+    "address": "7725 Airport Business Park Way, Van Nuys, CA 91406",
+    "phone": "818-908-4211",
+    "location_name": "Los Angeles HQ"
+  },
+  {
+    "business_name": "Lark Cake Shop",
+    "city": "Los Angeles",
+    "website_url": "https://larkcakeshop.com/",
+    "description": "Silver Lake cake shop offering cakes, cupcakes and custom orders, with wedding cake inquiries available.",
+    "services": [
+      {
+        "category": "Cake & Desserts",
+        "event_types": [
+          "Wedding"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://larkcakeshop.com/pages/contact",
+        "type": "official website",
+        "facts": [
+          "business name",
+          "Silver Lake location",
+          "phone",
+          "cakes",
+          "cupcakes",
+          "custom orders",
+          "weddings"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ],
+    "phone": "323-667-2968",
+    "location_name": "Silver Lake"
+  },
+  {
+    "business_name": "Mark’s Garden",
+    "city": "Sherman Oaks",
+    "website_url": "https://marksgarden.com/",
+    "description": "Sherman Oaks floral business providing arrangements and floral design for weddings and other events.",
+    "services": [
+      {
+        "category": "Florals",
+        "event_types": [
+          "Wedding",
+          "Private Party"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://marksgarden.com/",
+        "type": "official website",
+        "facts": [
+          "business name",
+          "address",
+          "phone",
+          "floral arrangements",
+          "weddings",
+          "event floral design"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ],
+    "address": "13838 Ventura Blvd., Sherman Oaks, CA 91423",
+    "phone": "818-906-1718"
+  },
+  {
+    "business_name": "Rent For Event",
+    "city": "Los Angeles",
+    "website_url": "https://rentforevent.com/",
+    "description": "Los Angeles office for event audiovisual production and equipment rentals, including sound, lighting and video systems.",
+    "services": [
+      {
+        "category": "AV Production",
+        "event_types": []
+      },
+      {
+        "category": "Rentals",
+        "event_types": []
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://rentforevent.com/contact/",
+        "type": "official website",
+        "facts": [
+          "business name",
+          "Los Angeles address",
+          "phone",
+          "event production",
+          "sound equipment rental",
+          "lighting rental",
+          "video equipment rental"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ],
+    "address": "3370 N. San Fernando Road, Ste 104, Los Angeles, CA 90065",
+    "phone": "877-409-6999",
+    "location_name": "West Coast office"
+  },
+  {
+    "business_name": "Premier Staff",
+    "city": "West Hollywood",
+    "website_url": "https://premierstaff.com/",
+    "description": "Event staffing business with a West Hollywood office and services for Los Angeles events.",
+    "services": [
+      {
+        "category": "Staffing",
+        "event_types": []
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://premierstaff.com/all-location/",
+        "type": "official website",
+        "facts": [
+          "business name",
+          "West Hollywood office",
+          "phone",
+          "event staffing"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      },
+      {
+        "url": "https://premierstaff.com/contact-us/",
+        "type": "official website",
+        "facts": [
+          "Los Angeles event staffing"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ],
+    "address": "9255 Sunset Blvd., #1100, West Hollywood, CA 90069",
+    "phone": "212-943-3333",
+    "location_name": "Los Angeles office"
+  },
+  {
+    "business_name": "Porto’s Bakery",
+    "city": "Burbank",
+    "website_url": "https://www.portosbakery.com/",
+    "description": "Burbank branch of Porto’s Bakery, offering cakes and bakery items for pickup.",
+    "services": [
+      {
+        "category": "Cake & Desserts",
+        "event_types": []
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://www.portosbakery.com/locations/",
+        "type": "official website",
+        "facts": [
+          "business name",
+          "Burbank branch address",
+          "pickup"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      },
+      {
+        "url": "https://www.portosbakery.com/current-menu/",
+        "type": "official website",
+        "facts": [
+          "cakes",
+          "bakery items"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ],
+    "address": "3614 W. Magnolia Blvd., Burbank, CA 91505",
+    "location_name": "Burbank",
+    "separate_reason": "Separate branch with its own address on the official locations page."
+  },
+  {
+    "business_name": "Porto’s Bakery",
+    "city": "Glendale",
+    "website_url": "https://www.portosbakery.com/",
+    "description": "Glendale branch of Porto’s Bakery, offering cakes and bakery items for pickup.",
+    "services": [
+      {
+        "category": "Cake & Desserts",
+        "event_types": []
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://www.portosbakery.com/locations/",
+        "type": "official website",
+        "facts": [
+          "business name",
+          "Glendale branch address",
+          "pickup"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      },
+      {
+        "url": "https://www.portosbakery.com/current-menu/",
+        "type": "official website",
+        "facts": [
+          "cakes",
+          "bakery items"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ],
+    "address": "315 N. Brand Blvd., Glendale, CA 91203",
+    "location_name": "Glendale",
+    "separate_reason": "Separate branch with its own address on the official locations page."
+  },
+  {
+    "business_name": "Mik Milman",
+    "city": "Los Angeles",
+    "website_url": "https://mikmilman.com/",
+    "description": "Los Angeles photographer providing event and corporate photography.",
+    "services": [
+      {
+        "category": "Photography",
+        "event_types": [
+          "Corporate"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://mikmilman.com/",
+        "type": "official website",
+        "facts": [
+          "business identity",
+          "Los Angeles operating city",
+          "phone",
+          "event photography",
+          "corporate photography"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ],
+    "phone": "818-275-1645"
+  },
+  {
+    "business_name": "AGS Protect",
+    "city": "Los Angeles",
+    "website_url": "https://www.agsprotect.com/",
+    "description": "Security provider offering event security personnel and coordination across Los Angeles County and Southern California.",
+    "services": [
+      {
+        "category": "Security",
+        "event_types": []
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://www.agsprotect.com/solutions/event-security",
+        "type": "official website",
+        "facts": [
+          "business name",
+          "Los Angeles County service area",
+          "event security"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ]
+  },
+  {
+    "business_name": "KLS Worldwide Chauffeured Services",
+    "city": "Los Angeles",
+    "website_url": "https://klsworldwide.com/",
+    "description": "Chauffeured transportation provider serving Los Angeles, with event support and corporate travel services.",
+    "services": [
+      {
+        "category": "Transportation",
+        "event_types": [
+          "Corporate"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://klsworldwide.com/contact-us/",
+        "type": "official website",
+        "facts": [
+          "business name",
+          "phone",
+          "event support",
+          "corporate travel"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      },
+      {
+        "url": "https://klsworldwide.com/sites/default/files/theme-assets/KLS-Worldwide%20PDF.pdf",
+        "type": "official website",
+        "facts": [
+          "Los Angeles service area",
+          "ground transportation"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ],
+    "phone": "877-936-5466"
+  },
+  {
+    "business_name": "The Lou Effect",
+    "city": "Los Angeles",
+    "website_url": "https://www.theloueffect.com/",
+    "description": "Event photography and video production for Los Angeles corporate events, conferences and special events.",
+    "services": [
+      {
+        "category": "Photography",
+        "event_types": [
+          "Corporate",
+          "Convention"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://www.theloueffect.com/los-angeles-event-photographer/",
+        "type": "official website",
+        "facts": [
+          "business name",
+          "Los Angeles service area",
+          "event photography",
+          "event videography",
+          "corporate events",
+          "conferences"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ]
+  },
+  {
+    "business_name": "Jacob Martinez",
+    "city": "Los Angeles",
+    "website_url": "https://jacobmartinez.com/",
+    "description": "Los Angeles magician and mentalist offering strolling magic and stage shows for private and corporate events.",
+    "services": [
+      {
+        "category": "Magic",
+        "event_types": [
+          "Corporate",
+          "Private Party",
+          "Wedding"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://jacobmartinez.com/",
+        "type": "official website",
+        "facts": [
+          "business identity",
+          "Los Angeles operating city",
+          "magic",
+          "mentalism",
+          "private parties",
+          "corporate events",
+          "weddings"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ]
+  },
+  {
+    "business_name": "Clover String Quartet",
+    "city": "Los Angeles",
+    "website_url": "https://cloverstringquartet.com/",
+    "description": "Los Angeles string quartet and trio performing at weddings, private parties and corporate events across Southern California.",
+    "services": [
+      {
+        "category": "Live Music",
+        "event_types": [
+          "Wedding",
+          "Private Party",
+          "Corporate",
+          "Birthday",
+          "Fundraiser"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://cloverstringquartet.com/",
+        "type": "official website",
+        "facts": [
+          "business name",
+          "Los Angeles operating city",
+          "phone",
+          "string quartet and trio",
+          "weddings",
+          "private parties",
+          "corporate events",
+          "Southern California service area"
+        ],
+        "researched_on": "2026-10-26",
+        "reviewed_on": "2026-10-26"
+      }
+    ],
+    "phone": "805-338-5111"
+  }
+]
