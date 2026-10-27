@@ -101,6 +101,7 @@ export type MarketplaceItem = {
   name: string;
   type: ServiceName;
   location: string;
+  media?: Array<{url:string;alt:string;kind:"business_photo"|"logo"|"illustration";status:"candidate"|"rights_review"|"approved"|"rejected";order:number;vendorAttested?:boolean;attribution:string|null}>;
   photoUrl?: string | null;
   profileImageUrl?: string;
   galleryUrls?: string[];

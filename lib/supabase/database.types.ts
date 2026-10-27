@@ -149,6 +149,10 @@ export type Database = {
         Row: {
           id: string;
           image_url: string;
+          media_status: "candidate"|"rights_review"|"approved"|"rejected";
+          media_kind: "business_photo"|"logo"|"illustration";
+          source_url:string|null; rights_basis:string|null; creator:string|null; attribution:string|null; alt_text:string|null;
+          reviewed_at:string|null; reviewed_by:string|null; rights_attested_at:string|null; rights_attested_by:string|null;
           sort_order: number;
           storage_path: string | null;
           vendor_id: string;
@@ -385,6 +389,7 @@ export type Database = {
       complete_legal_acceptance: { Args: Record<string, never>; Returns: undefined };
       trust_operation: {Args:{operation:string;payload?:Json};Returns:Json};
       business_matches: {Args:{payload:Json};Returns:Json};
+      media_operation: { Args: {operation:string;payload?:Json}; Returns:Json };
       activation_operation: { Args: {operation: string; payload?: Json}; Returns: Json };
       acquisition_operation: { Args: {operation: string; payload?: Json}; Returns: Json };
       listing_operation: { Args: {operation: string; payload?: Json}; Returns: Json };

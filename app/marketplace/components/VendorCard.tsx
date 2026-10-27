@@ -1,5 +1,7 @@
 "use client";
 
+import {BusinessStatusBadge} from "@/app/components/BusinessStatusBadge";
+import {getVendorMedia} from "@/lib/marketplace/vendorImages";
 import { PricingDisclosure } from "./PricingDisclosure";
 import Link from "next/link";
 import { listingPresentation } from "@/lib/marketplace/listing-state";
@@ -8,7 +10,7 @@ import { ListingImage } from "./ListingImage";
 import { ProviderProfile } from "./ProviderProfile";
 import Image from "next/image";
 import type { MarketplaceItem } from "@/app/data/marketplace";
-import { getVendorImage } from "@/lib/marketplace/vendorImages";
+
 
 type VendorCardProps = {
   eventId?: string;
@@ -42,7 +44,8 @@ function VendorCardComponent({
   onAdd,
 }: VendorCardProps) {
   const [profileOpen, setProfileOpen] = useState(false);
-  const imageUrl = item.photoUrl ?? getVendorImage(item);
+  const media = getVendorMedia(item);
+  const imageUrl = media.src;
   const listing = listingPresentation(item);
   const isDemoProvider = item.databaseSource === false;
   const tags = [
@@ -62,23 +65,22 @@ function VendorCardComponent({
       <div className="relative aspect-[4/3] overflow-hidden bg-[#f2f0ec]">
         <ListingImage
           src={imageUrl}
-          alt={item.photoUrl && item.databaseSource ? `Photo supplied for ${item.name}` : `Illustrative photo for ${item.type} listings`}
+          alt={media.alt}
           sizes="(max-width: 768px) 74vw, 326px"
           className="object-cover transition duration-500 hover:scale-105"
         />
+        {media.illustrative&&<span className="absolute bottom-2 right-2 rounded ui-surface px-2 py-1 text-[10px]">{media.label}</span>}
         {isSelected && <span className="absolute left-3 top-3 rounded-md ui-primary px-3 py-1 text-xs font-semibold">Selected</span>}
 
       </div>
-      <div className="p-4"><p className="mb-3 text-xs font-semibold ui-text" data-provider-status>{listing.label}</p>{matchLabel && <div className="mb-3 text-xs"><p className="font-semibold">{matchLabel}</p><p className="mt-1 leading-5 ui-muted">{matchReason}</p></div>}
+      <div className="p-4"><div className="mb-3"><BusinessStatusBadge item={item}/></div>
         <div className="flex items-start justify-between gap-3">
-          {item.profileImageUrl && <Image src={item.profileImageUrl} alt={`${item.name} logo`} width={44} height={44} unoptimized className="shrink-0 rounded-lg object-contain" />}
+          {item.databaseSource === false && item.profileImageUrl && <Image src={item.profileImageUrl} alt={`${item.name} logo`} width={44} height={44} unoptimized className="shrink-0 rounded-lg object-contain" />}
           <div>
-            <p className="text-xs ui-muted">
-              {item.type} · {item.location}
-            </p>
-            <h3 className="mt-2 line-clamp-2 text-lg font-semibold tracking-tight ui-text">
-              {item.name}
-            </h3>
+
+            <h3 className="mt-2 text-lg font-semibold tracking-tight ui-text">
+              <button className="provider-profile-trigger text-left" onClick={()=>setProfileOpen(true)} aria-label={`View ${item.name} profile`}>{item.name}</button>
+            </h3><p className="mt-1 text-xs ui-muted">{item.type} · {item.location}</p>
           </div>
 
         </div>
@@ -95,14 +97,14 @@ function VendorCardComponent({
               {item.pricingKnown === false ? "Contact for pricing" : preview ? item.serviceOptions?.[0]?.estimateLabel || "Request pricing" : `$${quote.toLocaleString()}`}
             </p>
           </div>
-          {item.listingState === "unclaimed" ? <Link href={`/business/${item.vendorId}?serviceId=${item.serviceId??""}${eventId ? `&eventId=${encodeURIComponent(eventId)}` : ""}`} onClick={e=>e.stopPropagation()} className="rounded-lg ui-primary px-3 py-2 text-sm">Request through ARIVVIO</Link> : <button
+          {item.listingState === "unclaimed" ? <Link href={`/business/${item.vendorId}?serviceId=${item.serviceId??""}${eventId ? `&eventId=${encodeURIComponent(eventId)}` : ""}`} onClick={e=>e.stopPropagation()} className="provider-action rounded-lg ui-primary px-3 py-2 text-sm">Request through ARIVVIO</Link> : <button
             type="button"
             disabled={!listing.canRequest || (disableAdd ?? isSelected)}
             onClick={(event) => {
               event.stopPropagation();
               if (preview) setProfileOpen(true); else onAdd(item);
             }}
-            className={`h-10 rounded-lg px-4 text-sm font-semibold transition hover:-translate-y-0.5 disabled:cursor-default disabled:hover:translate-y-0 ${
+            className={`provider-action h-10 rounded-lg px-4 text-sm font-semibold transition hover:-translate-y-0.5 disabled:cursor-default disabled:hover:translate-y-0 ${
               isSelected
                 ? "ui-soft"
                 : "ui-primary hover:opacity-90"
@@ -111,9 +113,10 @@ function VendorCardComponent({
             {!listing.canRequest ? "Verification review required" : buttonLabel}
           </button>}
         </div>
-        {onSelect && <button type="button" onClick={()=>onSelect(item)} className="hub-button mt-3">Select {item.name}</button>}
+        {onSelect && <button type="button" onClick={()=>onSelect(item)} className="provider-action hub-button mt-3">Select {item.name}</button>}
+        {matchLabel && <p className="mt-3 text-xs ui-muted">{matchLabel}</p>}
         <PricingDisclosure item={item}/>
-        <button type="button" onClick={(event) => { event.stopPropagation(); setProfileOpen(true); }} className="mt-4 py-2 text-sm font-semibold underline underline-offset-4 hover:opacity-80">View profile</button>
+
       </div>
     </article>{profileOpen ? <ProviderProfile eventId={eventId} preview={preview} item={item} quote={quote} matchReason={preview ? matchReason : item.services.slice(0, 2).join(" · ") || matchReason} selected={Boolean(disableAdd ?? isSelected)} onAdd={() => { setProfileOpen(false); if (!preview) onAdd(item); }} onClose={() => setProfileOpen(false)} /> : null}</>
   );

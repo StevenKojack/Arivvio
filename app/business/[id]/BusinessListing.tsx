@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import {BusinessStatusBadge} from "@/app/components/BusinessStatusBadge";
 import {inquiryReturnKey} from "@/lib/acquisition/activation";
 import {AccessRequest} from "@/app/vendor/verification/AccessRequest";
 import {AuthorityFields} from "@/app/vendor/verification/AuthorityFields";
@@ -121,11 +122,7 @@ export function BusinessListing({
         </p>
       ) : (
         <>
-          <p className="mt-8 text-sm ui-muted">
-            {listing.owner_id
-              ? listing.verification_status === "verified" ? "Verified Business" : "Business-Managed · Verification Pending"
-              : "Unclaimed Business"}
-          </p>
+          <div className="mt-8"><BusinessStatusBadge item={{databaseSource:true,listingState:listing.owner_id?"claimed":"unclaimed",verificationStatus:listing.verification_status}}/></div>
           <h1 className="mt-2 text-3xl font-semibold">
             {listing.business_name}
           </h1>

@@ -42,6 +42,7 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       "20261023022245_privacy_launch_controls.sql",
       "20261026214746_business_acquisition.sql",
       "20261027031606_vendor_activation.sql",
+      "20261027160000_business_media.sql",
     ])
       await db.exec(readFileSync("supabase/migrations/" + f, "utf8"));
     const as = async (n) =>
@@ -279,6 +280,22 @@ test("business acquisition drafts, publication and authorization", async (t) => 
         /Do not contact/,
       );
     });
+    await t.test('media candidates are private, approval requires rights and normal users cannot review',async()=>{
+      const media=async(operation,payload={})=>(await db.query('select public.media_operation($1,$2::jsonb) r',[operation,JSON.stringify(payload)])).rows[0].r;
+      await as(4);
+      const candidate=await media('candidate',{vendor_id:vendorId,image_url:'https://fixture.example/photo.jpg',source_url:'https://fixture.example/permission',media_kind:'business_photo',alt_text:'Event room',rights_basis:''});
+      await as(2);assert.equal((await db.query('select * from vendor_photos where id=$1',[candidate.id])).rows.length,0);
+      await assert.rejects(media('review',{id:candidate.id,status:'approved'}),/Admin/);
+      await assert.rejects(media('list'),/Admin/);
+      await assert.rejects(media('reorder',{vendor_id:vendorId,ids:[candidate.id]}),/editor/);
+      await as(4);await assert.rejects(media('review',{id:candidate.id,status:'approved',rights_basis:'Permission documented',alt_text:'Event room'}),/confirmation/);
+      await assert.rejects(media('review',{id:candidate.id,status:'approved',rights_confirmed:true,rights_basis:'',alt_text:'Event room'}),/rights basis/);
+      const approved=await media('review',{id:candidate.id,status:'approved',rights_confirmed:true,rights_basis:'Fixture permission for marketplace display',alt_text:'Event room'});
+      assert.equal(approved.reviewed_by,id(14));assert.ok(approved.reviewed_at);
+      await as(2);assert.equal((await db.query('select * from vendor_photos where id=$1',[candidate.id])).rows.length,1);
+      await as(4);await media('review',{id:candidate.id,status:'rejected',rights_basis:'Permission withdrawn',alt_text:'Event room'});
+      await as(2);assert.equal((await db.query('select * from vendor_photos where id=$1',[candidate.id])).rows.length,0);
+    });
     await t.test('claim milestones, vendor readiness and concierge handoff use original records',async()=>{
       const listing=async(operation,payload)=>(await db.query('select public.listing_operation($1,$2::jsonb) r',[operation,JSON.stringify(payload)])).rows[0].r;
       const trust=async(operation,payload)=>(await db.query('select public.trust_operation($1,$2::jsonb) r',[operation,JSON.stringify(payload)])).rows[0].r;
@@ -298,6 +315,15 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       const handed=await listing('handoff',{id:lead.id});assert.ok(handed.quote_request_id);assert.equal((await listing('handoff',{id:lead.id})).quote_request_id,handed.quote_request_id);
       await as(1);const q=(await db.query('select * from quote_requests where id=$1',[handed.quote_request_id])).rows[0];assert.equal(q.event_id,id(600));assert.equal(q.vendor_id,b.id);
       assert.equal((await db.query('update vendor_businesses set description=$1 where id=$2 returning id',['Updated by authorized owner',b.id])).rows.length,1);
+      const upload=async(path,basis='Vendor attests ownership or permission to publish')=>(await db.query('insert into vendor_photos(vendor_id,image_url,storage_path,rights_basis,alt_text) values($1,$2,$3,$4,$5) returning *',[b.id,'https://fixture.supabase.co/storage/v1/object/public/vendor-photos/'+path,path,basis,'Business event room'])).rows[0];
+      const photo=await upload(b.id+'/one.jpg');assert.equal(photo.media_status,'approved');assert.equal(photo.rights_attested_by,id(11));assert.ok(photo.rights_attested_at);
+      await assert.rejects(upload(b.id+'/two.jpg',''),/attestation/);
+      await assert.rejects(upload(id(999)+'/foreign.jpg'),/authorized upload/);
+      await assert.rejects(db.query("update vendor_photos set image_url='https://other.example/stolen.jpg' where id=$1",[photo.id]),/Only photo ordering/);
+      const photo2=await upload(b.id+'/two.jpg');
+      const media=async(payload)=>db.query("select public.media_operation('reorder',$1::jsonb)",[JSON.stringify(payload)]);
+      await assert.rejects(media({vendor_id:b.id,ids:[photo.id,photo.id]}),/complete photo list/);
+      await media({vendor_id:b.id,ids:[photo2.id,photo.id]});assert.equal((await db.query('select sort_order from vendor_photos where id=$1',[photo2.id])).rows[0].sort_order,0);
       await as(2);await assert.rejects(activation('record_contact',{...contact,vendor_id:b.id,client_key:id(905)}),/Admin access/);
     });
   } finally {

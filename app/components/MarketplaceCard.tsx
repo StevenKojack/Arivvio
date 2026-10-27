@@ -1,7 +1,9 @@
 "use client";
 
-import { listingPresentation } from "@/lib/marketplace/listing-state";
+import {BusinessStatusBadge} from "./BusinessStatusBadge";
 import Link from "next/link";
+import {getVendorMedia} from "@/lib/marketplace/vendorImages";
+import {ListingImage} from "@/app/marketplace/components/ListingImage";
 import type { MarketplaceItem } from "../data/marketplace";
 
 type MarketplaceCardProps = {
@@ -21,17 +23,11 @@ export function MarketplaceCard({
   quote,
   onAdd,
 }: MarketplaceCardProps) {
+  const media=getVendorMedia(item);
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-[#D4AF37]/16 bg-white shadow-[0_18px_44px_rgba(13,19,33,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[#D4AF37]/38 hover:shadow-[0_24px_58px_rgba(13,19,33,0.1)]">
-      {item.photoUrl ? (
-        <div
-          className="h-40 bg-cover bg-center"
-          style={{ backgroundImage: `url(${item.photoUrl})` }}
-        />
-      ) : (
-        <div className="h-2 bg-[#D4AF37]" />
-      )}
-      <div className="flex flex-1 flex-col p-5"><p className="mb-3 text-xs font-semibold">{listingPresentation(item).label}</p>
+      <div className="relative h-40"><ListingImage src={media.src} alt={media.alt} sizes="400px"/>{media.illustrative&&<span className="absolute bottom-2 left-2 rounded ui-surface px-2 py-1 text-xs">{media.label}</span>}</div>
+      <div className="flex flex-1 flex-col p-5"><BusinessStatusBadge item={item}/>
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#B88A1D]">
@@ -41,18 +37,7 @@ export function MarketplaceCard({
               {item.name}
             </h3>
           </div>
-          <div className="grid justify-items-end gap-2">
 
-            {!item.databaseSource ? (
-              <span className="rounded-full bg-[#FFF8E1] px-3 py-1 text-xs font-semibold text-[#8A6A16]">
-                Demo provider
-              </span>
-            ) : (
-              <span className="rounded-full bg-[#EAF6EE] px-3 py-1 text-xs font-semibold text-emerald-800">
-                Database provider
-              </span>
-            )}
-          </div>
         </div>
         <p className="mt-3 text-sm font-medium text-neutral-500">{item.location}</p>
         <p className="mt-1 text-xs text-neutral-400">{item.address}</p>
