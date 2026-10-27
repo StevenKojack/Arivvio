@@ -42,6 +42,8 @@ export function AdminDashboard() {
 
         const adminOverview = await getAdminOverview(supabase);
         setOverview(adminOverview);
+        const requested = decodeURIComponent(window.location.hash.slice(1));
+        if (["Public Listings", "Claims", "Leads"].includes(requested)) setActiveSection(requested);
         setMessage("");
       } catch (error) {
         setMessage(
@@ -52,7 +54,10 @@ export function AdminDashboard() {
       }
     }
 
+    const navigate = () => { const requested=decodeURIComponent(window.location.hash.slice(1)); if (["Public Listings","Claims","Leads"].includes(requested)) setActiveSection(requested); };
+    window.addEventListener("hashchange",navigate);
     loadAdmin();
+    return () => window.removeEventListener("hashchange",navigate);
   }, []);
 
   if (!overview) {

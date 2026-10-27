@@ -13,6 +13,7 @@ import {
 } from "@/lib/acquisition/research";
 import type { ListingWorkspace } from "@/lib/repositories/listingsRepository";
 import type { BusinessMatch } from "@/lib/repositories/businessTrustRepository";
+import { VendorActivationOperations } from "./VendorActivationOperations";
 import { ContactPreference } from "./ContactPreference";
 const field = "w-full rounded-lg border ui-border ui-surface p-3";
 const button = "rounded-lg border ui-border px-3 py-2 disabled:opacity-50";
@@ -543,6 +544,7 @@ export function BusinessAcquisition({
           )}
         </details>
       ))}
+      <VendorActivationOperations workspace={workspace} onChanged={onChanged}/>
       <details onToggle={(e) => setHelpersOpen(e.currentTarget.open)}>
         <summary className="cursor-pointer font-semibold">
           Manual claim and outreach helpers

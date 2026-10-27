@@ -385,6 +385,7 @@ export type Database = {
       complete_legal_acceptance: { Args: Record<string, never>; Returns: undefined };
       trust_operation: {Args:{operation:string;payload?:Json};Returns:Json};
       business_matches: {Args:{payload:Json};Returns:Json};
+      activation_operation: { Args: {operation: string; payload?: Json}; Returns: Json };
       acquisition_operation: { Args: {operation: string; payload?: Json}; Returns: Json };
       listing_operation: { Args: {operation: string; payload?: Json}; Returns: Json };
       get_quote_thread: {Args:{request:string};Returns:Json};

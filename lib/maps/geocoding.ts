@@ -113,3 +113,14 @@ function getFallbackAddressSuggestions(query: string): AddressSuggestion[] {
 
   return [...venueSuggestions, ...areaSuggestions].slice(0, 5);
 }
+
+// Stored business pins must use permanent geocoding, never demo/city fallbacks.
+export async function searchPermanentAddresses(query: string): Promise<AddressSuggestion[]> {
+ if(!hasMapboxConfig()) throw new Error('Mapbox is not configured. Leave the location unknown.');
+ if(query.trim().length<5) throw new Error('Enter the full public street address.');
+ const params=new URLSearchParams({access_token:MAPBOX_ACCESS_TOKEN,q:query.trim(),country:'us',types:'address',limit:'5',autocomplete:'false',permanent:'true'});
+ const response=await fetch(`https://api.mapbox.com/search/geocode/v6/forward?${params}`);
+ if(!response.ok) throw new Error('Address lookup unavailable. Check Mapbox permanent-geocoding access. No location was saved.');
+ const data=await response.json() as {features?:{id:string;geometry:{coordinates:[number,number]};properties:{feature_type:string;full_address?:string;name:string;place_formatted?:string}}[]};
+ return (data.features??[]).filter(f=>f.properties.feature_type==='address' && f.geometry?.coordinates?.length===2).map(f=>({id:f.id,isFallback:false,placeType:'address',label:f.properties.full_address??`${f.properties.name}, ${f.properties.place_formatted??''}`,coordinates:{lat:f.geometry.coordinates[1],lng:f.geometry.coordinates[0]}}));
+}

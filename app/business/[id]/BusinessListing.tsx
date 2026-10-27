@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import {inquiryReturnKey} from "@/lib/acquisition/activation";
 import {AccessRequest} from "@/app/vendor/verification/AccessRequest";
 import {AuthorityFields} from "@/app/vendor/verification/AuthorityFields";
 import { useEffect, useState, type FormEvent } from "react";
@@ -94,7 +95,7 @@ export function BusinessListing({
       } else {
         await listingOperation("lead", { ...values, vendor_id: id });
         setMessage(
-          "ARIVVIO is reaching out. Your request is saved in your account.",
+          "ARIVVIO is reviewing your request and may reach out. Your request is saved in your account.",
         );
       }
     } catch (e) {
@@ -106,8 +107,8 @@ export function BusinessListing({
   const field = "mt-1 w-full rounded-lg border ui-border ui-surface p-3";
   const next = new URLSearchParams({
     mode,
-    ...(initialEventId ? { eventId: initialEventId } : {}),
-    ...(initialServiceId ? { serviceId: initialServiceId } : {}),
+    ...(eventId ? { eventId } : {}),
+    ...(serviceId ? { serviceId } : {}),
   });
   return (
     <main id="main-content" tabIndex={-1} className="mx-auto max-w-3xl px-5 py-12">
@@ -171,8 +172,7 @@ export function BusinessListing({
                   {mode === "request" ? (
                     <>
                       <p>
-                        We will reach out and let this business know you are
-                        interested. This does not reserve a date or create a
+                        ARIVVIO will review your interest and may contact this business. A response is not guaranteed. This does not reserve a date or create a
                         booking.
                       </p>
                       <label className="block">
@@ -193,7 +193,7 @@ export function BusinessListing({
                         </select>
                       </label>
                       {!events.length && (
-                        <Link href="/account" className="underline">
+                        <Link href="/plan" onClick={()=>sessionStorage.setItem(inquiryReturnKey,`/business/${id}?mode=request${serviceId?`&serviceId=${encodeURIComponent(serviceId)}`:""}`)} className="underline">
                           Create or save an event to your account first.
                         </Link>
                       )}
@@ -280,7 +280,7 @@ export function BusinessListing({
           {message && (
             <p role="status" className="mt-6 rounded-xl ui-soft p-4">
               {message}{" "}
-              <Link href="/account" className="underline">
+              <Link href="/plan" onClick={()=>sessionStorage.setItem(inquiryReturnKey,`/business/${id}?mode=request${serviceId?`&serviceId=${encodeURIComponent(serviceId)}`:""}`)} className="underline">
                 View your account
               </Link>
             </p>
