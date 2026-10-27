@@ -1,0 +1,44 @@
+[
+  {
+    "business_id": "c3a84c45-eb7e-49b1-8306-b7744fcd056e",
+    "business_name": "VOX DJs",
+    "source_url": "https://voxdjs.com/",
+    "proposed_url": "https://voxdjs.com/wp-content/uploads/2023/04/VOX-DJs-Logos_Source_VOX-DJS-Logo_White.svg",
+    "media_type": "logo",
+    "status": "rights_review",
+    "rights_basis": null,
+    "note": "Official logo located. Public availability does not establish reuse permission.",
+    "reviewed_on": "2026-10-27",
+    "attribution": null,
+    "display_order": 0,
+    "published": false
+  },
+  {
+    "business_id": "780f0f89-1a15-4db2-ac8d-b585ddda363b",
+    "business_name": "Mark\u2019s Garden",
+    "source_url": "https://marksgarden.com/",
+    "proposed_url": "https://marksgarden.com/wp-content/uploads/2020/07/logo_grey.svg",
+    "media_type": "logo",
+    "status": "rights_review",
+    "rights_basis": null,
+    "note": "Official brand asset located. Obtain permission before displaying.",
+    "reviewed_on": "2026-10-27",
+    "attribution": null,
+    "display_order": 0,
+    "published": false
+  },
+  {
+    "business_id": "b07100d6-3674-4e89-aa9b-b1989b703bf2",
+    "business_name": "The Ebell of Los Angeles",
+    "source_url": "https://www.ebellofla.org/press",
+    "proposed_url": null,
+    "media_type": "business_photo",
+    "status": "rights_review",
+    "rights_basis": null,
+    "note": "Official press page directs asset requests to press@EbellofLA.org. No general marketplace reuse permission found. No request was sent.",
+    "reviewed_on": "2026-10-27",
+    "attribution": null,
+    "display_order": 0,
+    "published": false
+  }
+]

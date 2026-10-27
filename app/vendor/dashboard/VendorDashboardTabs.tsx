@@ -1,4 +1,6 @@
 "use client";
+import {ProviderProfile} from "@/app/marketplace/components/ProviderProfile";
+import {mapServiceToMarketplaceItem} from "@/lib/supabase/marketplace";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -87,7 +89,8 @@ type VendorTabProps = {
   onToggleVacationMode: (vendor: VendorBusinessRow) => Promise<void>;
   onUpdateBusiness: (vendorId: string, draft: BusinessDraft) => Promise<void>;
   onUpdateService: (serviceId: string, draft: ServiceDraft) => Promise<void>;
-  onUploadPhoto: (vendorId: string, file: File) => Promise<boolean>;
+  onReorderPhotos: (vendorId:string,ids:string[]) => Promise<void>;
+  onUploadPhoto: (vendorId: string, file: File, altText:string) => Promise<boolean>;
   photos: VendorPhotoRow[];
   quotes: QuoteWithEvent[];
   services: VendorServiceRow[];
@@ -532,23 +535,30 @@ export function AvailabilityTab({
 }
 
 export function PhotosTab({
+  services, availability,
+  onReorderPhotos,
   onDeletePhoto,
   onUploadPhoto,
   photos,
   vendors,
 }: Pick<
   VendorTabProps,
-  "onDeletePhoto" | "onUploadPhoto" | "photos" | "vendors"
+  "onDeletePhoto" | "onUploadPhoto" | "onReorderPhotos" | "photos" | "vendors" | "services" | "availability"
 >) {
   const [vendorId, setVendorId] = useState(vendors[0]?.id ?? "");
+  const [altText,setAltText]=useState("");
+  const [preview,setPreview]=useState(false);
   const [fileName, setFileName] = useState("");
   const [pendingFile, setPendingFile] = useState<File>();
   const [rightsAccepted, setRightsAccepted] = useState(false);
   const [uploading, setUploading] = useState(false);
   const selectedVendor = vendors.find((vendor) => vendor.id === vendorId);
 
+  const selectedServices=services.filter(s=>s.vendor_id===vendorId);
+  const previewItem=selectedVendor&&selectedServices[0]?mapServiceToMarketplaceItem(selectedVendor,selectedServices[0],availability.filter(a=>a.vendor_id===vendorId),photos.filter(p=>p.vendor_id===vendorId),[],selectedServices):null;
+
   async function uploadFile(file: File | undefined) {
-    if (!file || !vendorId || !rightsAccepted || uploading) {
+    if (!file || !vendorId || !rightsAccepted || altText.trim().length<3 || uploading) {
       return;
     }
 
@@ -564,7 +574,7 @@ export function PhotosTab({
     setFileName(file.name);
     setUploading(true);
     try {
-      if (await onUploadPhoto(vendorId, file)) {
+      if (await onUploadPhoto(vendorId, file, altText)) {
         setPendingFile(undefined);
         setRightsAccepted(false);
       }
@@ -575,6 +585,9 @@ export function PhotosTab({
 
   return (
     <Panel title="Photos">
+      {previewItem&&<button className="mb-4 rounded-lg border px-4 py-2 text-sm" onClick={()=>setPreview(true)}>Preview customer profile</button>}
+      {preview&&previewItem&&<ProviderProfile item={previewItem} quote={0} matchReason="Your saved business profile and services" selected={false} preview onAdd={()=>{}} onClose={()=>setPreview(false)}/>}
+
       <div className="grid gap-3 rounded-lg border border-dashed border-neutral-300 p-5 text-sm text-neutral-600">
         <p>
           Upload JPEG, PNG, or WebP images up to 5MB. Photos appear on your public business profile.
@@ -608,11 +621,12 @@ export function PhotosTab({
             }}
           />
         </label>
+        <label className="grid gap-2 text-sm">Describe the photo for people who cannot see it<input value={altText} maxLength={500} onChange={e=>setAltText(e.target.value)} placeholder="For example: Round tables set for a garden reception" className="rounded-lg border bg-white p-3"/></label>
         <label className="flex items-start gap-2">
           <input type="checkbox" checked={rightsAccepted} onChange={(event) => setRightsAccepted(event.target.checked)} />
           I own this photo or have permission to publish it, including permission from identifiable people shown.
         </label>
-        <button type="button" disabled={!pendingFile || !vendorId || !rightsAccepted || uploading} onClick={() => void uploadFile(pendingFile)} className="rounded-full bg-[#0D1321] px-4 py-3 font-semibold text-white disabled:opacity-50">
+        <button type="button" disabled={!pendingFile || !vendorId || !rightsAccepted || altText.trim().length<3 || uploading} onClick={() => void uploadFile(pendingFile)} className="rounded-full bg-[#0D1321] px-4 py-3 font-semibold text-white disabled:opacity-50">
           {uploading ? "Uploading…" : "Upload photo"}
         </button>
         {fileName ? (
@@ -625,7 +639,8 @@ export function PhotosTab({
         {selectedVendor ? (
           photos
             .filter((photo) => photo.vendor_id === selectedVendor.id)
-            .map((photo) => (
+            .sort((a,b)=>a.sort_order-b.sort_order)
+            .map((photo,index,ordered) => (
               <div key={photo.id} className="overflow-hidden rounded-lg border border-neutral-200">
                 <div
                   role="img"
@@ -633,6 +648,7 @@ export function PhotosTab({
                   className="h-40 bg-cover bg-center"
                   style={{ backgroundImage: `url(${photo.image_url})` }}
                 />
+                <div className="flex gap-3 p-3 text-xs"><span>{index===0?"Cover photo":`Photo ${index+1}`}</span>{index>0&&<><button type="button" className="underline" onClick={()=>void onReorderPhotos(vendorId,[photo.id,...ordered.filter(p=>p.id!==photo.id).map(p=>p.id)])}>Use as cover</button><button type="button" className="underline" onClick={()=>{const ids=ordered.map(p=>p.id);[ids[index-1],ids[index]]=[ids[index],ids[index-1]];void onReorderPhotos(vendorId,ids);}}>Move earlier</button></>}</div>
                 <button
                   type="button"
                   onClick={() => onDeletePhoto(photo)}
