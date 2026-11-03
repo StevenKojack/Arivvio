@@ -42,7 +42,7 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       "20261023022245_privacy_launch_controls.sql",
       "20261026214746_business_acquisition.sql",
       "20261027031606_vendor_activation.sql",
-      "20261027160000_business_media.sql",
+      "20261103160458_business_media.sql",
     ])
       await db.exec(readFileSync("supabase/migrations/" + f, "utf8"));
     const as = async (n) =>
