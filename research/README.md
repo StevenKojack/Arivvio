@@ -30,3 +30,29 @@ Security advisor: existing informational notices for two private RPC-only tables
 Next focused work: verify authenticated Admin workflow on desktop/mobile, confirm licensed fixed-location map coordinates, then manually invite the sourced businesses and measure claims. Do not start automated outreach.
 
 Post-release public browser check: Marketplace loaded 21 real service listings and 48 fictional examples. DJ search showed VOX alongside fictional DJs. VOX's profile displayed its three services, Unclaimed Business, Contact for pricing, unconfirmed availability and illustrative imagery. Its claim link retained the business UUID and required sign-in. Logged-out Admin showed its access gate. Vercel production was READY on the acquisition release and its error/fatal runtime query returned no matching logs. A follow-up adds the official website directly to the Marketplace profile and related-lead details to Admin.
+
+## Continuous research queue (October 27, 2026)
+
+Muse/Alfred: read `research/pipeline/` and current production inventory before researching. Use a dedicated branch such as `research/2026-10-27-bartending`. Add a new dated/category batch file rather than editing another researcher's active file. Candidate IDs are stable lowercase slugs. Keep one canonical business with multiple services, and separate independently sourced branches. Never put credentials, customer data or private outreach history in GitHub.
+
+Each business candidate wraps the existing `ResearchBusiness` in `details`, with `candidate_id`, `research_status`, `location_basis`, `duplicate_review` and `proposed_media`. Sources record specific supported facts and research/review dates. Unknown contacts, coordinates, prices and availability stay absent. A service city is not a storefront address.
+
+Research states: `candidate` → `researching` → `source_checked` → `ready_for_admin_review` → `imported` → `published`. Alternatives: `duplicate`, `rejected`, `needs_recheck`. These are research milestones, never ownership or verification states. Record the resulting business UUID when an Admin imports/publishes a candidate. Resolve duplicate relationships explicitly. Shared franchise domains alone do not merge locations.
+
+Validate/export using:
+
+```sh
+node --experimental-strip-types scripts/research-pipeline.mjs research/pipeline/2026-10-27-la-services.json /tmp/arivvio-import.json research/los-angeles-2026-10-26.json
+```
+
+The optional final argument is a current inventory in the existing research format. Local validation catches exact identity duplicates. It cannot replace live Admin name/domain/phone/location matching. The historical October 26 batch is not a complete live inventory. The eight October 27 candidates were also compared against all 18 current production business names and domains through the database.
+
+Open a small PR with source links, categories, duplicate findings and unresolved questions. WORK reviews the diff, runs validation, then uses the existing Admin JSON preview and draft importer. Review and publication remain separate deliberate Admin actions. Export includes only ready candidates, strips research/media metadata and never calls the database. No accounts, ownership, verification, listings or outreach are automatically created.
+
+`2026-10-27-la-services.json` contains eight new sourced candidates ready for Admin review, not published businesses. `2026-10-27-media-candidates.json` records separate media leads for existing businesses. A media URL is not permission. The Ebell press page requires contacting its media team for assets. No permission request or other outreach was sent.
+
+## Media operations
+
+Admin > Public Listings > Business media rights & gallery records candidate URL, source, creator, rights basis, attribution, actual photo/logo/illustration type, review state and date. Only approved rows reach public discovery. Approval requires explicit confirmation, a rights basis and accurate alt text. A rejected/candidate image is never rendered by the review UI. Vendor uploads retain durable account-linked rights attestation. Vendor Hub Photos supports cover selection and moving images earlier. The existing listing editor provides the customer-facing preview.
+
+The reusable media selector prefers attested vendor photos, approved licensed business photos, approved logos, then service illustrations. It never infers a business image from the business name. Public profiles do not use unapproved legacy raw photo URLs.

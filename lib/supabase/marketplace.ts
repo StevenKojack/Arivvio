@@ -270,7 +270,7 @@ export async function createQuoteRequestsFromCart(
   return data ?? [];
 }
 
-function mapServiceToMarketplaceItem(
+export function mapServiceToMarketplaceItem(
   vendor: VendorBusinessRow,
   service: VendorServiceRow,
   availability: VendorAvailabilityRow[],
@@ -321,7 +321,8 @@ function mapServiceToMarketplaceItem(
     id: numericId(service.id),
     location: city,
     name: service.service_name || vendor.business_name,
-    photoUrl: photos[0]?.image_url ?? null,
+    photoUrl: photos.find(p=>p.media_status === "approved")?.image_url ?? null,
+    media: photos.filter(p=>p.media_status === "approved").map(p=>({url:p.image_url,alt:p.alt_text ?? "Business photograph",kind:p.media_kind,status:p.media_status,order:p.sort_order,vendorAttested:!!p.rights_attested_at,attribution:p.attribution})),
     price: basePrice,
     pricing,
     rating: 0,

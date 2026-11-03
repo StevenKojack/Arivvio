@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import {mediaOperation} from "@/lib/repositories/acquisitionRepository";
 import {ActivationChecklist} from "./ActivationChecklist";
 import { useEffect, useState } from "react";
 import { eventTypes } from "@/app/data/marketplace";
@@ -242,11 +243,12 @@ export function VendorDashboard() {
     }
   }
 
-  async function handleUploadPhoto(vendorId: string, file: File) {
+  async function handleUploadPhoto(vendorId: string, file: File, altText:string) {
     try {
       const supabase = createBrowserSupabaseClient();
       const result = await uploadVendorPhoto(supabase, {
         file,
+        altText,
         sortOrder: photos.filter((photo) => photo.vendor_id === vendorId).length,
         vendorId,
       });
@@ -258,6 +260,11 @@ export function VendorDashboard() {
       setMessage(error instanceof Error ? error.message : "Unable to upload photo.");
       return false;
     }
+  }
+
+  async function handleReorderPhotos(vendorId:string,ids:string[]){
+    try { await mediaOperation("reorder",{vendor_id:vendorId,ids}); setPhotos(current=>current.map(p=>p.vendor_id===vendorId?{...p,sort_order:ids.indexOf(p.id)}:p)); setMessage("Photo order saved. First photo is the cover."); }
+    catch(error){setMessage(error instanceof Error?error.message:"Unable to reorder photos.");}
   }
 
   async function handleDeletePhoto(photo: VendorPhotoRow) {
@@ -397,6 +404,9 @@ export function VendorDashboard() {
           <PhotosTab
             onDeletePhoto={handleDeletePhoto}
             onUploadPhoto={handleUploadPhoto}
+            onReorderPhotos={handleReorderPhotos}
+            services={services}
+            availability={availability}
             photos={photos}
             vendors={vendors}
           />

@@ -129,7 +129,7 @@ export function EventDiscoverySearch({ pageHidden = false }: { pageHidden?: bool
       <div className="occasion-strip-wrap">
         <div className="occasion-strip" data-paused={pageHidden} aria-label="Occasion ideas">
           <div className="occasion-strip-track">{[0, 1].map(copy => <div key={copy} className="occasion-strip-group" aria-hidden={copy === 1 ? true : undefined}>
-            {loopExamples.map(example => <button key={example} type="button" tabIndex={copy === 1 ? -1 : 0} onClick={() => submitSearch(example)}>{example}<span aria-hidden="true">↗</span></button>)}
+            {loopExamples.map(example => <button key={example} type="button" tabIndex={copy === 1 ? -1 : 0} onClick={() => submitSearch(example)}>{example}</button>)}
           </div>)}</div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 "use client";
+import { BusinessMedia } from "./BusinessMedia";
 import { BusinessAcquisition } from "./BusinessAcquisition";
 import { ContactPreference } from "./ContactPreference";
 import Link from "next/link";
@@ -172,6 +173,7 @@ export function PublicListingOperations({ section }: { section: string }) {
                 workspace={data}
                 onChanged={() => setRevision((x) => x + 1)}
               />
+              <BusinessMedia businesses={data.listings}/>
               <form onSubmit={save} className="mt-5 space-y-4">
                 <div className="flex flex-wrap gap-2">
                   {[

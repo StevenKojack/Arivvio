@@ -1,0 +1,318 @@
+[
+  {
+    "candidate_id": "luxe-linen-la",
+    "research_status": "ready_for_admin_review",
+    "details": {
+      "business_name": "Luxe Linen",
+      "city": "Los Angeles",
+      "website_url": "https://luxelinen.org/",
+      "description": "Linen and tabletop rental options for Los Angeles County events, with local delivery described on the official site.",
+      "services": [
+        {
+          "category": "Rentals",
+          "event_types": [
+            "Wedding",
+            "Corporate",
+            "Birthday"
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://luxelinen.org/our-services/",
+          "type": "official website",
+          "facts": [
+            "business identity",
+            "Los Angeles service coverage",
+            "listed services"
+          ],
+          "researched_on": "2026-10-27",
+          "reviewed_on": "2026-10-27"
+        }
+      ]
+    },
+    "location_basis": "Service coverage only. No storefront or radius inferred.",
+    "duplicate_review": {
+      "checked_on": "2026-10-27",
+      "result": "no_match",
+      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+    },
+    "proposed_media": []
+  },
+  {
+    "candidate_id": "just-joe-la",
+    "research_status": "ready_for_admin_review",
+    "details": {
+      "business_name": "Just Joe Bartending",
+      "city": "Los Angeles",
+      "website_url": "https://www.justjoebartending.com/",
+      "description": "Mobile bartending for Southern California celebrations, including weddings and corporate gatherings.",
+      "services": [
+        {
+          "category": "Bartending",
+          "event_types": [
+            "Wedding",
+            "Corporate",
+            "Private Party"
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.justjoebartending.com/book-us/",
+          "type": "official website",
+          "facts": [
+            "business identity",
+            "Los Angeles service coverage",
+            "listed services"
+          ],
+          "researched_on": "2026-10-27",
+          "reviewed_on": "2026-10-27"
+        }
+      ],
+      "phone": "818.486.2045",
+      "email": "hello@justjoebartending.com"
+    },
+    "location_basis": "Service coverage only. No storefront or radius inferred.",
+    "duplicate_review": {
+      "checked_on": "2026-10-27",
+      "result": "no_match",
+      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+    },
+    "proposed_media": []
+  },
+  {
+    "candidate_id": "party-creations-la",
+    "research_status": "ready_for_admin_review",
+    "details": {
+      "business_name": "Party Creations LA",
+      "city": "Los Angeles",
+      "website_url": "https://www.partycreationsla.com/",
+      "description": "Los Angeles entertainment provider with character appearances and private and corporate event programs.",
+      "services": [
+        {
+          "category": "Character Performers",
+          "event_types": [
+            "Corporate",
+            "Birthday",
+            "Private Party"
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.partycreationsla.com/",
+          "type": "official website",
+          "facts": [
+            "business identity",
+            "Los Angeles service coverage",
+            "listed services"
+          ],
+          "researched_on": "2026-10-27",
+          "reviewed_on": "2026-10-27"
+        }
+      ]
+    },
+    "location_basis": "Service coverage only. No storefront or radius inferred.",
+    "duplicate_review": {
+      "checked_on": "2026-10-27",
+      "result": "no_match",
+      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+    },
+    "proposed_media": []
+  },
+  {
+    "candidate_id": "entertainment-contractor-la",
+    "research_status": "ready_for_admin_review",
+    "details": {
+      "business_name": "The Entertainment Contractor",
+      "city": "Los Angeles",
+      "website_url": "https://theentertainmentcontractor.com/",
+      "description": "Food-cart rentals and event entertainment services for gatherings in the Los Angeles area.",
+      "services": [
+        {
+          "category": "Rentals",
+          "event_types": [
+            "Corporate",
+            "Wedding",
+            "Private Party"
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://theentertainmentcontractor.com/",
+          "type": "official website",
+          "facts": [
+            "business identity",
+            "Los Angeles service coverage",
+            "listed services"
+          ],
+          "researched_on": "2026-10-27",
+          "reviewed_on": "2026-10-27"
+        }
+      ]
+    },
+    "location_basis": "Service coverage only. No storefront or radius inferred.",
+    "duplicate_review": {
+      "checked_on": "2026-10-27",
+      "result": "no_match",
+      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+    },
+    "proposed_media": []
+  },
+  {
+    "candidate_id": "mint-valet-la",
+    "research_status": "ready_for_admin_review",
+    "details": {
+      "business_name": "Mint Valet",
+      "city": "Los Angeles",
+      "website_url": "https://www.mintvaletservices.com/",
+      "description": "Valet service for private events in Los Angeles and surrounding communities.",
+      "services": [
+        {
+          "category": "Valet",
+          "event_types": [
+            "Private Party"
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.mintvaletservices.com/valet-parking-los-angeles",
+          "type": "official website",
+          "facts": [
+            "business identity",
+            "Los Angeles service coverage",
+            "listed services"
+          ],
+          "researched_on": "2026-10-27",
+          "reviewed_on": "2026-10-27"
+        }
+      ]
+    },
+    "location_basis": "Service coverage only. No storefront or radius inferred.",
+    "duplicate_review": {
+      "checked_on": "2026-10-27",
+      "result": "no_match",
+      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+    },
+    "proposed_media": []
+  },
+  {
+    "candidate_id": "aardvark-la",
+    "research_status": "ready_for_admin_review",
+    "details": {
+      "business_name": "Aardvark Letterpress",
+      "city": "Los Angeles",
+      "website_url": "https://www.aardvarkletterpress.com/",
+      "description": "Los Angeles letterpress studio producing custom printed pieces such as invitations, announcements and menus.",
+      "services": [
+        {
+          "category": "Invitations",
+          "event_types": []
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.aardvarkletterpress.com/get-started",
+          "type": "official website",
+          "facts": [
+            "business identity",
+            "Los Angeles service coverage",
+            "listed services"
+          ],
+          "researched_on": "2026-10-27",
+          "reviewed_on": "2026-10-27"
+        }
+      ],
+      "address": "2500 W 7th Street, Los Angeles, CA 90057",
+      "phone": "213.388.2271",
+      "email": "info@aardvarkletterpress.com"
+    },
+    "location_basis": "Confirmed studio address",
+    "duplicate_review": {
+      "checked_on": "2026-10-27",
+      "result": "no_match",
+      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+    },
+    "proposed_media": []
+  },
+  {
+    "candidate_id": "platinum-pro-la",
+    "research_status": "ready_for_admin_review",
+    "details": {
+      "business_name": "Platinum Pro Portables",
+      "city": "Los Angeles",
+      "website_url": "https://platinumproportables.com/",
+      "description": "Portable restroom and restroom-trailer rentals for Los Angeles events and weddings.",
+      "services": [
+        {
+          "category": "Portable Restrooms",
+          "event_types": [
+            "Wedding"
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://platinumproportables.com/luxury-portable-restrooms-los-angeles/",
+          "type": "official website",
+          "facts": [
+            "business identity",
+            "Los Angeles service coverage",
+            "listed services"
+          ],
+          "researched_on": "2026-10-27",
+          "reviewed_on": "2026-10-27"
+        }
+      ]
+    },
+    "location_basis": "Service coverage only. No storefront or radius inferred.",
+    "duplicate_review": {
+      "checked_on": "2026-10-27",
+      "result": "no_match",
+      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+    },
+    "proposed_media": []
+  },
+  {
+    "candidate_id": "spirinity-la",
+    "research_status": "ready_for_admin_review",
+    "details": {
+      "business_name": "Spirinity Productions",
+      "city": "Los Angeles",
+      "website_url": "https://spirinityproductions.com/",
+      "description": "Live-streaming and webcast production for Los Angeles conferences, corporate events and concerts.",
+      "services": [
+        {
+          "category": "AV Production",
+          "event_types": [
+            "Corporate",
+            "Concert"
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://spirinityproductions.com/services/live-streaming-los-angeles/",
+          "type": "official website",
+          "facts": [
+            "business identity",
+            "Los Angeles service coverage",
+            "listed services"
+          ],
+          "researched_on": "2026-10-27",
+          "reviewed_on": "2026-10-27"
+        }
+      ]
+    },
+    "location_basis": "Service coverage only. No storefront or radius inferred.",
+    "duplicate_review": {
+      "checked_on": "2026-10-27",
+      "result": "no_match",
+      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+    },
+    "proposed_media": []
+  }
+]

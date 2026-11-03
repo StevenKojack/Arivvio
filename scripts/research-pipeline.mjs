@@ -1,0 +1,13 @@
+import {readFileSync,writeFileSync,existsSync} from 'node:fs';
+import {registerHooks} from 'node:module';
+import {fileURLToPath} from 'node:url';
+registerHooks({resolve(s,c,next){if(s.startsWith('.')){const base=new URL(s,c.parentURL).href;for(const ext of ['', '.ts'])if(existsSync(fileURLToPath(base+ext)))return next(base+ext,c);}return next(s,c);}});
+const {allServices}=await import('../app/data/marketplace.ts');
+const {exportResearch}=await import('../lib/acquisition/pipeline.mjs');
+const [input,output,inventory]=process.argv.slice(2);
+if(!input)throw new Error('Usage: node --experimental-strip-types scripts/research-pipeline.mjs BATCH.json [OUTPUT.json] [CURRENT_INVENTORY.json]');
+const rows=JSON.parse(readFileSync(input,'utf8'));
+const existing=inventory?JSON.parse(readFileSync(inventory,'utf8')):[];
+const result=exportResearch(rows,allServices,existing);
+if(output)writeFileSync(output,JSON.stringify(result,null,2)+'\n');
+console.log(`${rows.length} candidates validated. ${result.length} ready for Admin import. No database writes or publication performed.`);

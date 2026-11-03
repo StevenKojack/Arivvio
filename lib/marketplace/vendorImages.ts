@@ -51,22 +51,23 @@ const categoryImages: Partial<Record<MarketplaceItem["type"], string>> = {
     "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
 };
 
-export function getVendorImage(item: MarketplaceItem) {
-  if (item.photoUrl) {
-    return item.photoUrl;
-  }
-
-  if (item.name.toLowerCase().includes("scooter")) {
-    return "https://images.unsplash.com/photo-1560506840-ec148e82a604?auto=format&fit=crop&w=640&q=70";
-  }
-
-  if (item.name.toLowerCase().includes("raceway")) {
-    return "https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?auto=format&fit=crop&w=640&q=70";
-  }
-
-  const imageUrl =
-    categoryImages[item.type] ??
-    "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=900&q=80";
-
-  return imageUrl.replace("w=900&q=80", "w=640&q=70");
+/** Fallbacks are service illustrations, never business identity inferred from a name. */
+export function getVendorMedia(item: MarketplaceItem) {
+  const approved = item.media?.filter(media => media.status === "approved").sort((a,b) => {
+    const priority = (m: typeof a) => m.kind === "business_photo" ? (m.vendorAttested ? 0 : 1) : m.kind === "logo" ? 2 : 3;
+    return priority(a)-priority(b) || a.order-b.order;
+  })[0];
+  if (approved) return {src:approved.url, alt:approved.alt, illustrative:approved.kind === "illustration", label:approved.kind === "illustration" ? "Illustrative image" : approved.kind === "logo" ? "Business logo" : "Business photograph", attribution:approved.attribution};
+  const variants: Partial<Record<MarketplaceItem["type"], string[]>> = {
+    Venue:[categoryImages.Venue!,categoryImages.Rentals!],
+    DJ:[categoryImages["Live Music"]!,categoryImages["AV Production"]!],
+    "Live Music":[categoryImages["Live Music"]!,categoryImages["AV Production"]!],
+    Rentals:[categoryImages.Rentals!,categoryImages.Venue!],
+    Photography:[categoryImages.Photography!,categoryImages.Venue!],
+  };
+  const decorativeOnly = ["Security","Valet","Portable Restrooms","Character Performers","Bounce Houses","Magic","Registration"];
+  const options=variants[item.type];
+  const src = decorativeOnly.includes(item.type) ? "/marketplace-placeholder.svg" : (options ? options[Math.abs(item.id)%options.length] : categoryImages[item.type]) ?? "/marketplace-placeholder.svg";
+  return {src, alt:`Illustrative ${item.type.toLowerCase()} image, not a photograph of ${item.name}`, illustrative:true, label:item.databaseSource === false ? "Demo illustration" : "Service illustration", attribution:null};
 }
+export function getVendorImage(item: MarketplaceItem) { return getVendorMedia(item).src; }

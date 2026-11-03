@@ -1,4 +1,6 @@
 "use client";
+import {createRoot,type Root} from "react-dom/client";
+import {BusinessStatusBadge} from "@/app/components/BusinessStatusBadge";
 import { listingPresentation } from "@/lib/marketplace/listing-state";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -302,7 +304,7 @@ export function MarketplaceMap({
         onSelectItem(pin.item);
         popupRef.current
           ?.setLngLat([pin.item.coordinates.lng, pin.item.coordinates.lat])
-          .setHTML(getPopupHtml(pin.item))
+          .setDOMContent(getPopupContent(pin.item, popupRef.current!))
           .addTo(map);
       });
 
@@ -354,7 +356,7 @@ export function MarketplaceMap({
 
     popupRef.current
       ?.setLngLat([selectedPin.item.coordinates.lng, selectedPin.item.coordinates.lat])
-      .setHTML(getPopupHtml(selectedPin.item))
+      .setDOMContent(getPopupContent(selectedPin.item, popupRef.current!))
       .addTo(map);
     const point: [number, number] = [
       selectedPin.item.coordinates.lng,
@@ -657,6 +659,16 @@ function createEventMarker() {
   return marker;
 }
 
+const badgeRoots=new WeakMap<mapboxgl.Popup,Root>();
+const badgeCleanup=new WeakSet<mapboxgl.Popup>();
+function getPopupContent(item:MarketplaceItem,popup:mapboxgl.Popup){
+ badgeRoots.get(popup)?.unmount();
+ const element=document.createElement("div");element.innerHTML=getPopupHtml(item);
+ element.style.setProperty("--hub-text","#222a38");element.style.setProperty("--hub-accent","#23334e");
+ const target=element.querySelector('[data-business-status]')!;const root=createRoot(target);root.render(<BusinessStatusBadge item={item}/>);badgeRoots.set(popup,root);
+ if(!badgeCleanup.has(popup)){popup.on('close',()=>{badgeRoots.get(popup)?.unmount();badgeRoots.delete(popup);});badgeCleanup.add(popup);}
+ return element;
+}
 function getPopupHtml(item: MarketplaceItem) {
   return `
     <div style="font-family: Arial, Helvetica, sans-serif; width: 292px; overflow: hidden; border-radius: 22px; background: #fff;">
@@ -673,7 +685,7 @@ function getPopupHtml(item: MarketplaceItem) {
           <p style="margin: 0; font-size: 15px; line-height: 1.25; font-weight: 800; color: #0D1321;">${escapeHtml(
             item.name,
           )}</p>
-          <span style="font-size:12px;color:#555">${escapeHtml(listingPresentation(item).label)}${item.databaseSource === false ? " · Illustrative location" : ""}</span>
+          <span style="font-size:12px;color:#555"><span data-business-status></span>${item.databaseSource === false ? " · Illustrative location" : ""}</span>
         </div>
         <p style="margin: 7px 0 0; font-size: 13px; line-height: 1.45; color: #666;">${escapeHtml(
           item.location,

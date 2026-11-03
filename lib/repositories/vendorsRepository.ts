@@ -294,6 +294,7 @@ export async function uploadVendorPhoto(
   supabase: ArivvioSupabaseClient,
   input: {
     file: File;
+    altText: string;
     sortOrder: number;
     vendorId: string;
   },
@@ -319,6 +320,8 @@ export async function uploadVendorPhoto(
     .from("vendor_photos")
     .insert({
       image_url: publicUrl,
+      rights_basis: "Vendor attests ownership or permission to publish",
+      alt_text: input.altText.trim(),
       sort_order: input.sortOrder,
       storage_path: storagePath,
       vendor_id: input.vendorId,
