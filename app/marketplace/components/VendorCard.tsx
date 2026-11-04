@@ -67,7 +67,7 @@ function VendorCardComponent({
           src={imageUrl}
           alt={media.alt}
           sizes="(max-width: 768px) 74vw, 326px"
-          className="object-cover transition duration-500 hover:scale-105"
+          className={media.label === "Business logo" ? "object-contain p-5 ui-surface" : "object-cover transition duration-500 hover:scale-105"}
         />
         {media.illustrative&&<span className="absolute bottom-2 right-2 rounded ui-surface px-2 py-1 text-[10px]">{media.label}</span>}
         {isSelected && <span className="absolute left-3 top-3 rounded-md ui-primary px-3 py-1 text-xs font-semibold">Selected</span>}

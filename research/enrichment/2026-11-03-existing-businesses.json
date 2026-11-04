@@ -1,0 +1,1036 @@
+[
+  {
+    "business_id": "4ec18ba0-a2a2-4ec1-b7f0-67b1372270a0",
+    "business_name": "Scooter's Jungle",
+    "branch": "El Segundo / South Bay",
+    "identity": {
+      "website_url": "https://scootersjungle.com/el-segundo/",
+      "service_area_city": "El Segundo",
+      "base_address": "606 Hawaii Street, El Segundo, CA 90245"
+    },
+    "before": {
+      "description": "El Segundo location offering private children's birthday parties, open play and camps. This listing represents the South Bay location only. Contact ARIVVIO to ask about your event."
+    },
+    "after": {
+      "description": "Private indoor birthday venue in El Segundo with inflatable slides, obstacle courses, a zipline and sports games. Party packages include staffed play and dining time, with food options prepared on site. This profile covers only the El Segundo / South Bay location."
+    },
+    "services": [
+      {
+        "id": "1c2f0f22-4d9e-459a-957c-a828fd11ac59",
+        "category": "Venue",
+        "before": {
+          "description": "El Segundo location offering private children's birthday parties, open play and camps. This listing represents the South Bay location only. Contact ARIVVIO to ask about your event."
+        },
+        "after": {
+          "description": "Private indoor birthday venue in El Segundo with inflatable slides, obstacle courses, a zipline and sports games. Party packages include staffed play and dining time, with food options prepared on site. This profile covers only the El Segundo / South Bay location."
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://scootersjungle.com/el-segundo/",
+        "type": "official website",
+        "facts": [
+          "description"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://scootersjungle.com/el-segundo/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [
+      "Deck includes Valencia and other branches. Rejected Valencia phone and multi-location overwrite. Only El Segundo facts applied."
+    ],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate"
+    ]
+  },
+  {
+    "business_id": "b07100d6-3674-4e89-aa9b-b1989b703bf2",
+    "business_name": "The Ebell of Los Angeles",
+    "branch": "Los Angeles campus",
+    "identity": {
+      "website_url": "https://www.ebellofla.org/",
+      "service_area_city": "Los Angeles",
+      "base_address": "743 S Lucerne Blvd, Los Angeles, CA 90005"
+    },
+    "before": {
+      "description": "Los Angeles cultural campus that hosts weddings, gatherings and private events. The public contact address is on South Lucerne Boulevard. Event arrangements require confirmation with the venue."
+    },
+    "after": {
+      "description": "Historic Los Angeles venue with wedding spaces and an on-site cuisine and mixology team. The Ebell's official events site provides wedding examples and planning information for its Los Angeles campus."
+    },
+    "services": [
+      {
+        "id": "3644af8b-0216-4c63-a183-6d41d9050925",
+        "category": "Venue",
+        "before": {
+          "description": "Los Angeles cultural campus that hosts weddings, gatherings and private events. The public contact address is on South Lucerne Boulevard. Event arrangements require confirmation with the venue."
+        },
+        "after": {
+          "description": "Historic Los Angeles venue with wedding spaces and an on-site cuisine and mixology team. The Ebell's official events site provides wedding examples and planning information for its Los Angeles campus."
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://ebellevents.com/",
+        "type": "official website",
+        "facts": [
+          "description"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://ebellevents.com/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [
+      "Deck hours, email and theatre capacity not imported without specific current source confirmation. Original organization website retained, event site linked separately."
+    ],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate"
+    ]
+  },
+  {
+    "business_id": "66ee52f9-1eaa-4102-bcd1-252ea58f6cb7",
+    "business_name": "NOOR",
+    "branch": "Pasadena / The PASEO",
+    "identity": {
+      "website_url": "https://noorevents.com/",
+      "service_area_city": "Pasadena",
+      "base_address": "300 East Colorado Boulevard Suite 200, Pasadena, CA 91101"
+    },
+    "before": {
+      "description": "Pasadena event venue at The PASEO with spaces for weddings, corporate events and celebrations. Site tours are by appointment. Pricing, dates and event arrangements require confirmation."
+    },
+    "after": {
+      "description": "Pasadena event venue at The PASEO with Sofia and Ella ballrooms, a balcony and an outdoor terrace. Offers in-house catering and event packages for weddings, corporate gatherings, birthdays and fundraisers. Room choice and package details require confirmation."
+    },
+    "services": [
+      {
+        "id": "5623dda6-45ba-403d-8ba7-219f6b39984d",
+        "category": "Venue",
+        "before": {
+          "description": "Pasadena event venue at The PASEO with spaces for weddings, corporate events and celebrations. Site tours are by appointment. Pricing, dates and event arrangements require confirmation.",
+          "event_types_supported": [
+            "Wedding",
+            "Corporate",
+            "Birthday"
+          ]
+        },
+        "after": {
+          "description": "Pasadena event venue at The PASEO with Sofia and Ella ballrooms, a balcony and an outdoor terrace. Offers in-house catering and event packages for weddings, corporate gatherings, birthdays and fundraisers. Room choice and package details require confirmation.",
+          "event_types_supported": [
+            "Wedding",
+            "Corporate",
+            "Birthday",
+            "Private Party",
+            "Fundraiser",
+            "Baby Shower",
+            "Graduation"
+          ]
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://noorevents.com/",
+        "type": "official website",
+        "facts": [
+          "description",
+          "event_types_supported"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://noorevents.com/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [
+      "Catering described as in-house venue service. No separate off-site catering listing inferred. Hours and capacities omitted pending operational review."
+    ],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate"
+    ]
+  },
+  {
+    "business_id": "780f0f89-1a15-4db2-ac8d-b585ddda363b",
+    "business_name": "Mark’s Garden",
+    "branch": null,
+    "identity": {
+      "website_url": "https://marksgarden.com/",
+      "service_area_city": "Sherman Oaks",
+      "base_address": "13838 Ventura Blvd., Sherman Oaks, CA 91423"
+    },
+    "before": {
+      "description": "Sherman Oaks floral business providing arrangements and floral design for weddings and other events."
+    },
+    "after": {
+      "description": "Sherman Oaks floral design business creating wedding flowers, event installations and arrangements for intimate dinners. Its official lookbooks show botanical, whimsical and other floral approaches."
+    },
+    "services": [
+      {
+        "id": "ff9d7898-7331-423f-9b62-496f52fcda90",
+        "category": "Florals",
+        "before": {
+          "description": "Sherman Oaks floral business providing arrangements and floral design for weddings and other events."
+        },
+        "after": {
+          "description": "Sherman Oaks floral design business creating wedding flowers, event installations and arrangements for intimate dinners. Its official lookbooks show botanical, whimsical and other floral approaches."
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://marksgarden.com/",
+        "type": "official website",
+        "facts": [
+          "description"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://marksgarden.com/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate"
+    ]
+  },
+  {
+    "business_id": "c3a84c45-eb7e-49b1-8306-b7744fcd056e",
+    "business_name": "VOX DJs",
+    "branch": "Los Angeles office",
+    "identity": {
+      "website_url": "https://voxdjs.com/",
+      "service_area_city": "Torrance",
+      "base_address": "2909 Oregon Court, Suite B2, Torrance, CA 90503"
+    },
+    "before": {
+      "description": "DJ and MC services from a Torrance office, with live music and photo booth options for events.",
+      "email": null
+    },
+    "after": {
+      "description": "DJ and MC team with a Los Angeles office in Torrance. Services include event music, live musicians, photo booths, lighting and audiovisual options for weddings, corporate events, birthdays and private parties.",
+      "email": "booking@voxdjs.com"
+    },
+    "services": [
+      {
+        "id": "04aea759-fdaa-42a6-95ff-fd4436e1b361",
+        "category": "DJ",
+        "before": {
+          "description": "DJ and MC services from a Torrance office, with live music and photo booth options for events."
+        },
+        "after": {
+          "description": "DJ and MC services for weddings, corporate gatherings, birthdays and private parties. Lighting and audiovisual options can be discussed with the Torrance office."
+        }
+      },
+      {
+        "id": "73e2b290-bf0e-4764-a038-37b487f0b39e",
+        "category": "Live Music",
+        "before": {
+          "description": "DJ and MC services from a Torrance office, with live music and photo booth options for events."
+        },
+        "after": {
+          "description": "Live music options alongside VOX DJs event services. Ensemble, repertoire and performance format require confirmation with the business."
+        }
+      },
+      {
+        "id": "dd23dad6-f2f8-43bc-803b-fa833e1b8266",
+        "category": "Photo Booth",
+        "before": {
+          "description": "DJ and MC services from a Torrance office, with live music and photo booth options for events."
+        },
+        "after": {
+          "description": "Photo booth options offered through VOX DJs. Booth format, backdrop, duration and delivery details require confirmation."
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://voxdjs.com/",
+        "type": "official website",
+        "facts": [
+          "description"
+        ],
+        "reviewed_on": "2026-11-03"
+      },
+      {
+        "url": "https://voxdjs.com/",
+        "type": "official website",
+        "facts": [
+          "email"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://voxdjs.com/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [
+      "Retain 310-372-2222: official contact page confirms Torrance branch. Homepage 877 number is general booking, not a replacement branch number."
+    ],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate"
+    ]
+  },
+  {
+    "business_id": "b070dab2-1011-415d-b3b0-b8bff4238516",
+    "business_name": "Heirloom LA",
+    "branch": null,
+    "identity": {
+      "website_url": "https://heirloomla.com/",
+      "service_area_city": "Los Angeles",
+      "base_address": "3232 ½ N Figueroa Street, Los Angeles, CA 90065"
+    },
+    "before": {
+      "description": "Los Angeles catering business accepting full-service event and pickup or drop-off inquiries.",
+      "email": null
+    },
+    "after": {
+      "description": "Los Angeles catering kitchen offering full-service events and separate pickup or drop-off inquiries. Its event work includes buffets, family-style meals and plated dinners, with menus developed for the occasion.",
+      "email": "info@heirloomla.com"
+    },
+    "services": [
+      {
+        "id": "e2042368-d98c-4d0e-a712-aacbf595c80b",
+        "category": "Catering",
+        "before": {
+          "description": "Los Angeles catering business accepting full-service event and pickup or drop-off inquiries."
+        },
+        "after": {
+          "description": "Los Angeles catering kitchen offering full-service events and separate pickup or drop-off inquiries. Its event work includes buffets, family-style meals and plated dinners, with menus developed for the occasion."
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://heirloomla.com/",
+        "type": "official website",
+        "facts": [
+          "description"
+        ],
+        "reviewed_on": "2026-11-03"
+      },
+      {
+        "url": "https://heirloomla.com/contact-us",
+        "type": "official website",
+        "facts": [
+          "email"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://heirloomla.com/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate"
+    ]
+  },
+  {
+    "business_id": "86877207-3104-45f6-8f78-2392a9d12aca",
+    "business_name": "Town & Country Event Rentals",
+    "branch": "Los Angeles HQ",
+    "identity": {
+      "website_url": "https://www.townandcountry.com/",
+      "service_area_city": "Van Nuys",
+      "base_address": "7725 Airport Business Park Way, Van Nuys, CA 91406"
+    },
+    "before": {
+      "description": "Event rentals from a Van Nuys design center, including furniture, tabletop pieces, tents and event equipment."
+    },
+    "after": {
+      "description": "Event rental company with a Los Angeles design center in Van Nuys. Its catalog includes dining furniture, lounge seating, linens, tableware, tents, staging and event equipment. The official inspiration gallery shows wedding, corporate and outdoor event setups."
+    },
+    "services": [
+      {
+        "id": "2a20b2a6-ba08-4e4a-abc6-d2adab678698",
+        "category": "Rentals",
+        "before": {
+          "description": "Event rentals from a Van Nuys design center, including furniture, tabletop pieces, tents and event equipment.",
+          "event_types_supported": []
+        },
+        "after": {
+          "description": "Event rental company with a Los Angeles design center in Van Nuys. Its catalog includes dining furniture, lounge seating, linens, tableware, tents, staging and event equipment. The official inspiration gallery shows wedding, corporate and outdoor event setups.",
+          "event_types_supported": [
+            "Wedding",
+            "Corporate",
+            "Private Party"
+          ]
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://www.townandcountry.com/inspirational-galleries",
+        "type": "official website",
+        "facts": [
+          "description",
+          "event_types_supported"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://www.townandcountry.com/inspirational-galleries",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate"
+    ]
+  },
+  {
+    "business_id": "1e932018-910d-40d1-bf22-ff5e18b075c5",
+    "business_name": "Lark Cake Shop",
+    "branch": "Silver Lake",
+    "identity": {
+      "website_url": "https://larkcakeshop.com/",
+      "service_area_city": "Los Angeles",
+      "base_address": null
+    },
+    "before": {
+      "description": "Silver Lake cake shop offering cakes, cupcakes and custom orders, with wedding cake inquiries available."
+    },
+    "after": {
+      "description": "Silver Lake bakery offering cakes, cupcakes, custom orders and wedding cakes. Customers can arrange pickup or delivery through the bakery. Design, serving size and fulfillment details should be confirmed for each order."
+    },
+    "services": [
+      {
+        "id": "894c530c-47c5-433b-9950-7087976515cc",
+        "category": "Cake & Desserts",
+        "before": {
+          "description": "Silver Lake cake shop offering cakes, cupcakes and custom orders, with wedding cake inquiries available."
+        },
+        "after": {
+          "description": "Silver Lake bakery offering cakes, cupcakes, custom orders and wedding cakes. Customers can arrange pickup or delivery through the bakery. Design, serving size and fulfillment details should be confirmed for each order."
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://larkcakeshop.com/pages/contact",
+        "type": "official website",
+        "facts": [
+          "description"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://larkcakeshop.com/pages/contact",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate",
+      "Street address not established, retain operating city/service area"
+    ]
+  },
+  {
+    "business_id": "67c190c7-9556-45d1-a3f0-e3fa3806bd44",
+    "business_name": "Rent For Event",
+    "branch": "West Coast office",
+    "identity": {
+      "website_url": "https://rentforevent.com/",
+      "service_area_city": "Los Angeles",
+      "base_address": "3370 N. San Fernando Road, Ste 104, Los Angeles, CA 90065"
+    },
+    "before": {
+      "description": "Los Angeles office for event audiovisual production and equipment rentals, including sound, lighting and video systems."
+    },
+    "after": {
+      "description": "Los Angeles audiovisual production and equipment rental company. Options include sound systems, microphones, LED video walls, projection, lighting and staging, with production support for live, corporate, virtual and hybrid events."
+    },
+    "services": [
+      {
+        "id": "5dcdb08d-fe54-46d9-ba85-59263cdfa03d",
+        "category": "AV Production",
+        "before": {
+          "description": "Los Angeles office for event audiovisual production and equipment rentals, including sound, lighting and video systems.",
+          "event_types_supported": []
+        },
+        "after": {
+          "description": "Production support for live, corporate, virtual and hybrid events, including sound, lighting, video and staging. Technical requirements and staffing are quoted for each event.",
+          "event_types_supported": [
+            "Corporate"
+          ]
+        }
+      },
+      {
+        "id": "16f8cf16-8b69-41f2-a47f-7afef7ff674d",
+        "category": "Rentals",
+        "before": {
+          "description": "Los Angeles office for event audiovisual production and equipment rentals, including sound, lighting and video systems.",
+          "event_types_supported": []
+        },
+        "after": {
+          "description": "Audiovisual rentals including microphones, speakers, LED walls, projectors, lighting and stages. Equipment selection, delivery and setup must be confirmed.",
+          "event_types_supported": [
+            "Corporate"
+          ]
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://rentforevent.com/",
+        "type": "official website",
+        "facts": [
+          "description",
+          "event_types_supported"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://rentforevent.com/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate"
+    ]
+  },
+  {
+    "business_id": "d74bd945-44ca-4366-98a8-81c9a3c553b5",
+    "business_name": "Premier Staff",
+    "branch": "Los Angeles office",
+    "identity": {
+      "website_url": "https://premierstaff.com/",
+      "service_area_city": "West Hollywood",
+      "base_address": "9255 Sunset Blvd., #1100, West Hollywood, CA 90069"
+    },
+    "before": {
+      "description": "Event staffing business with a West Hollywood office and services for Los Angeles events.",
+      "email": null
+    },
+    "after": {
+      "description": "Event staffing company with a West Hollywood office serving Los Angeles. Roles include check-in teams, hospitality staff, servers, bartenders, brand ambassadors and production assistants for corporate events, weddings and private gatherings.",
+      "email": "info@premierstaff.com"
+    },
+    "services": [
+      {
+        "id": "08926ed1-1ff9-403a-83b0-3efce5ad657c",
+        "category": "Staffing",
+        "before": {
+          "description": "Event staffing business with a West Hollywood office and services for Los Angeles events.",
+          "event_types_supported": []
+        },
+        "after": {
+          "description": "Event staffing company with a West Hollywood office serving Los Angeles. Roles include check-in teams, hospitality staff, servers, bartenders, brand ambassadors and production assistants for corporate events, weddings and private gatherings.",
+          "event_types_supported": [
+            "Wedding",
+            "Corporate",
+            "Private Party",
+            "Convention",
+            "Graduation"
+          ]
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://premierstaff.com/",
+        "type": "official website",
+        "facts": [
+          "description",
+          "event_types_supported"
+        ],
+        "reviewed_on": "2026-11-03"
+      },
+      {
+        "url": "https://premierstaff.com/",
+        "type": "official website",
+        "facts": [
+          "email"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://premierstaff.com/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [
+      "Official locations page confirms the 212 number for West Hollywood. Retained rather than replacing based on area code."
+    ],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate"
+    ]
+  },
+  {
+    "business_id": "7f4f425b-fe78-472f-938a-d9d3b267aa60",
+    "business_name": "Porto’s Bakery",
+    "branch": "Burbank",
+    "identity": {
+      "website_url": "https://www.portosbakery.com/",
+      "service_area_city": "Burbank",
+      "base_address": "3614 W. Magnolia Blvd., Burbank, CA 91505"
+    },
+    "before": {
+      "description": "Burbank branch of Porto’s Bakery, offering cakes and bakery items for pickup.",
+      "phone": null
+    },
+    "after": {
+      "description": "Burbank branch of Porto’s Bakery, offering cakes, pastries and bakery items with location-specific pickup ordering. Select the Burbank branch when arranging an order. Cake selection and pickup times depend on the bakery’s current menu and order capacity.",
+      "phone": "818-846-9100"
+    },
+    "services": [
+      {
+        "id": "81311fc7-1e2e-417d-8a5d-29f5c3ea6b3d",
+        "category": "Cake & Desserts",
+        "before": {
+          "description": "Burbank branch of Porto’s Bakery, offering cakes and bakery items for pickup."
+        },
+        "after": {
+          "description": "Burbank branch of Porto’s Bakery, offering cakes, pastries and bakery items with location-specific pickup ordering. Select the Burbank branch when arranging an order. Cake selection and pickup times depend on the bakery’s current menu and order capacity."
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://www.portosbakery.com/locations/",
+        "type": "official website",
+        "facts": [
+          "description"
+        ],
+        "reviewed_on": "2026-11-03"
+      },
+      {
+        "url": "https://www.portosbakery.com/locations/",
+        "type": "official website",
+        "facts": [
+          "phone"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://www.portosbakery.com/locations/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate"
+    ]
+  },
+  {
+    "business_id": "8e1990fb-fff5-4a53-aa47-a76dfa567f94",
+    "business_name": "Porto’s Bakery",
+    "branch": "Glendale",
+    "identity": {
+      "website_url": "https://www.portosbakery.com/",
+      "service_area_city": "Glendale",
+      "base_address": "315 N. Brand Blvd., Glendale, CA 91203"
+    },
+    "before": {
+      "description": "Glendale branch of Porto’s Bakery, offering cakes and bakery items for pickup.",
+      "phone": null
+    },
+    "after": {
+      "description": "Glendale branch of Porto’s Bakery, offering cakes, pastries and bakery items with location-specific pickup ordering. Select the Glendale branch when arranging an order. Cake selection and pickup times depend on the bakery’s current menu and order capacity.",
+      "phone": "818-956-5996"
+    },
+    "services": [
+      {
+        "id": "28cf4417-f673-47c5-89a3-f5cad51b2c8f",
+        "category": "Cake & Desserts",
+        "before": {
+          "description": "Glendale branch of Porto’s Bakery, offering cakes and bakery items for pickup."
+        },
+        "after": {
+          "description": "Glendale branch of Porto’s Bakery, offering cakes, pastries and bakery items with location-specific pickup ordering. Select the Glendale branch when arranging an order. Cake selection and pickup times depend on the bakery’s current menu and order capacity."
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://www.portosbakery.com/locations/",
+        "type": "official website",
+        "facts": [
+          "description"
+        ],
+        "reviewed_on": "2026-11-03"
+      },
+      {
+        "url": "https://www.portosbakery.com/locations/",
+        "type": "official website",
+        "facts": [
+          "phone"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://www.portosbakery.com/locations/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate"
+    ]
+  },
+  {
+    "business_id": "c3b9b330-9259-4d19-84ca-a1e40c445d80",
+    "business_name": "Mik Milman",
+    "branch": null,
+    "identity": {
+      "website_url": "https://mikmilman.com/",
+      "service_area_city": "Los Angeles",
+      "base_address": null
+    },
+    "before": {
+      "description": "Los Angeles photographer providing event and corporate photography.",
+      "email": null
+    },
+    "after": {
+      "description": "Los Angeles event photographer covering corporate gatherings and brand events. His portfolio emphasizes people, event atmosphere and branded details, with coverage planned around the client’s event and intended image use.",
+      "email": "mikmilman@gmail.com"
+    },
+    "services": [
+      {
+        "id": "0a0fbf3a-6559-4621-9c7e-841c93082792",
+        "category": "Photography",
+        "before": {
+          "description": "Los Angeles photographer providing event and corporate photography."
+        },
+        "after": {
+          "description": "Los Angeles event photographer covering corporate gatherings and brand events. His portfolio emphasizes people, event atmosphere and branded details, with coverage planned around the client’s event and intended image use."
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://mikmilman.com/",
+        "type": "official website",
+        "facts": [
+          "description"
+        ],
+        "reviewed_on": "2026-11-03"
+      },
+      {
+        "url": "https://mikmilman.com/",
+        "type": "official website",
+        "facts": [
+          "email"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://mikmilman.com/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate",
+      "Street address not established, retain operating city/service area"
+    ]
+  },
+  {
+    "business_id": "f92051ff-5538-44d3-b2e8-fc54b9a5fba2",
+    "business_name": "AGS Protect",
+    "branch": null,
+    "identity": {
+      "website_url": "https://www.agsprotect.com/",
+      "service_area_city": "Los Angeles",
+      "base_address": null
+    },
+    "before": {
+      "description": "Security provider offering event security personnel and coordination across Los Angeles County and Southern California."
+    },
+    "after": {
+      "description": "Event security provider serving Los Angeles and Orange County. Services include entry and crowd-flow support, talent escorts, security deployment planning and on-site supervision. Staffing and coverage are scoped for each event."
+    },
+    "services": [
+      {
+        "id": "ce5511aa-daf9-4b2a-9b9d-949850a9ba4f",
+        "category": "Security",
+        "before": {
+          "description": "Security provider offering event security personnel and coordination across Los Angeles County and Southern California."
+        },
+        "after": {
+          "description": "Event security provider serving Los Angeles and Orange County. Services include entry and crowd-flow support, talent escorts, security deployment planning and on-site supervision. Staffing and coverage are scoped for each event."
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://www.agsprotect.com/solutions/event-security",
+        "type": "official website",
+        "facts": [
+          "description"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://www.agsprotect.com/solutions/event-security",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate",
+      "Street address not established, retain operating city/service area",
+      "Public phone not established"
+    ]
+  },
+  {
+    "business_id": "4fa991a4-b29c-4080-b5a7-e0193b1209cf",
+    "business_name": "KLS Worldwide Chauffeured Services",
+    "branch": null,
+    "identity": {
+      "website_url": "https://klsworldwide.com/",
+      "service_area_city": "Los Angeles",
+      "base_address": null
+    },
+    "before": {
+      "description": "Chauffeured transportation provider serving Los Angeles, with event support and corporate travel services.",
+      "email": null
+    },
+    "after": {
+      "description": "Chauffeured transportation provider serving Los Angeles with event support, corporate travel and production logistics. Its fleet includes sedans, SUVs and Sprinter vans. Vehicle choice, passenger needs and routing require a provider quote.",
+      "email": "info@klsworldwide.com"
+    },
+    "services": [
+      {
+        "id": "7bc4dd8c-53ec-495b-81f0-4e5b7f569891",
+        "category": "Transportation",
+        "before": {
+          "description": "Chauffeured transportation provider serving Los Angeles, with event support and corporate travel services."
+        },
+        "after": {
+          "description": "Chauffeured transportation provider serving Los Angeles with event support, corporate travel and production logistics. Its fleet includes sedans, SUVs and Sprinter vans. Vehicle choice, passenger needs and routing require a provider quote."
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://klsworldwide.com/",
+        "type": "official website",
+        "facts": [
+          "description"
+        ],
+        "reviewed_on": "2026-11-03"
+      },
+      {
+        "url": "https://klsworldwide.com/",
+        "type": "official website",
+        "facts": [
+          "email"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://klsworldwide.com/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate",
+      "Street address not established, retain operating city/service area"
+    ]
+  },
+  {
+    "business_id": "2bffb78a-ba0e-4636-9ed8-81f30abb0954",
+    "business_name": "The Lou Effect",
+    "branch": null,
+    "identity": {
+      "website_url": "https://www.theloueffect.com/",
+      "service_area_city": "Los Angeles",
+      "base_address": null
+    },
+    "before": {
+      "description": "Event photography and video production for Los Angeles corporate events, conferences and special events.",
+      "phone": null,
+      "email": null
+    },
+    "after": {
+      "description": "Los Angeles photography and video team covering conferences, trade shows, brand activations, galas and weddings. Offers coordinated photo and video coverage, with deliverables and turnaround arranged for each event.",
+      "phone": "310-878-7433",
+      "email": "theloueffectmedia@gmail.com"
+    },
+    "services": [
+      {
+        "id": "f4c71d09-80b9-4bd3-b987-c0c9a0312531",
+        "category": "Photography",
+        "before": {
+          "description": "Event photography and video production for Los Angeles corporate events, conferences and special events.",
+          "event_types_supported": [
+            "Corporate",
+            "Convention"
+          ]
+        },
+        "after": {
+          "description": "Los Angeles photography and video team covering conferences, trade shows, brand activations, galas and weddings. Offers coordinated photo and video coverage, with deliverables and turnaround arranged for each event.",
+          "event_types_supported": [
+            "Corporate",
+            "Convention",
+            "Wedding",
+            "Private Party",
+            "Fundraiser"
+          ]
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://www.theloueffect.com/los-angeles-event-photographer/",
+        "type": "official website",
+        "facts": [
+          "description",
+          "event_types_supported"
+        ],
+        "reviewed_on": "2026-11-03"
+      },
+      {
+        "url": "https://www.theloueffect.com/contact/",
+        "type": "official website",
+        "facts": [
+          "phone",
+          "email"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://www.theloueffect.com/los-angeles-event-photographer/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate",
+      "Street address not established, retain operating city/service area"
+    ]
+  },
+  {
+    "business_id": "6f54791a-0ea2-4061-9abe-1aedd577daa3",
+    "business_name": "Jacob Martinez",
+    "branch": null,
+    "identity": {
+      "website_url": "https://jacobmartinez.com/",
+      "service_area_city": "Los Angeles",
+      "base_address": null
+    },
+    "before": {
+      "description": "Los Angeles magician and mentalist offering strolling magic and stage shows for private and corporate events.",
+      "phone": null,
+      "email": null
+    },
+    "after": {
+      "description": "Los Angeles magician and mentalist offering close-up strolling performances and seated stage shows. Formats suit cocktail hours, wedding receptions, private parties and corporate gatherings, with the performance tailored to the room and schedule.",
+      "phone": "323-286-1457",
+      "email": "jacob@jacobmartinez.com"
+    },
+    "services": [
+      {
+        "id": "568f5592-601a-4a48-a49d-a623fb5d9091",
+        "category": "Magic",
+        "before": {
+          "description": "Los Angeles magician and mentalist offering strolling magic and stage shows for private and corporate events."
+        },
+        "after": {
+          "description": "Los Angeles magician and mentalist offering close-up strolling performances and seated stage shows. Formats suit cocktail hours, wedding receptions, private parties and corporate gatherings, with the performance tailored to the room and schedule."
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://jacobmartinez.com/",
+        "type": "official website",
+        "facts": [
+          "description"
+        ],
+        "reviewed_on": "2026-11-03"
+      },
+      {
+        "url": "https://jacobmartinez.com/",
+        "type": "official website",
+        "facts": [
+          "phone",
+          "email"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://jacobmartinez.com/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate",
+      "Street address not established, retain operating city/service area"
+    ]
+  },
+  {
+    "business_id": "8f70f96e-e3d4-4c00-96f4-3ff13abeafae",
+    "business_name": "Clover String Quartet",
+    "branch": null,
+    "identity": {
+      "website_url": "https://cloverstringquartet.com/",
+      "service_area_city": "Los Angeles",
+      "base_address": null
+    },
+    "before": {
+      "description": "Los Angeles string quartet and trio performing at weddings, private parties and corporate events across Southern California.",
+      "email": null
+    },
+    "after": {
+      "description": "Los Angeles string quartet and trio performing classical pieces and contemporary arrangements. Serves weddings, private parties, corporate events and fundraisers across Southern California, including Pasadena, Glendale and the San Fernando Valley.",
+      "email": "cloverquartet@gmail.com"
+    },
+    "services": [
+      {
+        "id": "89b9d680-97a0-4f7d-8fe7-4142c7052190",
+        "category": "Live Music",
+        "before": {
+          "description": "Los Angeles string quartet and trio performing at weddings, private parties and corporate events across Southern California."
+        },
+        "after": {
+          "description": "Los Angeles string quartet and trio performing classical pieces and contemporary arrangements. Serves weddings, private parties, corporate events and fundraisers across Southern California, including Pasadena, Glendale and the San Fernando Valley."
+        }
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://cloverstringquartet.com/",
+        "type": "official website",
+        "facts": [
+          "description"
+        ],
+        "reviewed_on": "2026-11-03"
+      },
+      {
+        "url": "https://cloverstringquartet.com/",
+        "type": "official website",
+        "facts": [
+          "email"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://cloverstringquartet.com/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate",
+      "Street address not established, retain operating city/service area"
+    ]
+  }
+]

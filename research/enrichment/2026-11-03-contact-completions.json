@@ -1,0 +1,144 @@
+[
+  {
+    "business_id": "7f4f425b-fe78-472f-938a-d9d3b267aa60",
+    "business_name": "Porto’s Bakery",
+    "branch": "Burbank",
+    "identity": {
+      "website_url": "https://www.portosbakery.com/",
+      "service_area_city": "Burbank",
+      "base_address": "3614 W. Magnolia Blvd., Burbank, CA 91505"
+    },
+    "before": {
+      "phone": null
+    },
+    "after": {
+      "phone": "818-846-9100"
+    },
+    "services": [],
+    "sources": [
+      {
+        "url": "https://www.portosbakery.com/locations/",
+        "type": "official website",
+        "facts": [
+          "phone"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://www.portosbakery.com/locations/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate"
+    ]
+  },
+  {
+    "business_id": "8e1990fb-fff5-4a53-aa47-a76dfa567f94",
+    "business_name": "Porto’s Bakery",
+    "branch": "Glendale",
+    "identity": {
+      "website_url": "https://www.portosbakery.com/",
+      "service_area_city": "Glendale",
+      "base_address": "315 N. Brand Blvd., Glendale, CA 91203"
+    },
+    "before": {
+      "phone": null
+    },
+    "after": {
+      "phone": "818-956-5996"
+    },
+    "services": [],
+    "sources": [
+      {
+        "url": "https://www.portosbakery.com/locations/",
+        "type": "official website",
+        "facts": [
+          "phone"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://www.portosbakery.com/locations/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate"
+    ]
+  },
+  {
+    "business_id": "2bffb78a-ba0e-4636-9ed8-81f30abb0954",
+    "business_name": "The Lou Effect",
+    "branch": null,
+    "identity": {
+      "website_url": "https://www.theloueffect.com/",
+      "service_area_city": "Los Angeles",
+      "base_address": null
+    },
+    "before": {
+      "phone": null
+    },
+    "after": {
+      "phone": "310-878-7433"
+    },
+    "services": [],
+    "sources": [
+      {
+        "url": "https://www.theloueffect.com/contact/",
+        "type": "official website",
+        "facts": [
+          "phone"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://www.theloueffect.com/los-angeles-event-photographer/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate",
+      "Street address not established, retain operating city/service area"
+    ]
+  },
+  {
+    "business_id": "6f54791a-0ea2-4061-9abe-1aedd577daa3",
+    "business_name": "Jacob Martinez",
+    "branch": null,
+    "identity": {
+      "website_url": "https://jacobmartinez.com/",
+      "service_area_city": "Los Angeles",
+      "base_address": null
+    },
+    "before": {
+      "phone": null
+    },
+    "after": {
+      "phone": "323-286-1457"
+    },
+    "services": [],
+    "sources": [
+      {
+        "url": "https://jacobmartinez.com/",
+        "type": "official website",
+        "facts": [
+          "phone"
+        ],
+        "reviewed_on": "2026-11-03"
+      }
+    ],
+    "official_work_url": "https://jacobmartinez.com/",
+    "media_status": "permission_required",
+    "conflicts_resolved": [],
+    "missing": [
+      "Documented logo/photo reuse permission",
+      "Confirmed event pricing and availability",
+      "Confirmed map coordinates where appropriate",
+      "Street address not established, retain operating city/service area"
+    ]
+  }
+]

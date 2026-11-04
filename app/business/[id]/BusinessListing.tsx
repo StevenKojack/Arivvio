@@ -1,4 +1,5 @@
 "use client";
+import { OfficialBusinessWork } from "@/app/components/OfficialBusinessWork";
 import Link from "next/link";
 import {BusinessStatusBadge} from "@/app/components/BusinessStatusBadge";
 import {inquiryReturnKey} from "@/lib/acquisition/activation";
@@ -131,6 +132,7 @@ export function BusinessListing({
             {listing.location_name} {listing.service_area_city || "Service area not confirmed"} {listing.base_address}
           </p>
           {listing.website_url && /^https?:\/\//.test(listing.website_url) && <p className="mt-3"><a href={listing.website_url} target="_blank" rel="noopener noreferrer" className="underline">Official business website</a></p>}
+          <OfficialBusinessWork businessId={listing.id}/>
           {!listing.owner_id ? (
             <>
               <p className="mt-6 rounded-xl ui-soft p-4 text-sm">
