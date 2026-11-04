@@ -181,7 +181,7 @@ export function BusinessAcquisition({
   const visible = drafts.filter(
     (d) =>
       (status === "all" || d.status === status) &&
-      `${d.details.business_name} ${d.details.city} ${d.details.services.map((s) => s.category).join(" ")}`
+      `${d.details.business_name} ${d.details.city} ${(d.details.services ?? []).map((s) => s.category).join(" ")}`
         .toLowerCase()
         .includes(search.toLowerCase()),
   );
@@ -414,9 +414,9 @@ export function BusinessAcquisition({
           >
             Check existing business matches
           </button>
-          <p>{d.details.services.map((s) => s.category).join(" · ")}</p>
+          <p>{(d.details.services ?? []).map((s) => s.category).join(" · ")}</p>
           <ul className="my-2">
-            {d.details.sources.map((s, i) => (
+            {(d.details.sources ?? []).map((s, i) => (
               <li key={i}>
                 <a
                   href={s.url}
@@ -426,7 +426,7 @@ export function BusinessAcquisition({
                 >
                   {s.type}
                 </a>
-                : {s.facts.join(", ")} · researched {s.researched_on} · reviewed{" "}
+                : {(s.facts ?? []).join(", ")} · researched {s.researched_on} · reviewed{" "}
                 {s.reviewed_on}
               </li>
             ))}
