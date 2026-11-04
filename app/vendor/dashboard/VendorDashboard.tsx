@@ -329,7 +329,7 @@ export function VendorDashboard() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl"><Link href="/vendor/verification" className="hub-button mb-6">Business verification and team access</Link>
+    <div className="mx-auto max-w-7xl"><Link href="/vendor/profile" className="hub-primary mr-3">Edit Business Profile</Link><Link href="/vendor/verification" className="hub-button mb-6">Business verification and team access</Link>
       <ActivationChecklist vendors={vendors} services={services} photos={photos} availability={availability} onTab={setActiveTab}/>
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>

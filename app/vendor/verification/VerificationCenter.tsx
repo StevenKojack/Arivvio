@@ -135,7 +135,7 @@ export function VerificationCenter() {
             </section>
           ))}
           {data.businesses.map((b) => (
-            <section key={b.id} className="hub-card space-y-4 p-5">
+            <section key={b.id} className="hub-card space-y-4 p-5"><Link className="hub-button" href={"/vendor/profile?business="+b.id}>Edit Business Profile</Link>
               <h2 className="text-xl font-semibold">
                 {b.business_name} · Team access
               </h2>

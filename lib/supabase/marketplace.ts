@@ -323,6 +323,7 @@ export function mapServiceToMarketplaceItem(
     name: service.service_name || vendor.business_name,
     businessName: vendor.business_name,
     branch: vendor.location_name ?? undefined,
+    shortIntro: vendor.short_intro||undefined,
     businessSummary: vendor.description ?? undefined,
     profileSections: vendor.profile_sections,
     photoUrl: photos.find(p=>p.media_status === "approved")?.image_url ?? null,

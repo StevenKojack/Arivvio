@@ -81,7 +81,7 @@ function VendorCardComponent({
 
         </div>
         <p className="mt-3 line-clamp-2 min-h-12 text-sm leading-6 ui-muted">
-          {item.businessSummary?.split("\n")[0] || item.description || item.services.slice(0, 2).join(" · ") || matchReason}
+          {item.shortIntro || item.businessSummary?.split("\n")[0] || item.description || item.services.slice(0, 2).join(" · ") || matchReason}
         </p>
         <div className="mt-4 flex items-end justify-between gap-3">
           <div>

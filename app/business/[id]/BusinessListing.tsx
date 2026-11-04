@@ -2,7 +2,7 @@
 import { ProfileSections } from "@/app/components/ProfileSections";
 import { OfficialBusinessWork } from "@/app/components/OfficialBusinessWork";
 import { BusinessMark } from "@/app/components/BusinessMark";
-import { serviceIllustration } from "@/lib/marketplace/vendorImages";
+import { representativePhoto } from "@/lib/marketplace/vendorImages";
 import Image from "next/image";
 import type {PublicTableRow} from "@/lib/supabase/database.types";
 import Link from "next/link";
@@ -131,13 +131,13 @@ export function BusinessListing({
         </p>
       ) : (
         <>
-          {!photos.some(p=>p.media_kind==="business_photo")&&<figure className="relative mt-6 overflow-hidden rounded-2xl"><Image src={serviceIllustration(listing.category,listing.description||"")} alt="ARIVVIO service illustration" width={800} height={360} unoptimized className="aspect-[2.65] w-full object-cover"/><figcaption className="cover-caption">Service illustration</figcaption></figure>}
+          {!photos.some(p=>p.media_kind==="business_photo")&&<figure className="relative mt-6 overflow-hidden rounded-2xl"><Image src={representativePhoto(listing.category,listing.description||"")} alt="Representative event photograph" width={800} height={360} unoptimized className="aspect-[2.65] w-full object-cover"/><figcaption className="cover-caption">AI-generated representative photo</figcaption></figure>}
           <div className="mt-5 flex items-center gap-3">{!photos.some(p=>p.media_kind==="logo")&&<BusinessMark name={listing.business_name}/>}<BusinessStatusBadge item={{databaseSource:true,listingState:listing.owner_id?"claimed":"unclaimed",verificationStatus:listing.verification_status}}/></div>
           <h1 className="mt-2 text-3xl font-semibold">
             {listing.business_name}
           </h1>
           {photos.filter(p=>p.media_kind==="logo").slice(0,1).map(p=><figure key={p.id}><Image unoptimized src={p.image_url} alt={p.alt_text||"Business logo"} width={96} height={96} className="my-3 h-24 w-24 object-contain"/>{p.attribution&&<figcaption>{p.attribution}</figcaption>}</figure>)}
-          <p className="mt-3 whitespace-pre-line">{listing.description}</p><ProfileSections sections={listing.profile_sections}/>
+          {listing.short_intro&&<p className="mt-3 font-medium">{listing.short_intro}</p>}<p className="mt-3 whitespace-pre-line">{listing.description}</p><ProfileSections sections={listing.profile_sections}/>
           {(listing.email||listing.phone)&&<p className="mt-3 flex flex-wrap gap-4">{listing.phone&&<a href={"tel:"+listing.phone} className="underline">{listing.phone}</a>}{listing.email&&<a href={"mailto:"+listing.email} className="underline">{listing.email}</a>}</p>}
           {photos.some(p=>p.media_kind==="business_photo")&&<section aria-label="Business photos" className="my-4 grid grid-cols-2 gap-3">{photos.filter(p=>p.media_kind==="business_photo").map((p,i)=><figure key={p.id} className={i===0?"col-span-2":""}><Image src={p.image_url} alt={p.alt_text||"Business photo"} width={900} height={500} unoptimized className="aspect-video w-full rounded-xl object-cover"/>{p.attribution&&<figcaption>{p.attribution}</figcaption>}</figure>)}</section>}
           {services.length>0&&<details className="my-4"><summary>Services and pricing</summary>{services.map(s=><div key={s.id} className="mt-3"><strong>{s.service_name}</strong><p className="whitespace-pre-line">{s.description}</p><p>{s.pricing_type==="hourly"&&s.hourly_rate!=null?`$${s.hourly_rate} per hour`:s.base_price!=null?`$${s.base_price}${s.pricing_type==="per_guest"?" per guest":""}`:"Contact for pricing"}</p></div>)}</details>}

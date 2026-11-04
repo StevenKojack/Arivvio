@@ -52,7 +52,7 @@ export function ProviderProfile({ eventId, item, quote, selected, onAdd, onClose
         {media.attribution&&<small className="ml-3 ui-muted">{media.attribution}</small>}
         <div className="mt-3 flex flex-wrap items-center gap-3"><h2 id={`provider-title-${item.id}`} className="text-3xl font-semibold tracking-tight">{name}</h2><BusinessStatusBadge item={item}/></div>
         <p className="mt-1 text-sm ui-muted">{item.type} · {item.branch||item.location}</p>
-        <p className="my-4 max-w-prose leading-7">{summary}</p>
+        <p className="my-4 max-w-prose leading-7">{item.shortIntro||summary}</p>{item.shortIntro&&summary&&summary!==item.shortIntro&&<p className="mb-4 leading-7">{summary}</p>}
         <section className="profile-group"><h3>Services &amp; offerings</h3><p>{offerings||item.services.join(" · ")}</p>{item.serviceOptions?.map(o=><div key={o.title} className="mt-3"><strong>{o.title}</strong><p>{o.description}</p></div>)}
         {item.databaseSource&&<OfficialBusinessWork businessId={item.vendorId}/>}</section>
         <ProfileSections sections={item.profileSections}/>
@@ -61,8 +61,8 @@ export function ProviderProfile({ eventId, item, quote, selected, onAdd, onClose
         {details.length>0&&<details className="my-3"><summary className="cursor-pointer font-medium">Event fit, pricing and booking details</summary>{details.map((d,i)=><p key={i} className="mt-3 whitespace-pre-line">{d}</p>)}</details>}
         {item.databaseSource&&/^https?:\/\//.test(item.sourceUrl)&&<a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">Official website</a>}</section>
         <footer className="mt-4 flex flex-wrap items-center justify-between gap-4"><div><p className="font-semibold">{item.pricingKnown===false?"Contact for pricing":preview?"See package pricing":(demo?"Demo estimate · ":"Estimated · ")+"$"+quote.toLocaleString()}</p>{item.pricingKnown!==false&&<details><summary className="cursor-pointer text-xs">Estimate details</summary><PricingDisclosure item={item}/></details>}</div>
-        {item.listingState==="unclaimed"?<Link href={inquiry} className="hub-primary">Request through ARIVVIO</Link>:<button className="hub-primary" disabled={selected||preview||!listing.canRequest} onClick={onAdd}>{selected?"Added to cart":preview?"Preview":!listing.canRequest?"Requests unavailable":demo?"Add Demo to cart":"Request quote"}</button>}</footer>
-        {item.listingState==="unclaimed"&&<p className="mt-5 text-sm ui-muted">Own this business? <Link className="underline" href={`/business/${item.vendorId}?mode=claim`}>Claim this listing</Link></p>}
+        {preview?<span className="text-sm ui-muted">Saved profile preview</span>:item.listingState==="unclaimed"?<Link href={inquiry} className="hub-primary">Request through ARIVVIO</Link>:<button className="hub-primary" disabled={selected||preview||!listing.canRequest} onClick={onAdd}>{selected?"Added to cart":preview?"Preview":!listing.canRequest?"Requests unavailable":demo?"Add Demo to cart":"Request quote"}</button>}</footer>
+        {!preview&&item.listingState==="unclaimed"&&<p className="mt-5 text-sm ui-muted">Own this business? <Link className="underline" href={`/business/${item.vendorId}?mode=claim`}>Claim this listing</Link></p>}
       </div>
     </div>
   </dialog>;

@@ -104,6 +104,7 @@ export type MarketplaceItem = {
   media?: Array<{url:string;alt:string;kind:"business_photo"|"logo"|"illustration";status:"candidate"|"rights_review"|"approved"|"rejected";order:number;vendorAttested?:boolean;attribution:string|null}>;
   photoUrl?: string | null;
   profileImageUrl?: string;
+  shortIntro?: string;
   businessSummary?: string;
   businessName?: string;
   branch?: string;

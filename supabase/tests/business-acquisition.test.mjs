@@ -44,6 +44,7 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       "20261027031606_vendor_activation.sql",
       "20261103160458_business_media.sql",
       "20261104160319_admin_profile_editor.sql",
+      "20261104194822_profile_workspace.sql",
     ])
       await db.exec(readFileSync("supabase/migrations/" + f, "utf8"));
     const as = async (n) =>
@@ -335,12 +336,24 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       await as(4);const interest=await activation('prepare_interest',{vendor_id:b.id,lead_id:lead.id});assert.equal(interest.event_type,'Wedding');assert.equal(interest.title,undefined);assert.equal(interest.customer_note,undefined);
       await activation('record_contact',{...contact,vendor_id:b.id,lead_id:lead.id,client_key:id(904)});
       await assert.rejects(listing('handoff',{id:lead.id}));
+      const modify=(op,body)=>db.query('select public.profile_workspace_edit($1,$2::jsonb)',[op,JSON.stringify(body)]);
+      await as(2);await assert.rejects(modify('profile',{vendor_id:b.id,before:{description:'Event venue'},changes:{description:'Wrong branch'}}),/editor/);
+      const candidate=await trust('candidate',{business_name:'Studio fixture',city:'Pasadena',category:'Photography',relationship:'Owner',location_scope:'Pasadena',authority_attested:true,adult_attested:true,separate_reason:'Independent fixture business in another category'});
+      const draft=candidate.vendor_id;
+      await modify('profile',{vendor_id:draft,before:{short_intro:null},changes:{short_intro:'Conference coverage'}});
+      await assert.rejects(modify('profile',{vendor_id:draft,before:{short_intro:null},changes:{short_intro:'Overwritten'}}),/changed/);
+      await modify('profile',{vendor_id:draft,before:{profile_sections:[]},changes:{profile_sections:[{title:'Editing',body:'Color correction included.'}]}});
+      await modify('new_service',{vendor_id:draft,id:id(978),changes:{service_name:'Conference photography',category:'Photography',pricing_type:'flat'}});
+      await modify('specialties',{vendor_id:draft,before_tags:[],tags:['Conferences']});
+      await assert.rejects(modify('service',{vendor_id:draft,id:id(987),before:{base_price:150},changes:{base_price:222}}));
+      await as(3);await assert.rejects(modify('profile',{vendor_id:draft,before:{short_intro:'Conference coverage'},changes:{short_intro:'Other actor'}}),/editor/);
       await as(1);const claim=await trust('claim',{vendor_id:b.id,relationship:'Owner',location_scope:'Pasadena',authority_attested:true,adult_attested:true});
       await as(4);let row=(await activation('list')).find(r=>r.id===b.id);assert.equal(row.pending_claims,1);assert.equal(row.ready,false);
       await trust('identity',{vendor_id:b.id,website_url:'https://activation.example',source_url:'https://activation.example',note:'Official source reviewed for this safe fixture'});
       await trust('evidence',{claim_id:claim.id,method:'public_record',source_reference:'https://registry.example/fixture',location_scope:'Pasadena',note:'Safe fixture record confirms the business and authorized owner. No production vendor is created.',identity_confirmed:true,authority_confirmed:true});
       await trust('review',{claim_id:claim.id,decision:'approved'});
-      row=(await activation('list')).find(r=>r.id===b.id);assert.equal(row.id,b.id);assert.equal(row.owner_id,id(11));assert.equal(row.pending_claims,0);assert.equal(row.ready,true);
+      await as(1);await assert.rejects(modify('profile',{vendor_id:b.id,before:{business_name:'Activation safe fixture'},changes:{business_name:'Wrong identity'}}),/review/);
+      await as(4);row=(await activation('list')).find(r=>r.id===b.id);assert.equal(row.id,b.id);assert.equal(row.owner_id,id(11));assert.equal(row.pending_claims,0);assert.equal(row.ready,true);
       const handed=await listing('handoff',{id:lead.id});assert.ok(handed.quote_request_id);assert.equal((await listing('handoff',{id:lead.id})).quote_request_id,handed.quote_request_id);
       await as(1);const q=(await db.query('select * from quote_requests where id=$1',[handed.quote_request_id])).rows[0];assert.equal(q.event_id,id(600));assert.equal(q.vendor_id,b.id);
       assert.equal((await db.query('update vendor_businesses set description=$1 where id=$2 returning id',['Updated by authorized owner',b.id])).rows.length,1);
@@ -353,6 +366,14 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       const media=async(payload)=>db.query("select public.media_operation('reorder',$1::jsonb)",[JSON.stringify(payload)]);
       await assert.rejects(media({vendor_id:b.id,ids:[photo.id,photo.id]}),/complete photo list/);
       await media({vendor_id:b.id,ids:[photo2.id,photo.id]});assert.equal((await db.query('select sort_order from vendor_photos where id=$1',[photo2.id])).rows[0].sort_order,0);
+      const path=b.id+'/editor/'+id(995)+'.jpg';
+      await db.exec('reset role');await db.query('insert into storage.objects values($1,$2,$3)',['vendor-photos',path,id(1)]);await as(1);
+      const uploadPayload={vendor_id:b.id,kind:'logo',placement:'logo',path,url:'https://fixture.supabase.co/storage/v1/object/public/vendor-photos/'+path,alt:'Business logo',rights:'This is my original logo',rights_confirmed:true};
+      await modify('upload',uploadPayload);await modify('upload',uploadPayload);
+      const logo=(await db.query('select * from vendor_photos where storage_path=$1',[path])).rows[0];assert.equal(logo.media_kind,'logo');assert.equal(logo.rights_attested_by,id(11));
+      await modify('caption',{vendor_id:b.id,id:logo.id,before_alt:'Business logo',alt:'Original company mark'});
+      await modify('unpublish',{vendor_id:b.id,id:logo.id});
+      await as(3);assert.equal((await db.query('select * from vendor_photos where id=$1',[logo.id])).rows.length,0);
       await as(2);await assert.rejects(activation('record_contact',{...contact,vendor_id:b.id,client_key:id(905)}),/Admin access/);
     });
   } finally {
