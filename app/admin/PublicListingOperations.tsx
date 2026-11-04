@@ -1,4 +1,5 @@
 "use client";
+import { ManualProfileEditor } from "./ManualProfileEditor";
 import { BusinessMedia } from "./BusinessMedia";
 import { BusinessAcquisition } from "./BusinessAcquisition";
 import { ContactPreference } from "./ContactPreference";
@@ -169,6 +170,7 @@ export function PublicListingOperations({ section }: { section: string }) {
         <>
           {section === "Public Listings" && (
             <>
+              <ManualProfileEditor data={data} onSaved={() => setRevision(x => x+1)} />
               <BusinessAcquisition
                 workspace={data}
                 onChanged={() => setRevision((x) => x + 1)}

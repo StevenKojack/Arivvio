@@ -321,6 +321,8 @@ export function mapServiceToMarketplaceItem(
     id: numericId(service.id),
     location: city,
     name: service.service_name || vendor.business_name,
+    businessSummary: vendor.description ?? undefined,
+    profileSections: vendor.profile_sections,
     photoUrl: photos.find(p=>p.media_status === "approved")?.image_url ?? null,
     media: photos.filter(p=>p.media_status === "approved").map(p=>({url:p.image_url,alt:p.alt_text ?? "Business photograph",kind:p.media_kind,status:p.media_status,order:p.sort_order,vendorAttested:!!p.rights_attested_at,attribution:p.attribution})),
     price: basePrice,

@@ -55,7 +55,8 @@ const categoryImages: Partial<Record<MarketplaceItem["type"], string>> = {
 export function getVendorMedia(item: MarketplaceItem) {
   const approved = item.media?.filter(media => media.status === "approved").sort((a,b) => {
     const priority = (m: typeof a) => m.kind === "business_photo" ? (m.vendorAttested ? 0 : 1) : m.kind === "logo" ? 2 : 3;
-    return priority(a)-priority(b) || a.order-b.order;
+    const cover = (m: typeof a) => m.kind === "business_photo" && m.order < 0;
+    return Number(cover(b)) - Number(cover(a)) || priority(a)-priority(b) || a.order-b.order;
   })[0];
   if (approved) return {src:approved.url, alt:approved.alt, illustrative:approved.kind === "illustration", label:approved.kind === "illustration" ? "Illustrative image" : approved.kind === "logo" ? "Business logo" : "Business photograph", attribution:approved.attribution};
   const variants: Partial<Record<MarketplaceItem["type"], string[]>> = {

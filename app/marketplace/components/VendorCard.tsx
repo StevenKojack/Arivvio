@@ -54,6 +54,7 @@ function VendorCardComponent({
     ...(item.cultures ?? []),
   ].slice(0, 3);
 
+  const logo = item.databaseSource === false ? item.profileImageUrl : item.media?.filter(m=>m.status==="approved" && m.kind==="logo").sort((a,b)=>a.order-b.order)[0]?.url;
   return (
     <><article
       onMouseEnter={() => onHover?.(item.id)}
@@ -75,7 +76,7 @@ function VendorCardComponent({
       </div>
       <div className="p-4"><div className="mb-3"><BusinessStatusBadge item={item}/></div>
         <div className="flex items-start justify-between gap-3">
-          {item.databaseSource === false && item.profileImageUrl && <Image src={item.profileImageUrl} alt={`${item.name} logo`} width={44} height={44} unoptimized className="shrink-0 rounded-lg object-contain" />}
+          {logo && <Image src={logo} alt={`${item.name} logo`} width={44} height={44} unoptimized className="shrink-0 rounded-lg object-contain" />}
           <div>
 
             <h3 className="mt-2 text-lg font-semibold tracking-tight ui-text">

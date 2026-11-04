@@ -96,6 +96,7 @@ export type Database = {
           base_address: string | null;
           business_name: string;
           category: string;
+          profile_sections?: {title:string;body:string}[];
           description: string | null;
           email: string | null;
           id: string;
@@ -389,6 +390,7 @@ export type Database = {
       complete_legal_acceptance: { Args: Record<string, never>; Returns: undefined };
       trust_operation: {Args:{operation:string;payload?:Json};Returns:Json};
       business_matches: {Args:{payload:Json};Returns:Json};
+      admin_profile_edit: { Args: {operation:string;payload:Json}; Returns:Json };
       media_operation: { Args: {operation:string;payload?:Json}; Returns:Json };
       activation_operation: { Args: {operation: string; payload?: Json}; Returns: Json };
       acquisition_operation: { Args: {operation: string; payload?: Json}; Returns: Json };

@@ -1,6 +1,7 @@
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import type { Json } from "@/lib/supabase/database.types";
 export type ListingRecord = {
+  profile_sections?: {title:string;body:string}[];
   id: string;
   business_name: string;
   category: string;

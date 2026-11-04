@@ -43,6 +43,7 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       "20261026214746_business_acquisition.sql",
       "20261027031606_vendor_activation.sql",
       "20261103160458_business_media.sql",
+      "20261104160319_admin_profile_editor.sql",
     ])
       await db.exec(readFileSync("supabase/migrations/" + f, "utf8"));
     const as = async (n) =>
@@ -295,6 +296,34 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       await as(2);assert.equal((await db.query('select * from vendor_photos where id=$1',[candidate.id])).rows.length,1);
       await as(4);await media('review',{id:candidate.id,status:'rejected',rights_basis:'Permission withdrawn',alt_text:'Event room'});
       await as(2);assert.equal((await db.query('select * from vendor_photos where id=$1',[candidate.id])).rows.length,0);
+    });
+    await t.test('Admin edits are scoped, persistent and reject stale data; uploads retain their role',async()=>{
+      const edit=(op,body)=>db.query('select public.admin_profile_edit($1,$2::jsonb)',[op,JSON.stringify({vendor_id:vendorId,...body})]);
+      const services=()=>db.query('select * from vendor_services where vendor_id=$1 order by id',[vendorId]);
+      await as(4);const original=(await services()).rows;
+      const prior=(await db.query('select description from vendor_businesses where id=$1',[vendorId])).rows[0];
+      const patch={before:prior,changes:{description:'Admin supplied profile text.'}};
+      await as(2);await assert.rejects(edit('profile',patch),/Admin access/);
+      await as(4);await edit('profile',patch);await assert.rejects(edit('profile',patch),/changed/);
+      const sections=[{title:'Party packages',body:'Bring socks.\nChoose your arena.'}];
+      await edit('profile',{before:{profile_sections:[]},changes:{profile_sections:sections}});
+      assert.deepEqual((await db.query('select profile_sections from vendor_businesses where id=$1',[vendorId])).rows[0].profile_sections,sections);
+      await assert.rejects(edit('profile',{before:{profile_sections:sections},changes:{profile_sections:[{title:'',body:'Invalid'}]}}),/heading/);
+      assert.deepEqual((await services()).rows,original);
+      await assert.rejects(edit('profile',{changes:{owner_id:id(11)},before:{owner_id:null}}),/Invalid/);
+      await edit('new_service',{id:id(987),changes:{service_name:'Private party',category:'Venue',pricing_type:'flat',base_price:125}});
+      await edit('service',{id:id(987),before:{base_price:125},changes:{base_price:150}});
+      assert.equal(Number((await services()).rows.find(s=>s.id===id(987)).base_price),150);
+      await db.exec('reset role;create schema if not exists storage;create table if not exists storage.objects(bucket_id text,name text,owner_id text)');
+      const path=vendorId+'/admin/'+id(988)+'.png';
+      await db.query('insert into storage.objects values($1,$2,$3)',['vendor-photos',path,id(4)]);await as(4);
+      const upload={path,url:'https://fixture.supabase.co/storage/v1/object/public/vendor-photos/'+path,kind:'logo',placement:'logo',alt:'Fixture logo',rights:'Original artwork owned by operator',rights_confirmed:true};
+      await assert.rejects(edit('upload',{...upload,rights_confirmed:false}),/confirmed/);
+      await edit('upload',upload);await edit('upload',upload);
+      const photos=(await db.query('select * from vendor_photos where storage_path=$1',[path])).rows;
+      assert.equal(photos.length,1);assert.equal(photos[0].media_kind,'logo');assert.equal(photos[0].reviewed_by,id(14));
+      await edit('unpublish',{id:photos[0].id});await as(2);
+      assert.equal((await db.query('select * from vendor_photos where storage_path=$1',[path])).rows.length,0);
     });
     await t.test('claim milestones, vendor readiness and concierge handoff use original records',async()=>{
       const listing=async(operation,payload)=>(await db.query('select public.listing_operation($1,$2::jsonb) r',[operation,JSON.stringify(payload)])).rows[0].r;
