@@ -88,10 +88,9 @@ function UploadForm({businessId}:{businessId:string}){
  {photos.map(p=><div key={p.id} className="my-2 flex flex-wrap items-center gap-3"><a className="underline" href={p.image_url} target="_blank" rel="noreferrer">{p.alt_text||p.media_kind}</a>{p.media_kind==="business_photo"&&<button disabled={busy} onClick={()=>void changePhoto("cover",p.id)}>Make cover</button>}<button disabled={busy} onClick={()=>void changePhoto("unpublish",p.id)}>Unpublish</button></div>)}</>;
 }
 
-export function ManualProfileEditor({data,onSaved}:{data:ListingWorkspace;onSaved:()=>void}){
- const [selected,setSelected]=useState("");const b=data.listings.find(b=>b.id===selected);
- return <section className="my-5 rounded-xl border ui-border p-4"><h3 className="text-xl font-semibold">Edit a vendor profile</h3><p className="my-2 text-sm">Select a business and branch. Each section saves independently to the live profile. Use blank lines in your description to separate sections.</p>
- <label>Business and branch<select className={fieldClass} value={selected} onChange={e=>setSelected(e.target.value)}><option value="">Choose a business</option>{data.listings.map(b=><option key={b.id} value={b.id}>{[b.business_name,b.location_name||b.service_area_city].filter(Boolean).join(" · ")}</option>)}</select></label>
+export function ManualProfileEditor({data,onSaved,selected}:{data:ListingWorkspace;onSaved:()=>void;selected:string}){
+ const b=data.listings.find(b=>b.id===selected);
+ return <section className="my-4 rounded-xl border ui-border p-4"><h3 className="text-xl font-semibold">{b?.business_name}</h3><p className="my-2 text-sm ui-muted">{b?.location_name||b?.service_area_city}</p>
  {b&&<div key={b.id} className="mt-4 space-y-4"><a href={"/business/"+b.id} target="_blank" rel="noreferrer" className="underline">View public profile</a>
  <details open><summary>Business information</summary><DataForm key={JSON.stringify(b)} initial={b} labels={profileFields} operation="profile" businessId={b.id} onSaved={onSaved}/></details>
  <details><summary>Custom profile sections</summary><SectionsForm key={JSON.stringify(b.profile_sections)} businessId={b.id} initial={b.profile_sections??[]} onSaved={onSaved}/></details>

@@ -1,5 +1,5 @@
 "use client";
-import { ManualProfileEditor } from "./ManualProfileEditor";
+import { BusinessQueue } from "./BusinessQueue";
 import { BusinessMedia } from "./BusinessMedia";
 import { BusinessAcquisition } from "./BusinessAcquisition";
 import { ContactPreference } from "./ContactPreference";
@@ -39,6 +39,7 @@ const blank = {
   publish: false,
 };
 export function PublicListingOperations({ section }: { section: string }) {
+  const [advanced,setAdvanced]=useState(false);
   const [data, setData] = useState<ListingWorkspace | null>(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
@@ -170,7 +171,9 @@ export function PublicListingOperations({ section }: { section: string }) {
         <>
           {section === "Public Listings" && (
             <>
-              <ManualProfileEditor data={data} onSaved={() => setRevision(x => x+1)} />
+              <BusinessQueue data={data} revision={revision} onSaved={() => setRevision(x => x+1)} />
+              <details className="mt-6" onToggle={e=>setAdvanced(e.currentTarget.open)}><summary className="cursor-pointer font-semibold">More operations: research, media review and publication</summary>
+              {advanced&&<>
               <BusinessAcquisition
                 workspace={data}
                 onChanged={() => setRevision((x) => x + 1)}
@@ -418,6 +421,7 @@ export function PublicListingOperations({ section }: { section: string }) {
                     </article>
                   ))}
               </div>
+              </>}</details>
             </>
           )}
           {section === "Claims" && (

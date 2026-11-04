@@ -6,21 +6,21 @@ import { PricingDisclosure } from "./PricingDisclosure";
 import Link from "next/link";
 import { listingPresentation } from "@/lib/marketplace/listing-state";
 import { useEffect, useRef } from "react";
-import { AskArivvioButton } from "@/app/components/AskArivvioButton";
+import { BusinessMark } from "@/app/components/BusinessMark";
 import { getAssistantContext, publishAssistantContext } from "@/lib/assistant/session";
 import { providerContext } from "@/lib/assistant/context";
 import Image from "next/image";
 import { ListingImage } from "./ListingImage";
 import type { MarketplaceItem } from "@/app/data/marketplace";
-import { getVendorMedia } from "@/lib/marketplace/vendorImages";
+import { profileCover } from "@/lib/marketplace/vendorImages";
 
 import { BusinessStatusBadge } from "@/app/components/BusinessStatusBadge";
 import { lockDocumentScroll } from "@/lib/ui/scroll-lock";
 
-export function ProviderProfile({ eventId, item, quote, matchReason, selected, onAdd, onClose, preview = false }: { eventId?: string; item: MarketplaceItem; quote: number; matchReason: string; selected: boolean; onAdd: () => void; onClose: () => void; preview?: boolean }) {
+export function ProviderProfile({ eventId, item, quote, selected, onAdd, onClose, preview = false }: { eventId?: string; item: MarketplaceItem; quote: number; matchReason: string; selected: boolean; onAdd: () => void; onClose: () => void; preview?: boolean }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const listing = listingPresentation(item);
-  const media = getVendorMedia(item);
+  const media = profileCover(item);
   const demo = item.databaseSource === false;
   useEffect(() => {
     if(preview)return;
@@ -37,25 +37,33 @@ export function ProviderProfile({ eventId, item, quote, matchReason, selected, o
     return () => { element?.close(); unlock(); previous?.focus({preventScroll:true}); };
   }, []);
   const logo = item.databaseSource === false ? item.profileImageUrl : item.media?.filter(m=>m.status==="approved" && m.kind==="logo").sort((a,b)=>a.order-b.order)[0]?.url;
-  return <dialog ref={dialog} onCancel={onClose} aria-labelledby={`provider-title-${item.id}`} className="context-reveal fixed inset-0 m-auto max-h-[94dvh] w-[min(960px,96vw)] overflow-hidden rounded-2xl ui-soft p-0 ui-text shadow-2xl backdrop:bg-black/50">
-    <header className="sticky top-0 z-10 flex items-center justify-between border-b ui-border ui-surface px-5 py-4"><button onClick={onClose} className="rounded-lg border px-4 py-2 text-sm font-semibold">{preview ? "Close preview" : "← Back to marketplace"}</button><span className="text-xs ui-muted">Meet your event team</span></header>
+  const name=item.businessName||item.name;
+  const [summary,...more]=(item.businessSummary||item.description||"").split(/\n\s*\n/);
+  const offerings=more.find(p=>p.startsWith("Services:"))?.slice(9);
+  const details=more.filter(p=>!p.startsWith("Services:"));
+  const gallery=item.media?.filter(m=>m.status==="approved" && m.kind==="business_photo" && m.url!==media.src).sort((a,b)=>a.order-b.order);
+  const inquiry=`/business/${item.vendorId}?serviceId=${item.serviceId??""}${eventId ? `&eventId=${encodeURIComponent(eventId)}` : ""}`;
+  return <dialog ref={dialog} onCancel={onClose} aria-labelledby={`provider-title-${item.id}`} className="profile-window ui-surface ui-text backdrop:bg-black/55">
+    <button type="button" onClick={onClose} aria-label="Close profile" className="profile-dismiss">×</button>
     <div className="provider-profile-scroll">
-    <div className="relative h-48 sm:h-72"><ListingImage src={media.src} alt={media.alt} sizes="960px" className={media.label === "Business logo" ? "object-contain p-6 ui-surface" : "object-cover"} /><span className="absolute bottom-4 left-5 rounded-lg ui-surface px-3 py-1 text-xs">{media.label}</span></div>
-    <div className="grid gap-8 p-6 sm:p-8 md:grid-cols-[1fr_280px]">
-      <div>{logo && <Image src={logo} alt={`${item.name} business image`} width={88} height={88} unoptimized className="mb-4 rounded-xl object-contain" />}<p className="text-xs font-semibold uppercase tracking-widest text-[#8A6A16]">{item.type} · {item.location}</p><h2 id={`provider-title-${item.id}`} className="mt-3 text-3xl font-semibold tracking-tight">{item.name}</h2>
-        <div className="mt-3"><BusinessStatusBadge item={item}/></div><p className="mt-3 text-sm leading-6 ui-muted">{listing.description}</p>{media.attribution && <p className="mt-2 text-xs ui-muted">{media.attribution}</p>}
-        {item.listingState === "unclaimed" && <p className="mt-4 text-sm"><Link className="underline" href={`/business/${item.vendorId}?mode=claim`}>Own this business? Claim this listing</Link>. <Link className="underline" href="/support-project">Contact ARIVVIO to correct or remove this listing.</Link></p>}
-        {item.databaseSource && /^https?:\/\//.test(item.sourceUrl) && <p className="mt-3 text-sm"><a className="underline" href={item.sourceUrl} target="_blank" rel="noopener noreferrer">Official business website</a></p>}
-        {item.databaseSource && <OfficialBusinessWork businessId={item.vendorId}/>}
-        <section className="mt-8"><h3 className="text-lg font-semibold">Meet {item.name}</h3><p className="mt-3 whitespace-pre-line text-sm leading-7 ui-muted">{item.businessSummary||item.description}</p><ProfileSections sections={item.profileSections}/></section>
-        <section className="mt-8"><h3 className="text-lg font-semibold">What they bring to your event</h3><div className="mt-3 flex flex-wrap gap-2">{item.services.map(s => <span key={s} className="rounded-lg border ui-surface px-3 py-2 text-sm">{s}</span>)}</div>{item.serviceOptions?.map(option => <div key={option.title} className="mt-4 rounded-xl border ui-surface p-4"><h4 className="font-semibold">{option.title}</h4><p className="mt-2 text-sm ui-muted">{option.description}</p><p className="mt-2 text-xs text-[#8A6A16]">{option.estimateLabel}</p></div>)}</section>
-        <section className="mt-8 border-t ui-border pt-6"><h3 className="text-lg font-semibold">Event fit & practical details</h3><dl className="mt-4 grid grid-cols-2 gap-5 text-sm">{[["Event types", item.events.join(", ")], ["Service area", item.serviceRadiusMiles ? `Within ${item.serviceRadiusMiles} miles` : item.location], ["Capacity", item.capacity], ["Languages", item.languages?.join(", ")], ["Specialties", item.tags?.join(", ")]].filter(([,v]) => v).map(([label,value]) => <div key={label}><dt className="ui-muted">{label}</dt><dd className="mt-1 font-medium">{value}</dd></div>)}</dl></section>
-        {item.marketplaceRules && <details className="mt-8 border-t ui-border pt-5"><summary className="cursor-pointer text-sm font-semibold">More service preferences</summary><p className="mt-3 text-sm">Serves: {item.marketplaceRules.eventMode === "selected" ? item.marketplaceRules.served.join(", ") : "Event types not restricted"}</p><p className="mt-2 text-sm">Does not serve: {item.marketplaceRules.excluded.join(", ") || "No exclusions specified"}</p><p className="mt-2 text-sm">Audience: {({unspecified:"Not specified",all:"All ages",adults:"Adult events, 18+",kids:"Kids and teens, under 18","21plus":"Nightlife, 21+"})[item.marketplaceRules.audience]}</p><p className="mt-2 text-sm">{item.marketplaceRules.region} {item.marketplaceRules.travelNotes}</p></details>}
-        {!!item.media?.filter(m=>m.status === "approved").length && <section className="mt-8"><h3 className="text-lg font-semibold">Gallery</h3><div className="mt-3 grid grid-cols-2 gap-3">{item.media.filter(m=>m.status === "approved").sort((a,b)=>a.order-b.order).map(m=><figure key={m.url}><div className="relative aspect-[4/3] overflow-hidden rounded-xl"><Image src={m.url} alt={m.alt} fill unoptimized sizes="350px" className={m.kind === "logo" ? "object-contain p-4 ui-surface" : "object-cover"} /></div>{(m.kind === "illustration" || m.attribution) && <figcaption className="mt-1 text-xs ui-muted">{m.kind === "illustration" ? "Illustrative image. " : ""}{m.attribution}</figcaption>}</figure>)}</div></section>}
-        <section className="mt-8"><h3 className="text-lg font-semibold">Availability</h3><p className="mt-3 text-sm leading-7 ui-muted">{demo ? "Illustrative schedule. These sample windows do not represent real availability." : "Availability is not confirmed. An inquiry does not reserve a date."}</p>{demo && item.availability.map((window,index)=><p key={index} className="mt-2 text-sm ui-muted">{window.days.join(", ")} · {window.start}–{window.end}</p>)}</section>
+      <div className="relative aspect-[2.65] overflow-hidden"><ListingImage src={media.src} alt={media.alt} sizes="800px" className={media.label==="Business logo"?"object-contain":"object-cover"}/>{media.illustrative&&<span className="cover-caption">{media.label}</span>}</div>
+      <div className="px-5 pb-7 sm:px-9">
+        <div className="relative -mt-6 inline-flex rounded-2xl border-4 ui-border ui-surface"><BusinessMark large name={name} logo={logo}/></div>
+        {media.attribution&&<small className="ml-3 ui-muted">{media.attribution}</small>}
+        <div className="mt-3 flex flex-wrap items-center gap-3"><h2 id={`provider-title-${item.id}`} className="text-3xl font-semibold tracking-tight">{name}</h2><BusinessStatusBadge item={item}/></div>
+        <p className="mt-1 text-sm ui-muted">{item.type} · {item.branch||item.location}</p>
+        <p className="my-4 max-w-prose leading-7">{summary}</p>
+        <section className="profile-group"><h3>Services &amp; offerings</h3><p>{offerings||item.services.join(" · ")}</p>{item.serviceOptions?.map(o=><div key={o.title} className="mt-3"><strong>{o.title}</strong><p>{o.description}</p></div>)}
+        {item.databaseSource&&<OfficialBusinessWork businessId={item.vendorId}/>}</section>
+        <ProfileSections sections={item.profileSections}/>
+        {gallery?.length?<section className="profile-group"><h3>Gallery</h3><div className="grid grid-cols-2 gap-3">{gallery.map(m=><figure key={m.url}><Image src={m.url} alt={m.alt} width={420} height={270} unoptimized className="aspect-video w-full rounded-xl object-cover"/>{m.attribution&&<figcaption>{m.attribution}</figcaption>}</figure>)}</div></section>:null}
+        <section className="profile-group"><h3>Location &amp; booking</h3><p>{item.address||item.location}{item.serviceRadiusMiles?` · Serves within ${item.serviceRadiusMiles} miles`:""}</p>
+        {details.length>0&&<details className="my-3"><summary className="cursor-pointer font-medium">Event fit, pricing and booking details</summary>{details.map((d,i)=><p key={i} className="mt-3 whitespace-pre-line">{d}</p>)}</details>}
+        {item.databaseSource&&/^https?:\/\//.test(item.sourceUrl)&&<a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">Official website</a>}</section>
+        <footer className="mt-4 flex flex-wrap items-center justify-between gap-4"><div><p className="font-semibold">{item.pricingKnown===false?"Contact for pricing":preview?"See package pricing":(demo?"Demo estimate · ":"Estimated · ")+"$"+quote.toLocaleString()}</p>{item.pricingKnown!==false&&<details><summary className="cursor-pointer text-xs">Estimate details</summary><PricingDisclosure item={item}/></details>}</div>
+        {item.listingState==="unclaimed"?<Link href={inquiry} className="hub-primary">Request through ARIVVIO</Link>:<button className="hub-primary" disabled={selected||preview||!listing.canRequest} onClick={onAdd}>{selected?"Added to cart":preview?"Preview":!listing.canRequest?"Requests unavailable":demo?"Add Demo to cart":"Request quote"}</button>}</footer>
+        {item.listingState==="unclaimed"&&<p className="mt-5 text-sm ui-muted">Own this business? <Link className="underline" href={`/business/${item.vendorId}?mode=claim`}>Claim this listing</Link></p>}
       </div>
-      <aside className="h-fit rounded-2xl border ui-border ui-surface p-5 md:sticky md:top-24"><p className="text-xs ui-muted">{demo ? "Demo estimate" : "Estimated price"}</p><p className="mt-2 text-3xl font-semibold">{item.pricingKnown === false ? "Contact for pricing" : preview ? "See packages" : <>${quote.toLocaleString()}</>}</p><p className="mt-2 text-xs ui-muted">{preview ? "Pricing is shown for each service." : item.pricing.label}</p><PricingDisclosure item={item}/><div className="my-5 border-y py-4"><h3 className="text-sm font-semibold">{preview ? "A closer look" : "Your event fit"}</h3><p className="mt-2 text-sm leading-6 ui-muted">{matchReason}</p></div>{item.listingState === "unclaimed" ? <Link className="block rounded-lg ui-primary px-4 py-3 text-center text-sm font-semibold" href={`/business/${item.vendorId}?serviceId=${item.serviceId??""}${eventId ? `&eventId=${encodeURIComponent(eventId)}` : ""}`}>Request through ARIVVIO</Link> : <button disabled={selected || preview || !listing.canRequest} onClick={onAdd} className="w-full rounded-lg ui-primary px-4 py-3 text-sm font-semibold disabled:opacity-60">{!listing.canRequest ? "Requests not open yet" : preview ? "Add to quote cart · preview" : selected ? "Added to your quote cart" : demo ? "Add Demo to cart" : "Request Quote"}</button>}{!preview&&<AskArivvioButton />}<p className="mt-3 text-xs leading-5 ui-muted">Compare your selections in the marketplace cart. No payment is taken and no booking is confirmed.</p></aside>
-    </div>
     </div>
   </dialog>;
 }

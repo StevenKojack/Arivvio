@@ -105,6 +105,8 @@ export type MarketplaceItem = {
   photoUrl?: string | null;
   profileImageUrl?: string;
   businessSummary?: string;
+  businessName?: string;
+  branch?: string;
   profileSections?: {title:string;body:string}[];
   galleryUrls?: string[];
   address: string;

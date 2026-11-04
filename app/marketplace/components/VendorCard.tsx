@@ -1,14 +1,14 @@
 "use client";
 
 import {BusinessStatusBadge} from "@/app/components/BusinessStatusBadge";
-import {getVendorMedia} from "@/lib/marketplace/vendorImages";
-import { PricingDisclosure } from "./PricingDisclosure";
+import {profileCover} from "@/lib/marketplace/vendorImages";
+
 import Link from "next/link";
 import { listingPresentation } from "@/lib/marketplace/listing-state";
 import { memo, useState } from "react";
 import { ListingImage } from "./ListingImage";
 import { ProviderProfile } from "./ProviderProfile";
-import Image from "next/image";
+import {BusinessMark} from "@/app/components/BusinessMark";
 import type { MarketplaceItem } from "@/app/data/marketplace";
 
 
@@ -44,16 +44,11 @@ function VendorCardComponent({
   onAdd,
 }: VendorCardProps) {
   const [profileOpen, setProfileOpen] = useState(false);
-  const media = getVendorMedia(item);
+  const media = profileCover(item);
   const imageUrl = media.src;
   const listing = listingPresentation(item);
   const isDemoProvider = item.databaseSource === false;
-  const tags = [
-    item.type,
-    ...(item.tags ?? []),
-    ...(item.cultures ?? []),
-  ].slice(0, 3);
-
+  const name=item.businessName||item.name;
   const logo = item.databaseSource === false ? item.profileImageUrl : item.media?.filter(m=>m.status==="approved" && m.kind==="logo").sort((a,b)=>a.order-b.order)[0]?.url;
   return (
     <><article
@@ -75,20 +70,19 @@ function VendorCardComponent({
 
       </div>
       <div className="p-4"><div className="mb-3"><BusinessStatusBadge item={item}/></div>
-        <div className="flex items-start justify-between gap-3">
-          {logo && <Image src={logo} alt={`${item.name} logo`} width={44} height={44} unoptimized className="shrink-0 rounded-lg object-contain" />}
+        <div className="flex items-start gap-3">
+          <BusinessMark name={name} logo={logo}/>
           <div>
 
             <h3 className="mt-2 text-lg font-semibold tracking-tight ui-text">
-              <button className="provider-profile-trigger text-left" onClick={()=>setProfileOpen(true)} aria-label={`View ${item.name} profile`}>{item.name}</button>
+              <button className="provider-profile-trigger text-left" onClick={()=>setProfileOpen(true)} aria-label={`View ${name} profile`}>{name}</button>
             </h3><p className="mt-1 text-xs ui-muted">{item.type} · {item.location}</p>
           </div>
 
         </div>
         <p className="mt-3 line-clamp-2 min-h-12 text-sm leading-6 ui-muted">
-          {item.description || item.services.slice(0, 2).join(" · ") || matchReason}
+          {item.businessSummary?.split("\n")[0] || item.description || item.services.slice(0, 2).join(" · ") || matchReason}
         </p>
-        {tags.length > 1 && <p className="mt-2 truncate text-xs ui-muted">{tags.slice(1).join(" · ")}</p>}
         <div className="mt-4 flex items-end justify-between gap-3">
           <div>
             <p className="text-xs ui-muted">
@@ -116,7 +110,6 @@ function VendorCardComponent({
         </div>
         {onSelect && <button type="button" onClick={()=>onSelect(item)} className="provider-action hub-button mt-3">Select {item.name}</button>}
         {matchLabel && <p className="mt-3 text-xs ui-muted">{matchLabel}</p>}
-        <PricingDisclosure item={item}/>
 
       </div>
     </article>{profileOpen ? <ProviderProfile eventId={eventId} preview={preview} item={item} quote={quote} matchReason={preview ? matchReason : item.services.slice(0, 2).join(" · ") || matchReason} selected={Boolean(disableAdd ?? isSelected)} onAdd={() => { setProfileOpen(false); if (!preview) onAdd(item); }} onClose={() => setProfileOpen(false)} /> : null}</>

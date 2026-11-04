@@ -72,3 +72,15 @@ export function getVendorMedia(item: MarketplaceItem) {
   return {src, alt:`Illustrative ${item.type.toLowerCase()} image, not a photograph of ${item.name}`, illustrative:true, label:item.databaseSource === false ? "Demo illustration" : "Service illustration", attribution:null};
 }
 export function getVendorImage(item: MarketplaceItem) { return getVendorMedia(item).src; }
+
+// Marketplace artwork uses ARIVVIO editorial colors and original service illustrations.
+const scenes: Record<string,string> = {Venue:"ballroom",DJ:"dj",Florals:"floral",Rentals:"rentals","Cake & Desserts":"bakery",Catering:"catering",Photography:"photo",Videography:"photo","Live Music":"music",Transportation:"transport",Magic:"magic",Security:"security","AV Production":"production",Staffing:"staff","Bounce Houses":"play"};
+export function serviceIllustration(category:string,summary:string) {
+ const theme=category==="Venue" && /inflatable|indoor play|play arena/i.test(summary)?"play":scenes[category]||"production";
+ return "/illustrations/"+theme+".svg";
+}
+export function profileCover(item:MarketplaceItem) {
+ const official=getVendorMedia(item);
+ if (!item.databaseSource || (!official.illustrative && official.label!=="Business logo") || item.media?.some(m=>m.status==="approved"&&m.kind==="illustration"&&m.url===official.src)) return official;
+ return {src:serviceIllustration(item.type,item.businessSummary||item.description||""),alt:"ARIVVIO illustration of "+item.type.toLowerCase()+" services",illustrative:true,label:"Service illustration",attribution:null};
+}

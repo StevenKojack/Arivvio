@@ -1,6 +1,8 @@
 "use client";
 import { ProfileSections } from "@/app/components/ProfileSections";
 import { OfficialBusinessWork } from "@/app/components/OfficialBusinessWork";
+import { BusinessMark } from "@/app/components/BusinessMark";
+import { serviceIllustration } from "@/lib/marketplace/vendorImages";
 import Image from "next/image";
 import type {PublicTableRow} from "@/lib/supabase/database.types";
 import Link from "next/link";
@@ -129,7 +131,8 @@ export function BusinessListing({
         </p>
       ) : (
         <>
-          <div className="mt-8"><BusinessStatusBadge item={{databaseSource:true,listingState:listing.owner_id?"claimed":"unclaimed",verificationStatus:listing.verification_status}}/></div>
+          {!photos.some(p=>p.media_kind==="business_photo")&&<figure className="relative mt-6 overflow-hidden rounded-2xl"><Image src={serviceIllustration(listing.category,listing.description||"")} alt="ARIVVIO service illustration" width={800} height={360} unoptimized className="aspect-[2.65] w-full object-cover"/><figcaption className="cover-caption">Service illustration</figcaption></figure>}
+          <div className="mt-5 flex items-center gap-3">{!photos.some(p=>p.media_kind==="logo")&&<BusinessMark name={listing.business_name}/>}<BusinessStatusBadge item={{databaseSource:true,listingState:listing.owner_id?"claimed":"unclaimed",verificationStatus:listing.verification_status}}/></div>
           <h1 className="mt-2 text-3xl font-semibold">
             {listing.business_name}
           </h1>

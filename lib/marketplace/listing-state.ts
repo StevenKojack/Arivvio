@@ -22,7 +22,7 @@ export function listingPresentation(
     };
   if (item.listingState === "claimed" && item.verificationStatus === "verified")
     return {
-      label: "Claimed Business",
+      label: "Verified Business",
       description:
         "ARIVVIO reviewed business authority. Verification does not guarantee quality, licensing, insurance, availability or fulfillment. Confirm pricing and availability with the provider.",
       canRequest: true,
