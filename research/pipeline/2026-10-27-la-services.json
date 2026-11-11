@@ -6,7 +6,7 @@
       "business_name": "Luxe Linen",
       "city": "Los Angeles",
       "website_url": "https://luxelinen.org/",
-      "description": "Linen and tabletop rental options for Los Angeles County events, with local delivery described on the official site.",
+      "description": "Table linen, napkin and chair rentals for weddings, corporate events and celebrations, with delivery in Los Angeles and Orange counties.",
       "services": [
         {
           "category": "Rentals",
@@ -23,19 +23,21 @@
           "type": "official website",
           "facts": [
             "business identity",
-            "Los Angeles service coverage",
-            "listed services"
+            "linen, napkin and chair rentals",
+            "delivery in Los Angeles and Orange counties",
+            "weddings, corporate events and birthdays",
+            "official contact page"
           ],
           "researched_on": "2026-10-27",
-          "reviewed_on": "2026-10-27"
+          "reviewed_on": "2026-11-11"
         }
       ]
     },
     "location_basis": "Service coverage only. No storefront or radius inferred.",
     "duplicate_review": {
-      "checked_on": "2026-10-27",
+      "checked_on": "2026-11-11",
       "result": "no_match",
-      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+      "note": "Compared normalized business names and official domains with 19 production businesses and 19 acquisition records. Repeat the Admin duplicate preview before import."
     },
     "proposed_media": []
   },
@@ -63,11 +65,13 @@
           "type": "official website",
           "facts": [
             "business identity",
-            "Los Angeles service coverage",
-            "listed services"
+            "mobile bartending in Southern California",
+            "Los Angeles contact location",
+            "weddings, corporate events and private parties",
+            "public phone and email"
           ],
           "researched_on": "2026-10-27",
-          "reviewed_on": "2026-10-27"
+          "reviewed_on": "2026-11-11"
         }
       ],
       "phone": "818.486.2045",
@@ -75,9 +79,9 @@
     },
     "location_basis": "Service coverage only. No storefront or radius inferred.",
     "duplicate_review": {
-      "checked_on": "2026-10-27",
+      "checked_on": "2026-11-11",
       "result": "no_match",
-      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+      "note": "Compared normalized business names and official domains with 19 production businesses and 19 acquisition records. Repeat the Admin duplicate preview before import."
     },
     "proposed_media": []
   },
@@ -105,19 +109,21 @@
           "type": "official website",
           "facts": [
             "business identity",
-            "Los Angeles service coverage",
-            "listed services"
+            "Los Angeles event entertainment",
+            "costumed and strolling characters",
+            "private parties, birthdays and corporate events",
+            "official contact page"
           ],
           "researched_on": "2026-10-27",
-          "reviewed_on": "2026-10-27"
+          "reviewed_on": "2026-11-11"
         }
       ]
     },
     "location_basis": "Service coverage only. No storefront or radius inferred.",
     "duplicate_review": {
-      "checked_on": "2026-10-27",
+      "checked_on": "2026-11-11",
       "result": "no_match",
-      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+      "note": "Compared normalized business names and official domains with 19 production businesses and 19 acquisition records. Repeat the Admin duplicate preview before import."
     },
     "proposed_media": []
   },
@@ -145,19 +151,22 @@
           "type": "official website",
           "facts": [
             "business identity",
-            "Los Angeles service coverage",
-            "listed services"
+            "food cart rentals in Los Angeles and Southern California",
+            "corporate events, weddings and private events",
+            "public phone and email"
           ],
           "researched_on": "2026-10-27",
-          "reviewed_on": "2026-10-27"
+          "reviewed_on": "2026-11-11"
         }
-      ]
+      ],
+      "phone": "877-254-1268",
+      "email": "info@ecparties.com"
     },
     "location_basis": "Service coverage only. No storefront or radius inferred.",
     "duplicate_review": {
-      "checked_on": "2026-10-27",
+      "checked_on": "2026-11-11",
       "result": "no_match",
-      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+      "note": "Compared normalized business names and official domains with 19 production businesses and 19 acquisition records. Repeat the Admin duplicate preview before import."
     },
     "proposed_media": []
   },
@@ -168,12 +177,14 @@
       "business_name": "Mint Valet",
       "city": "Los Angeles",
       "website_url": "https://www.mintvaletservices.com/",
-      "description": "Valet service for private events in Los Angeles and surrounding communities.",
+      "description": "On-site valet parking for private events, weddings and corporate events in Los Angeles.",
       "services": [
         {
           "category": "Valet",
           "event_types": [
-            "Private Party"
+            "Private Party",
+            "Wedding",
+            "Corporate"
           ]
         }
       ],
@@ -183,19 +194,22 @@
           "type": "official website",
           "facts": [
             "business identity",
-            "Los Angeles service coverage",
-            "listed services"
+            "on-site Los Angeles valet parking",
+            "private events, weddings and corporate events",
+            "public phone and email"
           ],
           "researched_on": "2026-10-27",
-          "reviewed_on": "2026-10-27"
+          "reviewed_on": "2026-11-11"
         }
-      ]
+      ],
+      "phone": "818-806-6905",
+      "email": "info@mintvaletservices.com"
     },
     "location_basis": "Service coverage only. No storefront or radius inferred.",
     "duplicate_review": {
-      "checked_on": "2026-10-27",
+      "checked_on": "2026-11-11",
       "result": "no_match",
-      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+      "note": "Compared normalized business names and official domains with 19 production businesses and 19 acquisition records. Repeat the Admin duplicate preview before import."
     },
     "proposed_media": []
   },
@@ -210,7 +224,9 @@
       "services": [
         {
           "category": "Invitations",
-          "event_types": []
+          "event_types": [
+            "Wedding"
+          ]
         }
       ],
       "sources": [
@@ -219,11 +235,23 @@
           "type": "official website",
           "facts": [
             "business identity",
-            "Los Angeles service coverage",
-            "listed services"
+            "custom letterpress invitations and announcements",
+            "Los Angeles studio address",
+            "public phone and email"
           ],
           "researched_on": "2026-10-27",
-          "reviewed_on": "2026-10-27"
+          "reviewed_on": "2026-11-11"
+        },
+        {
+          "url": "https://www.aardvarkletterpress.com/",
+          "type": "official website",
+          "facts": [
+            "custom wedding invitations",
+            "letterpress printing services",
+            "public studio contact details"
+          ],
+          "researched_on": "2026-11-11",
+          "reviewed_on": "2026-11-11"
         }
       ],
       "address": "2500 W 7th Street, Los Angeles, CA 90057",
@@ -232,9 +260,9 @@
     },
     "location_basis": "Confirmed studio address",
     "duplicate_review": {
-      "checked_on": "2026-10-27",
+      "checked_on": "2026-11-11",
       "result": "no_match",
-      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+      "note": "Compared normalized business names and official domains with 19 production businesses and 19 acquisition records. Repeat the Admin duplicate preview before import."
     },
     "proposed_media": []
   },
@@ -260,25 +288,28 @@
           "type": "official website",
           "facts": [
             "business identity",
-            "Los Angeles service coverage",
-            "listed services"
+            "Los Angeles portable toilets and restroom trailer rentals",
+            "weddings and special events",
+            "public phone and email"
           ],
           "researched_on": "2026-10-27",
-          "reviewed_on": "2026-10-27"
+          "reviewed_on": "2026-11-11"
         }
-      ]
+      ],
+      "phone": "661-977-1973",
+      "email": "info@platinumproportables.com"
     },
     "location_basis": "Service coverage only. No storefront or radius inferred.",
     "duplicate_review": {
-      "checked_on": "2026-10-27",
+      "checked_on": "2026-11-11",
       "result": "no_match",
-      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+      "note": "Compared normalized business names and official domains with 19 production businesses and 19 acquisition records. Repeat the Admin duplicate preview before import."
     },
     "proposed_media": []
   },
   {
     "candidate_id": "spirinity-la",
-    "research_status": "ready_for_admin_review",
+    "research_status": "needs_recheck",
     "details": {
       "business_name": "Spirinity Productions",
       "city": "Los Angeles",
@@ -309,10 +340,11 @@
     },
     "location_basis": "Service coverage only. No storefront or radius inferred.",
     "duplicate_review": {
-      "checked_on": "2026-10-27",
+      "checked_on": "2026-11-11",
       "result": "no_match",
-      "note": "Compared name and official domain against all 18 production businesses. Admin must repeat live duplicate checks before import."
+      "note": "Compared normalized business names and official domains with 19 production businesses and 19 acquisition records. Repeat the Admin duplicate preview before import."
     },
-    "proposed_media": []
+    "proposed_media": [],
+    "source_review_note": "The official service page and homepage returned HTTP 406 on 2026-11-11. Retain the October evidence pending a fresh official-source review."
   }
 ]
