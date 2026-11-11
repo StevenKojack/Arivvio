@@ -45,6 +45,7 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       "20261103160458_business_media.sql",
       "20261104160319_admin_profile_editor.sql",
       "20261104194822_profile_workspace.sql",
+      "20261105064750_vendor_operational_calendar.sql",
     ])
       await db.exec(readFileSync("supabase/migrations/" + f, "utf8"));
     const as = async (n) =>
@@ -375,6 +376,25 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       await modify('unpublish',{vendor_id:b.id,id:logo.id});
       await as(3);assert.equal((await db.query('select * from vendor_photos where id=$1',[logo.id])).rows.length,0);
       await as(2);await assert.rejects(activation('record_contact',{...contact,vendor_id:b.id,client_key:id(905)}),/Admin access/);
+    });
+    await t.test('private operational calendar persists and isolates businesses',async()=>{
+      await as(2);
+      const candidate=await db.query("select public.trust_operation('candidate',$1::jsonb) r",[JSON.stringify({business_name:'Calendar fixture',city:'Pasadena',category:'Photography',relationship:'Owner',location_scope:'Pasadena',authority_attested:true,adult_attested:true,separate_reason:'Independent calendar test fixture'})]);
+      const business=candidate.rows[0].r.vendor_id;
+      const insert=async(n,start,end,extra={})=>db.query(`insert into vendor_calendar_events(id,vendor_id,name,date,end_date,start_time,end_time,timezone,status,client_contact) values($1,$2,'Private fixture','2026-11-05',$3,$4,$5,$6,$7,'private@example.test') returning *`,[id(n),extra.business||business,extra.end_date||'2026-11-05',start,end,extra.zone||'America/Los_Angeles',extra.status||'Confirmed']);
+      const a=(await insert(7001,'09:00','10:00')).rows[0];await insert(7002,'11:00','12:00');await insert(7003,'23:00','02:00',{end_date:'2026-11-06'});
+      assert.equal(a.created_by,id(12));assert.equal((await db.query('select * from vendor_calendar_events where vendor_id=$1',[business])).rows.length,3);
+      for(const status of ['Hold','Tentative','Confirmed','Completed','Cancelled'])await db.query('update vendor_calendar_events set status=$1 where id=$2',[status,a.id]);
+      const saved=(await db.query("update vendor_calendar_events set tasks='[{\"title\":\"Pack equipment\",\"done\":true}]' where id=$1 returning *",[a.id])).rows[0];assert.equal(saved.tasks[0].done,true);assert.equal(saved.version,7);
+      assert.equal((await db.query('update vendor_calendar_events set name=$1 where id=$2 and version=1 returning *',['Stale',a.id])).rows.length,0);
+      await assert.rejects(insert(7010,'12:00','10:00'));
+      await assert.rejects(insert(7011,'12:00','13:00',{zone:'Not/AZone'}));
+      await assert.rejects(db.query('update vendor_calendar_events set service_id=$1 where id=$2',[id(987),a.id]));
+      await assert.rejects(db.query("update vendor_calendar_events set tasks='[{\"title\":\"Bad task\"}]' where id=$1",[a.id]));
+      await as(3);assert.equal((await db.query('select * from vendor_calendar_events')).rows.length,0);
+      await assert.rejects(insert(7012,'12:00','13:00'));assert.equal((await db.query('update vendor_calendar_events set name=$1 where id=$2 returning *',['Unauthorized',a.id])).rows.length,0);await assert.rejects(db.query('delete from vendor_calendar_events where id=$1',[a.id]));
+      await db.exec('reset role;set role anon');await assert.rejects(db.query('select client_contact from vendor_calendar_events'));
+      await as(2);assert.equal((await db.query('select status from vendor_calendar_events where id=$1',[a.id])).rows[0].status,'Cancelled');
     });
   } finally {
     await db.close();

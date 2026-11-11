@@ -166,6 +166,12 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["vendor_photos"]["Insert"]>;
         Relationships: [];
       };
+      vendor_calendar_events: {
+        Row: import('../vendor-calendar/model').ManualEvent;
+        Insert: Partial<import('../vendor-calendar/model').ManualEvent> & {vendor_id:string;name:string;date:string;end_date:string;start_time:string;end_time:string;timezone:string};
+        Update: Partial<import('../vendor-calendar/model').ManualEvent>;
+        Relationships: [];
+      };
       vendor_availability: {
         Row: {
           date: string;
