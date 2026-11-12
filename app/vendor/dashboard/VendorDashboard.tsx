@@ -47,8 +47,8 @@ import {
   type VendorDashboardTab,
 } from "./VendorDashboardTabs";
 
-export function VendorDashboard() {
-  const [activeTab, setActiveTab] = useState<VendorDashboardTab>("Dashboard");
+export function VendorDashboard({ initialTab, initialBusiness }: { initialTab: VendorDashboardTab; initialBusiness?: string }) {
+  const [activeTab, setActiveTab] = useState<VendorDashboardTab>(initialTab);
   const [vendors, setVendors] = useState<VendorBusinessRow[]>([]);
   const [services, setServices] = useState<VendorServiceRow[]>([]);
   const [availability, setAvailability] = useState<VendorAvailabilityRow[]>([]);
@@ -380,7 +380,7 @@ export function VendorDashboard() {
 
       <div className="mt-6">
         {activeTab === "Dashboard" ? (
-          <div className="space-y-6"><CalendarWorkspace compact/><RequestInbox audience="vendor" compact /></div>
+          <div className="space-y-6"><CalendarWorkspace compact initial={initialBusiness}/><RequestInbox audience="vendor" compact /></div>
         ) : null}
         {activeTab === "Services" ? (
           <ServicesTab
@@ -394,6 +394,7 @@ export function VendorDashboard() {
         ) : null}
         {activeTab === "Availability" ? (
           <AvailabilityTab
+            initialBusiness={initialBusiness}
             availability={availability}
             onCreateAvailability={handleCreateAvailability}
             onDeleteAvailability={handleDeleteAvailability}

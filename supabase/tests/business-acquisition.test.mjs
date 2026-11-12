@@ -387,11 +387,31 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       for(const status of ['Hold','Tentative','Confirmed','Completed','Cancelled'])await db.query('update vendor_calendar_events set status=$1 where id=$2',[status,a.id]);
       const saved=(await db.query("update vendor_calendar_events set tasks='[{\"title\":\"Pack equipment\",\"done\":true}]' where id=$1 returning *",[a.id])).rows[0];assert.equal(saved.tasks[0].done,true);assert.equal(saved.version,7);
       assert.equal((await db.query('update vendor_calendar_events set name=$1 where id=$2 and version=1 returning *',['Stale',a.id])).rows.length,0);
+      const tasks = [{ title: 'Pack equipment', done: false }, { title: 'Check access', done: false }];
+      const updateTasks = (branch, version) => db.query(
+        'update vendor_calendar_events set tasks=$1::jsonb where id=$2 and vendor_id=$3 and version=$4 returning *',
+        [JSON.stringify(tasks), a.id, branch, version],
+      );
+      assert.equal((await updateTasks(id(9999), saved.version)).rows.length, 0);
+      assert.equal((await updateTasks(business, saved.version - 1)).rows.length, 0);
+      const reopened = (await updateTasks(business, saved.version)).rows[0];
+      assert.equal(reopened.version, saved.version + 1);
+      assert.equal(reopened.client_contact, 'private@example.test');
+      const clientUpdate = await db.query(
+        'update vendor_calendar_events set notes=$1,client_name=$2 where id=$3 and vendor_id=$4 and version=$5 returning *',
+        ['Use the west entrance', 'Fixture client', a.id, business, reopened.version],
+      );
+      assert.deepEqual(clientUpdate.rows[0].tasks, tasks);
+      const reread = (await db.query('select * from vendor_calendar_events where id=$1 and vendor_id=$2', [a.id, business])).rows[0];
+      assert.deepEqual(reread.tasks, tasks);
+      assert.equal(reread.notes, 'Use the west entrance');
+      assert.equal(reread.client_name, 'Fixture client');
       await assert.rejects(insert(7010,'12:00','10:00'));
       await assert.rejects(insert(7011,'12:00','13:00',{zone:'Not/AZone'}));
       await assert.rejects(db.query('update vendor_calendar_events set service_id=$1 where id=$2',[id(987),a.id]));
       await assert.rejects(db.query("update vendor_calendar_events set tasks='[{\"title\":\"Bad task\"}]' where id=$1",[a.id]));
-      await as(3);assert.equal((await db.query('select * from vendor_calendar_events')).rows.length,0);
+      await as(3);assert.equal((await db.query('select client_name,client_contact,notes,tasks from vendor_calendar_events')).rows.length,0);
+      assert.equal((await updateTasks(business, clientUpdate.rows[0].version)).rows.length, 0);
       await assert.rejects(insert(7012,'12:00','13:00'));assert.equal((await db.query('update vendor_calendar_events set name=$1 where id=$2 returning *',['Unauthorized',a.id])).rows.length,0);await assert.rejects(db.query('delete from vendor_calendar_events where id=$1',[a.id]));
       await db.exec('reset role;set role anon');await assert.rejects(db.query('select client_contact from vendor_calendar_events'));
       await as(2);assert.equal((await db.query('select status from vendor_calendar_events where id=$1',[a.id])).rows[0].status,'Cancelled');

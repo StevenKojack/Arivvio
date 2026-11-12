@@ -391,6 +391,7 @@ export function ServicesTab({
 
 export function AvailabilityTab({
   availability,
+  initialBusiness,
   onDeleteAvailability,
   onCreateAvailability,
   onToggleVacationMode,
@@ -402,14 +403,15 @@ export function AvailabilityTab({
   | "onDeleteAvailability"
   | "onToggleVacationMode"
   | "vendors"
->) {
+> & { initialBusiness?: string }) {
   const [draft, setDraft] = useState<AvailabilityDraft>({
     date: "",
     endTime: "17:00",
     startTime: "09:00",
     status: "available",
-    vendorId: vendors[0]?.id ?? "",
+    vendorId: initialBusiness ? (vendors.some(vendor => vendor.id === initialBusiness) ? initialBusiness : "") : (vendors[0]?.id ?? ""),
   });
+  const businessWindows = availability.filter(window => window.vendor_id === draft.vendorId);
   const weeklyDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   return (
@@ -472,6 +474,7 @@ export function AvailabilityTab({
               onChange={(event) => setDraft({ ...draft, vendorId: event.target.value })}
               className="h-11 rounded-lg border border-neutral-300 bg-white px-3"
             >
+              <option value="">Select a business</option>
               {vendors.map((vendor) => (
                 <option key={vendor.id} value={vendor.id}>
                   {vendor.business_name}
@@ -507,8 +510,8 @@ export function AvailabilityTab({
           </button>
         </div>
         <div className="mt-5 space-y-2">
-          {availability.length ? (
-            availability.map((window) => (
+          {businessWindows.length ? (
+            businessWindows.map((window) => (
               <div key={window.id} className="rounded-lg border border-neutral-200 p-4">
                 <p className="font-semibold text-neutral-950">
                   {formatDate(window.date)} - {window.status}

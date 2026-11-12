@@ -1,12 +1,14 @@
 import { Navigation } from "@/app/components/Navigation";
 import { VendorDashboard } from "./VendorDashboard";
 
-export default function VendorDashboardPage() {
+export default async function VendorDashboardPage({ searchParams }: { searchParams: Promise<{ tab?: string; business?: string }> }) {
+  const { tab, business } = await searchParams;
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#F6F3EA] text-neutral-950">
       <Navigation />
       <section className="px-6 py-16 sm:px-8 lg:px-12">
-        <VendorDashboard />
+        <VendorDashboard initialTab={tab === "availability" ? "Availability" : "Dashboard"}
+          initialBusiness={typeof business === "string" ? business : undefined} />
       </section>
     </main>
   );
