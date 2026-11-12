@@ -7,6 +7,7 @@ import { trustOperation, type TrustWorkspace } from '@/lib/repositories/business
 import { loadCalendar, saveCalendarEvent, updateCalendarEvent, type EventChanges } from '@/lib/repositories/vendorCalendarRepository';
 import { localDate, todayIn, shiftDate, onDay, manualEntry, sortEntries, type CalendarEntry, type ManualEvent } from '@/lib/vendor-calendar/model';
 import { entryKey, reviewLabels, scheduleReviews, timeRange, unfinishedCount, upcomingWork } from '@/lib/vendor-calendar/operations';
+import { vendorRequestsForBranch, vendorRequestStage } from '@/lib/requests/vendor-workspace';
 import { EventDetails } from './EventDetails';
 import { EventEditor } from './EventEditor';
 
@@ -19,9 +20,10 @@ function calendarHref(business: string, entry?: CalendarEntry, preparation = fal
   return '/vendor/calendar?' + params;
 }
 
-export function CalendarWorkspace({ initial, initialEvent, initialPreparation = false, compact = false }: {
+export function CalendarWorkspace({ initial, initialEvent, initialClient, initialPreparation = false, compact = false }: {
   initial?: string;
   initialEvent?: string;
+  initialClient?: string;
   initialPreparation?: boolean;
   compact?: boolean;
 }) {
@@ -92,18 +94,19 @@ export function CalendarWorkspace({ initial, initialEvent, initialPreparation = 
       {!loading && !error && !businesses.length && <p>No editable businesses yet. <Link className="underline" href="/vendor/onboarding">Find or create a business</Link></p>}
       {!loading && business && (
         <BusinessCalendar key={business.id} id={business.id} business={businessLabel(business)} compact={compact}
-          initialEvent={business.id === initial ? initialEvent : undefined} initialPreparation={business.id === initial && initialPreparation}
+          initialClient={business.id === initial ? initialClient : undefined} initialEvent={business.id === initial ? initialEvent : undefined} initialPreparation={business.id === initial && initialPreparation}
           onDirty={setDirty} onSaving={setSaving}/>
       )}
     </section>
   );
 }
 
-function BusinessCalendar({ id, business, compact, initialEvent, initialPreparation, onDirty, onSaving }: {
+function BusinessCalendar({ id, business, compact, initialEvent, initialClient, initialPreparation, onDirty, onSaving }: {
   id: string;
   business: string;
   compact: boolean;
   initialEvent?: string;
+  initialClient?: string;
   initialPreparation: boolean;
   onDirty: (dirty: boolean) => void;
   onSaving: (saving: boolean) => void;
@@ -116,7 +119,8 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialPreparat
   const [view, setView] = useState(initialPreparation ? 'Agenda' : 'Month');
   const [zone, setZone] = useState('');
   const [selectedKey, setSelectedKey] = useState(initialEvent ?? '');
-  const [draft, setDraft] = useState<ManualEvent | null>(null);
+  const [draft, setDraft] = useState<ManualEvent | null>(() =>
+    initialClient && !initialEvent ? blankEvent(id, date, '', initialClient) : null);
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
   const [prepOnly, setPrepOnly] = useState(initialPreparation);
@@ -143,6 +147,7 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialPreparat
   const upcoming = upcomingWork(entries);
   const prepEvents = upcoming.filter(entry => unfinishedCount(entry) > 0);
   const remainingTasks = prepEvents.reduce((count, entry) => count + unfinishedCount(entry), 0);
+  const branchRequests = compact && data ? vendorRequestsForBranch(data.inbox, id) : [];
   const selected = entries.find(entry => entryKey(entry) === selectedKey);
   const reviews = (entry: CalendarEntry) => scheduleReviews(entry, entries, data?.availability ?? []);
 
@@ -184,11 +189,7 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialPreparat
   function add() {
     leave(() => {
       select('');
-      setDraft({
-        id: crypto.randomUUID(), vendor_id: id, name: '', date, end_date: date, start_time: '', end_time: '', timezone: zone,
-        status: 'Tentative', event_type: '', client_name: '', client_contact: '', location: '', service_id: null,
-        notes: '', tasks: [], version: 0, created_at: '', updated_at: '', created_by: '', updated_by: '',
-      });
+      setDraft(blankEvent(id, date, zone));
     });
   }
 
@@ -275,7 +276,7 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialPreparat
           )}
           {draft && (
             <EventEditor key={draft.id} initial={draft} services={data.services} warnings={reviews(manualEntry(draft)).map(review => reviewLabels[review.kind] + ' · ' + review.message)}
-              onChange={event => { setDraft(event); mark(true); }} onCancel={() => leave(() => setDraft(null))}
+              onChange={event => { setDraft(event); mark(true); }} onCancel={() => leave(() => { setDraft(null); if (!selectedKey) select(''); })}
               onSave={() => persist(() => saveCalendarEvent(id, draft))}/>
           )}
 
@@ -314,6 +315,15 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialPreparat
         </>
       )}
 
+      {compact && data && <nav aria-label="Business workspace" className="flex flex-wrap gap-2">
+        <Link className="hub-button" href={'/vendor/clients?' + new URLSearchParams({ business: id })}>Clients</Link>
+        <Link className="hub-button" href={'/vendor/requests?' + new URLSearchParams({ business: id, stage: 'pending' })}>
+          Pending requests · {branchRequests.filter(row => vendorRequestStage(row) === 'New inquiries').length}
+        </Link>
+        <Link className="hub-button" href={'/vendor/requests?' + new URLSearchParams({ business: id, stage: 'bookings' })}>
+          Recorded bookings · {branchRequests.filter(row => vendorRequestStage(row) === 'Recorded bookings').length}
+        </Link>
+      </nav>}
       {data && (
         <section className="space-y-3 rounded-xl border ui-border ui-surface p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -360,4 +370,14 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialPreparat
       )}
     </div>
   );
+}
+
+
+function blankEvent(vendor: string, date: string, timezone: string, client: string | null = null): ManualEvent {
+  return {
+    id: crypto.randomUUID(), vendor_id: vendor, client_id: client, name: '', date, end_date: date,
+    start_time: '', end_time: '', timezone, status: 'Tentative', event_type: '', client_name: '',
+    client_contact: '', location: '', service_id: null, notes: '', tasks: [], version: 0,
+    created_at: '', updated_at: '', created_by: '', updated_by: '',
+  };
 }

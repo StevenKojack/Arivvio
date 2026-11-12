@@ -30,12 +30,12 @@ export async function loadCalendar(vendorId: string) {
     const row = bookingContext.get(booking.id);
     entries.push(bookingEntry(booking, row?.context, row?.service_name || serviceNames.get(booking.service_id ?? '')));
   }
-  return { vacation: business.data?.vacation_mode ?? false, entries: sortEntries(entries), availability: availability.data ?? [], services: serviceRows };
+  return { inbox, vacation: business.data?.vacation_mode ?? false, entries: sortEntries(entries), availability: availability.data ?? [], services: serviceRows };
 }
 
 export type EventChanges = Partial<Pick<ManualEvent,
   'name' | 'date' | 'end_date' | 'start_time' | 'end_time' | 'timezone' | 'status' |
-  'event_type' | 'client_name' | 'client_contact' | 'location' | 'service_id' | 'notes' | 'tasks'>>;
+  'event_type' | 'client_id' | 'client_name' | 'client_contact' | 'location' | 'service_id' | 'notes' | 'tasks'>>;
 
 export async function updateCalendarEvent(vendorId: string, event: ManualEvent, changes: EventChanges) {
   if (event.vendor_id !== vendorId || event.version < 1) throw Error('Select the event’s business before saving.');

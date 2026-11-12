@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { shiftDate, statuses, type ManualEvent } from '@/lib/vendor-calendar/model';
+import { EventClientPicker } from './EventClientPicker';
 import type { VendorServiceRow } from '@/lib/repositories/vendorsRepository';
 
 export function EventEditor({ initial: draft, onChange, onCancel, onSave, services, warnings }: {
@@ -13,6 +14,7 @@ export function EventEditor({ initial: draft, onChange, onCancel, onSave, servic
   warnings: string[];
 }) {
   const [busy, setBusy] = useState(false);
+  const [creatingClient, setCreatingClient] = useState(false);
   const [error, setError] = useState('');
   const heading = useRef<HTMLHeadingElement>(null);
   const zones = Array.from(new Set(['UTC', ...Intl.supportedValuesOf('timeZone'), draft.timezone].filter(Boolean)));
@@ -27,7 +29,7 @@ export function EventEditor({ initial: draft, onChange, onCancel, onSave, servic
   return (
     <form aria-label="External event editor" className="space-y-4 rounded-xl border ui-border ui-surface p-4 sm:p-6" onSubmit={async event => {
       event.preventDefault();
-      if (busy) return;
+      if (busy || creatingClient) return;
       setError('');
       if (!overnight && draft.end_time.slice(0, 5) <= draft.start_time.slice(0, 5)) {
         setError('End time must follow start time. Select Ends next day for an overnight event.');
@@ -39,7 +41,7 @@ export function EventEditor({ initial: draft, onChange, onCancel, onSave, servic
       finally { setBusy(false); }
     }}>
       <h2 ref={heading} tabIndex={-1} className="text-xl font-semibold">{draft.version ? 'Edit event details' : 'Add external event'}</h2>
-      <fieldset className="space-y-4" disabled={busy}>
+      <fieldset className="space-y-4" disabled={busy || creatingClient}>
         <label className="grid gap-1">Event name
           <input required maxLength={200} className="hub-input" value={draft.name} onChange={event => change({ name: event.target.value })}/>
         </label>
@@ -82,6 +84,8 @@ export function EventEditor({ initial: draft, onChange, onCancel, onSave, servic
           </select>
         </label>
         <p className="text-xs ui-muted">Events can last up to 24 hours. Repeated daylight-saving hours use the standard-time occurrence.</p>
+        <EventClientPicker business={draft.vendor_id} value={draft.client_id ?? null} disabled={busy}
+          onWorking={setCreatingClient} onChange={client_id => change({ client_id })}/>
         {!draft.version && (
           <details>
             <summary className="cursor-pointer py-2 font-semibold">Client & location</summary>
@@ -97,8 +101,8 @@ export function EventEditor({ initial: draft, onChange, onCancel, onSave, servic
       {warnings.map(warning => <p key={warning} className="text-sm font-medium">{warning}</p>)}
       {error && <p role="alert" className="text-sm font-medium">{error}</p>}
       <div className="flex flex-wrap gap-3">
-        <button className="hub-primary" disabled={busy}>{busy ? 'Saving…' : 'Save event'}</button>
-        <button type="button" className="hub-button" disabled={busy} onClick={onCancel}>Cancel</button>
+        <button className="hub-primary" disabled={busy || creatingClient}>{busy ? 'Saving…' : 'Save event'}</button>
+        <button type="button" className="hub-button" disabled={busy || creatingClient} onClick={onCancel}>Cancel</button>
       </div>
     </form>
   );

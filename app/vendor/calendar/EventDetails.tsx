@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { EventClientPicker } from './EventClientPicker';
+import { vendorClientLink } from '@/lib/vendor-calendar/links';
 import type { EventChanges } from '@/lib/repositories/vendorCalendarRepository';
 import { statuses, type CalendarEntry, type ManualEvent } from '@/lib/vendor-calendar/model';
 import { reviewLabels, timeRange, type ScheduleReview } from '@/lib/vendor-calendar/operations';
@@ -12,7 +14,7 @@ const clientFields = [
   { key: 'location', label: 'Location', max: 1000 },
   { key: 'notes', label: 'Private notes', max: 10000 },
 ] as const;
-type ClientFields = Pick<ManualEvent, typeof clientFields[number]['key']>;
+type ClientFields = Pick<ManualEvent, typeof clientFields[number]['key'] | 'client_id'>;
 type Edit = { type: 'client'; fields: ClientFields } | { type: 'task'; index: number; title: string };
 
 export function EventDetails({ entry, business, reviews, availabilityHref, busy, onDirty, onClose, onEdit, onOpen, onSave }: {
@@ -28,6 +30,7 @@ export function EventDetails({ entry, business, reviews, availabilityHref, busy,
   onSave: (event: ManualEvent, changes: EventChanges) => Promise<void>;
 }) {
   const [edit, setEdit] = useState<Edit | null>(null);
+  const [creatingClient, setCreatingClient] = useState(false);
   const [error, setError] = useState('');
   const heading = useRef<HTMLHeadingElement>(null);
   const manual = entry.manual;
@@ -98,7 +101,11 @@ export function EventDetails({ entry, business, reviews, availabilityHref, busy,
         <section className="min-w-0 space-y-3 rounded-xl border ui-border p-4">
           <h3 className="font-semibold">{manual ? 'Client & location' : 'Location & vendor notes'}</h3>
           {edit?.type === 'client' ? (
-            <form className="space-y-3" onSubmit={event => { event.preventDefault(); void save(edit.fields); }}>
+            <form className="space-y-3" onSubmit={event => { event.preventDefault(); if (!creatingClient) void save(edit.fields); }}>
+              {manual && <EventClientPicker business={manual.vendor_id} value={edit.fields.client_id ?? null}
+                disabled={busy} onWorking={setCreatingClient}
+                onChange={client_id => setEdit(current => current?.type === 'client' ? { ...current, fields: { ...current.fields, client_id } } : current)}/>}
+              <p className="text-xs ui-muted">Event contact details are saved separately from the directory.</p>
               {clientFields.map(({ key, label, max }) => (
                 <label className="grid gap-1 text-sm" key={key}>{label}
                   {key === 'notes' ? (
@@ -111,8 +118,8 @@ export function EventDetails({ entry, business, reviews, availabilityHref, busy,
                 </label>
               ))}
               <div className="flex flex-wrap gap-2">
-                <button className="hub-primary" disabled={busy}>Save client details</button>
-                <button type="button" className="hub-button" disabled={busy} onClick={() => startEdit(null)}>Cancel</button>
+                <button className="hub-primary" disabled={busy || creatingClient}>Save client details</button>
+                <button type="button" className="hub-button" disabled={busy || creatingClient} onClick={() => startEdit(null)}>Cancel</button>
               </div>
             </form>
           ) : (
@@ -124,9 +131,11 @@ export function EventDetails({ entry, business, reviews, availabilityHref, busy,
                 <div><dt className="ui-muted">Location</dt><dd className="break-words">{entry.location || 'Not added'}</dd></div>
                 <div><dt className="ui-muted">{manual ? 'Private notes' : 'Vendor notes'}</dt><dd className="whitespace-pre-wrap break-words">{entry.notes || 'Not added'}</dd></div>
               </dl>
+              {manual?.client_id && <Link className="block text-sm underline"
+                href={vendorClientLink(manual.vendor_id, manual.client_id)}>Open client profile</Link>}
               {manual && <button type="button" className="hub-button" disabled={busy || !!edit} onClick={() => startEdit({
-                type: 'client', fields: { client_name: manual.client_name, client_contact: manual.client_contact, location: manual.location, notes: manual.notes },
-              })}>Edit client details</button>}
+                type: 'client', fields: { client_id: manual.client_id, client_name: manual.client_name, client_contact: manual.client_contact, location: manual.location, notes: manual.notes },
+              })}>{manual.client_id ? 'Edit client details' : 'Link to client or edit details'}</button>}
             </>
           )}
         </section>

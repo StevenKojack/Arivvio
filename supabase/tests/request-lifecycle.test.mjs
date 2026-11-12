@@ -80,6 +80,23 @@ test('secured request, conversation and booking lifecycle',async t=>{
  assert.equal((await sql('select vendor_notes from public.bookings where id=$1',[booking.id]))[0].vendor_notes,'Vendor schedule note');
  await assert.rejects(()=>rpc('withdraw_quote_request',[id(51)]));
  });
+ await t.test('vendor overview reads preserve request stages and do not write communications or bookings', async () => {
+   try {
+     await as(2);
+     const counts = async () => (await sql('select (select count(*) from public.messages) as messages, (select count(*) from public.bookings) as bookings'))[0];
+     const before = await counts();
+     const first = await rpc('get_request_inbox', ['vendor']);
+     const second = await rpc('get_request_inbox', ['vendor']);
+     assert.deepEqual(first, second);
+     const accepted = first.find(row => row.quote.id === id(51));
+     assert.equal(accepted.quote.status, 'accepted');
+     assert.equal(accepted.quote.quote_revision, 3);
+     assert.equal(accepted.booking_id, booking.id);
+     assert.deepEqual(await counts(), before);
+     await as(3);
+     assert.ok(!(await rpc('get_request_inbox', ['vendor'])).some(row => row.quote.id === id(51)));
+   } finally { await as(1); }
+ });
  await t.test('withdrawal and decline preserve closed history and isolate providers',async()=>{
  await rpc('withdraw_quote_request',[id(52)]);await as(4);await assert.rejects(()=>rpc('send_vendor_quote',[id(52),500,'',1]));await assert.rejects(()=>rpc('send_quote_message',[id(52),'Late']));
  const declined=await rpc('decline_quote',[id(53),'Unavailable that evening']);assert.equal(declined.status,'declined');

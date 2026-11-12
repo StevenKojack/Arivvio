@@ -1,7 +1,7 @@
 export const statuses = ['Hold', 'Tentative', 'Confirmed', 'Completed', 'Cancelled'] as const;
 export type ManualEvent = {
  id:string; vendor_id:string; name:string; date:string; end_date:string; start_time:string; end_time:string; timezone:string;
- status:typeof statuses[number]; event_type:string; client_name:string; client_contact:string; location:string; service_id:string|null; notes:string;
+ status:typeof statuses[number]; event_type:string; client_id?:string|null; client_name:string; client_contact:string; location:string; service_id:string|null; notes:string;
  tasks:{title:string;done:boolean}[]; version:number; created_by:string; updated_by:string; created_at:string; updated_at:string;
 };
 export type CalendarEntry = {id:string;name:string;date:string|null;end_date:string|null;start_time:string|null;end_time:string|null;status:string;source:'External Event'|'ARIVVIO';timezone:string|null;location:string;notes:string;service:string;eventType?:string;manual?:ManualEvent};

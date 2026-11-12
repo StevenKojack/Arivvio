@@ -416,6 +416,74 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       await db.exec('reset role;set role anon');await assert.rejects(db.query('select client_contact from vendor_calendar_events'));
       await as(2);assert.equal((await db.query('select status from vendor_calendar_events where id=$1',[a.id])).rows[0].status,'Cancelled');
     });
+    await t.test('private client directory persists, preserves event snapshots and rejects cross-branch links', async () => {
+      await as(2);
+      const candidate = name => db.query("select public.trust_operation('candidate',$1::jsonb) r", [
+        JSON.stringify({ business_name: name, city: 'Pasadena', category: 'Photography',
+          relationship: 'Owner', location_scope: 'Pasadena', authority_attested: true, adult_attested: true,
+          separate_reason: 'Independent client directory test fixture' }),
+      ]).then(result => result.rows[0].r.vendor_id);
+      const branch = await candidate('Directory North Fixture');
+      const other = await candidate('Directory South Fixture');
+      const insertEvent = (number, vendor) => db.query(
+        "insert into vendor_calendar_events(id,vendor_id,name,date,end_date,start_time,end_time,timezone,client_name,client_contact) values($1,$2,'Fixture event','2026-11-05','2026-11-05','09:00','10:00','America/Los_Angeles','Saved contact','original@example.test')",
+        [id(number), vendor],
+      );
+      await insertEvent(7100, branch);
+      await insertEvent(7101, branch);
+      await insertEvent(7102, other);
+
+      await db.exec('reset role');
+      await db.exec(readFileSync('supabase/migrations/20261112124704_vendor_client_directory.sql', 'utf8'));
+      await as(2);
+      const insert = (vendor, name) => db.query(
+        'insert into vendor_clients(vendor_id,display_name) values($1,$2) returning *', [vendor, name],
+      ).then(result => result.rows[0]);
+      const client = await insert(branch, '  Fixture Client  ');
+      const sameName = await insert(branch, 'Fixture Client');
+      const otherClient = await insert(other, 'Fixture Client');
+      assert.equal(client.display_name, 'Fixture Client');
+      assert.equal(client.created_by, id(12));
+      assert.equal(client.email, '');
+      assert.notEqual(client.id, sameName.id);
+      assert.deepEqual((await db.query('select id from vendor_clients where vendor_id=$1', [other])).rows, [{ id: otherClient.id }]);
+
+      const before = (await db.query('select client_id,client_contact,version from vendor_calendar_events where id=$1', [id(7100)])).rows[0];
+      assert.deepEqual(before, { client_id: null, client_contact: 'original@example.test', version: 1 });
+      const link = (event, vendor, clientId, version) => db.query(
+        'update vendor_calendar_events set client_id=$1 where id=$2 and vendor_id=$3 and version=$4 returning id',
+        [clientId, id(event), vendor, version],
+      );
+      await assert.rejects(link(7100, branch, otherClient.id, 1), /vendor_calendar_client_branch_fk/);
+      assert.equal((await link(7100, branch, client.id, 1)).rows.length, 1);
+      assert.equal((await link(7101, branch, client.id, 1)).rows.length, 1);
+      assert.equal((await link(7100, branch, sameName.id, 1)).rows.length, 0);
+      await assert.rejects(link(7102, other, client.id, 1), /vendor_calendar_client_branch_fk/);
+      const updated = (await db.query(
+        "update vendor_clients set email='current@example.test' where id=$1 and vendor_id=$2 and version=1 returning *",
+        [client.id, branch],
+      )).rows[0];
+      assert.equal(updated.version, 2);
+      assert.equal(updated.updated_by, id(12));
+      assert.equal((await db.query(
+        "update vendor_clients set email='stale@example.test' where id=$1 and vendor_id=$2 and version=1 returning id",
+        [client.id, branch],
+      )).rows.length, 0);
+      await assert.rejects(db.query('update vendor_clients set vendor_id=$1 where id=$2', [other, client.id]), /business identity/);
+      const history = (await db.query(
+        'select id,client_contact from vendor_calendar_events where vendor_id=$1 and client_id=$2 order by id',
+        [branch, client.id],
+      )).rows;
+      assert.deepEqual(history, [7100, 7101].map(n => ({ id: id(n), client_contact: 'original@example.test' })));
+
+      await as(3);
+      assert.equal((await db.query('select * from vendor_clients where id=$1', [client.id])).rows.length, 0);
+      await assert.rejects(insert(branch, 'Unauthorized'));
+      assert.equal((await db.query('update vendor_clients set notes=$1 where id=$2 returning id', ['Unauthorized', client.id])).rows.length, 0);
+      assert.equal((await db.query('select * from vendor_calendar_events where client_id=$1', [client.id])).rows.length, 0);
+      await db.exec('reset role; set role anon;');
+      await assert.rejects(db.query('select * from vendor_clients'), /permission denied/);
+    });
   } finally {
     await db.close();
   }

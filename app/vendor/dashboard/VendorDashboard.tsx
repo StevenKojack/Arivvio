@@ -380,7 +380,13 @@ export function VendorDashboard({ initialTab, initialBusiness }: { initialTab: V
 
       <div className="mt-6">
         {activeTab === "Dashboard" ? (
-          <div className="space-y-6"><CalendarWorkspace compact initial={initialBusiness}/><RequestInbox audience="vendor" compact /></div>
+          <div className="space-y-6">
+            <nav aria-label="Vendor operations" className="flex flex-wrap gap-2">
+              <Link className="hub-button" href="/vendor/clients">Client directory</Link>
+              <Link className="hub-button" href="/vendor/requests">Request overview</Link>
+            </nav>
+            <CalendarWorkspace compact initial={initialBusiness}/>
+          </div>
         ) : null}
         {activeTab === "Services" ? (
           <ServicesTab
