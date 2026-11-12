@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { EventClientPicker } from './EventClientPicker';
-import { vendorClientLink } from '@/lib/vendor-calendar/links';
+import { vendorBookingLink, vendorClientLink } from '@/lib/vendor-calendar/links';
 import type { EventChanges } from '@/lib/repositories/vendorCalendarRepository';
 import { statuses, type CalendarEntry, type ManualEvent } from '@/lib/vendor-calendar/model';
 import { reviewLabels, timeRange, type ScheduleReview } from '@/lib/vendor-calendar/operations';
@@ -17,9 +17,10 @@ const clientFields = [
 type ClientFields = Pick<ManualEvent, typeof clientFields[number]['key'] | 'client_id'>;
 type Edit = { type: 'client'; fields: ClientFields } | { type: 'task'; index: number; title: string };
 
-export function EventDetails({ entry, business, reviews, availabilityHref, busy, onDirty, onClose, onEdit, onOpen, onSave }: {
+export function EventDetails({ entry, business, vendorId, reviews, availabilityHref, busy, onDirty, onClose, onEdit, onOpen, onSave }: {
   entry: CalendarEntry;
   business: string;
+  vendorId: string;
   reviews: ScheduleReview[];
   availabilityHref: string;
   busy: boolean;
@@ -93,7 +94,7 @@ export function EventDetails({ entry, business, reviews, availabilityHref, busy,
           ) : (
             <div className="space-y-2 text-sm">
               <p className="capitalize">Status · {entry.status}</p>
-              <Link className="hub-button inline-flex" href={'/bookings/' + entry.id}>Open ARIVVIO booking</Link>
+              <Link className="hub-button inline-flex" href={vendorBookingLink(vendorId, entry.id)}>Open booking operations</Link>
             </div>
           )}
         </section>

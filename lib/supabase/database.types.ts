@@ -166,6 +166,14 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["vendor_photos"]["Insert"]>;
         Relationships: [];
       };
+      vendor_private_operations: {
+        Row: import('../vendor-operations/model').VendorOperation;
+        Insert: Partial<import('../vendor-operations/model').OperationFields> & {
+          vendor_id: string; request_id?: string; booking_id?: string;
+        };
+        Update: Partial<import('../vendor-operations/model').OperationFields>;
+        Relationships: [];
+      };
       vendor_clients: {
         Row: import('../vendor-clients/model').VendorClient;
         Insert: import('../vendor-clients/model').ClientFields & { vendor_id: string };

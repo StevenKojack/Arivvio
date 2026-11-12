@@ -484,6 +484,71 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       await db.exec('reset role; set role anon;');
       await assert.rejects(db.query('select * from vendor_clients'), /permission denied/);
     });
+    await t.test('private operations persist without modifying quotes, bookings or communications', async () => {
+      await db.exec('reset role');
+      await db.exec(readFileSync('supabase/migrations/20261112185422_vendor_private_operations.sql', 'utf8'));
+      const request = (await db.query('select * from quote_requests where event_id=$1', [id(600)])).rows[0];
+      assert.ok(request);
+      const count = async () => (await db.query(
+        'select (select count(*) from messages) as messages, (select count(*) from bookings) as bookings',
+      )).rows[0];
+      const before = await count();
+      const draft = (vendor, requestId = request.id) => db.query(
+        "insert into vendor_private_operations(vendor_id,request_id,proposed_amount,draft_notes,private_notes) values($1,$2,250,'Fixture draft','Fixture notes') returning *",
+        [vendor, requestId],
+      );
+      await as(1);
+      await assert.rejects(draft(request.vendor_id, id(9981)), /row-level security/);
+      const row = (await draft(request.vendor_id)).rows[0];
+      assert.equal(Number(row.proposed_amount), 250);
+      assert.equal(row.draft_notes, 'Fixture draft');
+      assert.equal(row.version, 1);
+      await assert.rejects(draft(request.vendor_id), /duplicate key/);
+      const update = (notes, version) => db.query(
+        'update vendor_private_operations set private_notes=$1 where vendor_id=$2 and id=$3 and version=$4 returning *',
+        [notes, request.vendor_id, row.id, version],
+      );
+      const saved = (await update('Updated internal notes', 1)).rows[0];
+      assert.equal(saved.version, 2);
+      assert.equal((await update('Stale edit', 1)).rows.length, 0);
+      assert.equal(saved.draft_notes, 'Fixture draft');
+      assert.equal((await db.query('select private_notes from vendor_private_operations where id=$1', [row.id])).rows[0].private_notes, 'Updated internal notes');
+      await as(2);
+      assert.equal((await db.query('select * from vendor_private_operations')).rows.length, 0);
+      assert.equal((await update('Customer cannot edit', 2)).rows.length, 0);
+      await assert.rejects(draft(request.vendor_id), /row-level security/);
+      await db.exec('reset role');
+      assert.deepEqual(await count(), before);
+      assert.deepEqual((await db.query('select * from quote_requests where id=$1', [request.id])).rows[0], request);
+
+      const booking = (await db.query(
+        "insert into bookings(id,event_id,planner_id,vendor_id,quote_request_id,final_price,booking_status,vendor_notes) values($1,$2,$3,$4,$5,400,'confirmed','Shared fixture note') returning *",
+        [id(7200), request.event_id, request.planner_id, request.vendor_id, request.id],
+      )).rows[0];
+      const beforePrep = await count();
+      await as(1);
+      const tasks = [{ title: 'Prepare equipment', done: true }];
+      const prep = (await db.query(
+        "insert into vendor_private_operations(vendor_id,booking_id,private_notes,tasks) values($1,$2,'Private fixture note',$3::jsonb) returning *",
+        [request.vendor_id, booking.id, JSON.stringify(tasks)],
+      )).rows[0];
+      assert.deepEqual(prep.tasks, tasks);
+      const reopened = [{ title: 'Prepare equipment', done: false }];
+      await db.query('update vendor_private_operations set tasks=$1::jsonb where id=$2 and version=1', [JSON.stringify(reopened), prep.id]);
+      const reread = (await db.query('select * from vendor_private_operations where booking_id=$1', [booking.id])).rows[0];
+      assert.deepEqual(reread.tasks, reopened);
+      assert.equal(reread.private_notes, 'Private fixture note');
+      await assert.rejects(db.query('update vendor_private_operations set vendor_id=$1 where id=$2', [id(9982), prep.id]), /permission denied/);
+      await assert.rejects(db.query("update vendor_private_operations set tasks='[{}]' where id=$1", [prep.id]), /title and completion state/);
+      await as(2);
+      assert.equal((await db.query('select * from vendor_private_operations where booking_id=$1', [booking.id])).rows.length, 0);
+      assert.equal((await db.query('select vendor_notes from bookings where id=$1', [booking.id])).rows[0].vendor_notes, 'Shared fixture note');
+      await db.exec('reset role');
+      assert.deepEqual(await count(), beforePrep);
+      assert.deepEqual((await db.query('select * from bookings where id=$1', [booking.id])).rows[0], booking);
+      await db.exec('set role anon');
+      await assert.rejects(db.query('select * from vendor_private_operations'), /permission denied/);
+    });
   } finally {
     await db.close();
   }

@@ -30,7 +30,7 @@ export async function loadCalendar(vendorId: string) {
     const row = bookingContext.get(booking.id);
     entries.push(bookingEntry(booking, row?.context, row?.service_name || serviceNames.get(booking.service_id ?? '')));
   }
-  return { inbox, vacation: business.data?.vacation_mode ?? false, entries: sortEntries(entries), availability: availability.data ?? [], services: serviceRows };
+  return { inbox, bookings: [...uniqueBookings.values()], vacation: business.data?.vacation_mode ?? false, entries: sortEntries(entries), availability: availability.data ?? [], services: serviceRows };
 }
 
 export type EventChanges = Partial<Pick<ManualEvent,

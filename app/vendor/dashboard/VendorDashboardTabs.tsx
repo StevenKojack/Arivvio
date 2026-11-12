@@ -3,6 +3,7 @@ import {ProviderProfile} from "@/app/marketplace/components/ProviderProfile";
 import {mapServiceToMarketplaceItem} from "@/lib/supabase/marketplace";
 
 import Link from "next/link";
+import { vendorBookingLink } from "@/lib/vendor-calendar/links";
 import { useMemo, useState } from "react";
 import { allServices, eventTypes } from "@/app/data/marketplace";
 import type { BookingRow } from "@/lib/repositories/bookingsRepository";
@@ -680,7 +681,7 @@ export function BookingsTab({ bookings }: Pick<VendorTabProps, "bookings">) {
         bookings.map((booking) => (
           <Link
             key={booking.id}
-            href={`/bookings/${booking.id}`}
+            href={booking.vendor_id ? vendorBookingLink(booking.vendor_id, booking.id) : `/bookings/${booking.id}`}
             className="block rounded-lg border border-neutral-200 p-4 transition hover:border-[#0D1321]"
           >
             <p className="font-semibold text-neutral-950">

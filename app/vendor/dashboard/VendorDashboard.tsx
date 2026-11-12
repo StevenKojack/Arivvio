@@ -383,7 +383,8 @@ export function VendorDashboard({ initialTab, initialBusiness }: { initialTab: V
           <div className="space-y-6">
             <nav aria-label="Vendor operations" className="flex flex-wrap gap-2">
               <Link className="hub-button" href="/vendor/clients">Client directory</Link>
-              <Link className="hub-button" href="/vendor/requests">Request overview</Link>
+              <Link className="hub-button" href="/vendor/requests">Requests</Link>
+              <Link className="hub-button" href="/vendor/bookings">Bookings</Link>
             </nav>
             <CalendarWorkspace compact initial={initialBusiness}/>
           </div>

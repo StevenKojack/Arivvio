@@ -9,10 +9,11 @@ export function BusinessWorkspace({ initial, title, path, children, readOnly = f
   initial?: string;
   title: string;
   path: string;
-  children: (business: string) => ReactNode;
+  children: (business: string, canEdit: boolean) => ReactNode;
   readOnly?: boolean;
 }) {
   const [rows, setRows] = useState<TrustWorkspace['businesses']>([]);
+  const [operationEditors, setOperationEditors] = useState<string[]>([]);
   const [selected, setSelected] = useState(initial ?? '');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,6 +23,7 @@ export function BusinessWorkspace({ initial, title, path, children, readOnly = f
       if (event === 'SIGNED_OUT') {
         active = false;
         setRows([]);
+        setOperationEditors([]);
         setSelected('');
         setLoading(false);
         setError('Sign in to continue.');
@@ -36,6 +38,10 @@ export function BusinessWorkspace({ initial, title, path, children, readOnly = f
         (business.applicant_id === workspace.actor_id && !business.owner_id && business.approval_status === 'pending' &&
           ['pending', 'needs_more_information'].includes(business.verification_status ?? '')));
       setRows(editable);
+      setOperationEditors(workspace.memberships.filter(member =>
+        member.profile_id === workspace.actor_id && member.status === 'active' &&
+        ['owner', 'admin', 'manager'].includes(member.role) &&
+        (!member.expires_at || Date.parse(member.expires_at) > Date.now())).map(member => member.vendor_id));
       setSelected(current => editable.some(business => business.id === current) ? current : editable.length === 1 ? editable[0].id : '');
     }).catch(() => { if (active) setError('Unable to load your businesses. Sign in to continue.'); })
       .finally(() => { if (active) setLoading(false); });
@@ -60,6 +66,6 @@ export function BusinessWorkspace({ initial, title, path, children, readOnly = f
         </option>)}
       </select>
     </label>}
-    {rows.some(row => row.id === selected) && children(selected)}
+    {rows.some(row => row.id === selected) && children(selected, operationEditors.includes(selected))}
   </div>;
 }

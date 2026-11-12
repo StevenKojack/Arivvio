@@ -7,6 +7,8 @@ import { trustOperation, type TrustWorkspace } from '@/lib/repositories/business
 import { loadCalendar, saveCalendarEvent, updateCalendarEvent, type EventChanges } from '@/lib/repositories/vendorCalendarRepository';
 import { localDate, todayIn, shiftDate, onDay, manualEntry, sortEntries, type CalendarEntry, type ManualEvent } from '@/lib/vendor-calendar/model';
 import { entryKey, reviewLabels, scheduleReviews, timeRange, unfinishedCount, upcomingWork } from '@/lib/vendor-calendar/operations';
+import { loadBookingPreparation } from '@/lib/repositories/vendorOperationsRepository';
+import { vendorBookingLink } from '@/lib/vendor-calendar/links';
 import { vendorRequestsForBranch, vendorRequestStage } from '@/lib/requests/vendor-workspace';
 import { EventDetails } from './EventDetails';
 import { EventEditor } from './EventEditor';
@@ -113,6 +115,7 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialClient, 
 }) {
   const [data, setData] = useState<Awaited<ReturnType<typeof loadCalendar>> | null>(null);
   const [error, setError] = useState('');
+  const [bookingPrep, setBookingPrep] = useState<number>();
   const [notice, setNotice] = useState('');
   const [revision, setRevision] = useState(0);
   const [date, setDate] = useState(() => localDate());
@@ -131,10 +134,18 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialClient, 
     mounted.current = true;
     let live = true;
     loadCalendar(id).then(rows => {
-      if (live) { setData(rows); setError(''); }
+      if (!live) return;
+      setData(rows); setError('');
+      if (compact) {
+        const ids = upcomingWork(rows.entries).filter(entry =>
+          entry.source === 'ARIVVIO' && entry.date && entry.status === 'confirmed').map(entry => entry.id);
+        loadBookingPreparation(id, ids).then(records => {
+          if (live) setBookingPrep(records.reduce((total, record) => total + record.tasks.filter(task => !task.done).length, 0));
+        }).catch(() => { if (live) setBookingPrep(undefined); });
+      }
     }).catch(err => { if (live) setError(err.message); });
     return () => { live = false; mounted.current = false; };
-  }, [id, revision]);
+  }, [id, revision, compact]);
 
   useEffect(() => {
     if (!dirty && !busy) return;
@@ -266,7 +277,7 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialClient, 
           </div>
 
           {selected && !draft && (
-            <EventDetails key={entryKey(selected) + ':' + revision} entry={selected} business={business} reviews={reviews(selected)}
+            <EventDetails key={entryKey(selected) + ':' + revision} entry={selected} business={business} vendorId={id} reviews={reviews(selected)}
               availabilityHref={'/vendor/dashboard?' + new URLSearchParams({ tab: 'availability', business: id })}
               busy={busy} onDirty={mark} onClose={() => leave(() => select(''))}
               onEdit={setDraft} onOpen={open} onSave={(event, changes: EventChanges) => persist(() => updateCalendarEvent(id, event, changes))}/>
@@ -318,11 +329,16 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialClient, 
       {compact && data && <nav aria-label="Business workspace" className="flex flex-wrap gap-2">
         <Link className="hub-button" href={'/vendor/clients?' + new URLSearchParams({ business: id })}>Clients</Link>
         <Link className="hub-button" href={'/vendor/requests?' + new URLSearchParams({ business: id, stage: 'pending' })}>
-          Pending requests · {branchRequests.filter(row => vendorRequestStage(row) === 'New inquiries').length}
+          New inquiries · {branchRequests.filter(row => vendorRequestStage(row) === 'New inquiries').length}
         </Link>
-        <Link className="hub-button" href={'/vendor/requests?' + new URLSearchParams({ business: id, stage: 'bookings' })}>
-          Recorded bookings · {branchRequests.filter(row => vendorRequestStage(row) === 'Recorded bookings').length}
+        <Link className="hub-button" href={'/vendor/requests?' + new URLSearchParams({ business: id, stage: 'attention' })}>
+          Needs attention · {branchRequests.filter(row => vendorRequestStage(row) === 'Needs attention').length}
         </Link>
+        <Link className="hub-button" href={'/vendor/requests?' + new URLSearchParams({ business: id, stage: 'waiting' })}>
+          Awaiting decision · {branchRequests.filter(row => vendorRequestStage(row) === 'Awaiting customer decision').length}
+        </Link>
+        <Link className="hub-button" href={vendorBookingLink(id)}>Recorded bookings · {data.bookings.length}</Link>
+        {bookingPrep !== undefined && <Link className="hub-button" href={vendorBookingLink(id)}>Upcoming booking tasks · {bookingPrep}</Link>}
       </nav>}
       {data && (
         <section className="space-y-3 rounded-xl border ui-border ui-surface p-4">
