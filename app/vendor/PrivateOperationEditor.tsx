@@ -1,10 +1,11 @@
 'use client';
 
+import { ApplyServiceChecklist } from './services/ApplyServiceChecklist';
 import { useEffect, useState } from 'react';
 import { loadVendorOperation, saveVendorOperation, type OperationSource } from '@/lib/repositories/vendorOperationsRepository';
 import { emptyOperation, type OperationFields, type VendorOperation } from '@/lib/vendor-operations/model';
 
-export function PrivateOperationEditor({ business, source }: { business: string; source: OperationSource }) {
+export function PrivateOperationEditor({ business, source, service }: { business: string; source: OperationSource; service?: string | null }) {
   const [saved, setSaved] = useState<VendorOperation | null>();
   const [fields, setFields] = useState<OperationFields>(emptyOperation);
   const [amount, setAmount] = useState('');
@@ -26,7 +27,7 @@ export function PrivateOperationEditor({ business, source }: { business: string;
     return () => { active = false; };
   }, [business, column, id, reload]);
 
-  async function save() {
+  async function save(nextTasks = fields.tasks) {
     if (saved === undefined || busy) return;
     setError('');
     setNotice('');
@@ -35,7 +36,7 @@ export function PrivateOperationEditor({ business, source }: { business: string;
       setError('Enter a nonnegative amount with up to two decimal places.');
       return;
     }
-    const tasks = fields.tasks.map(task => ({ ...task, title: task.title.trim() }));
+    const tasks = nextTasks.map(task => ({ ...task, title: task.title.trim() }));
     if (tasks.some(task => !task.title)) { setError('Enter a name for each preparation task.'); return; }
     const changes = quote
       ? { proposed_amount: proposed ? Number(proposed) : null, draft_notes: fields.draft_notes, private_notes: fields.private_notes }
@@ -89,6 +90,7 @@ export function PrivateOperationEditor({ business, source }: { business: string;
           <div className="flex flex-wrap justify-between gap-2"><h3 className="font-medium">Preparation checklist</h3>
             <span className="text-sm ui-muted">{completed} of {fields.tasks.length} complete</span>
           </div>
+          <ApplyServiceChecklist business={business} service={service} tasks={fields.tasks} disabled={busy} onApply={next => void save(next)}/>
           {!fields.tasks.length && <p className="text-sm ui-muted">No preparation tasks yet.</p>}
           {fields.tasks.map((task, index) => <div key={index} className="flex flex-wrap items-center gap-2">
             <input type="checkbox" className="size-5 shrink-0" aria-label={'Complete task ' + (index + 1)}

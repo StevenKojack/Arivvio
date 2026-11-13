@@ -1,4 +1,6 @@
 "use client";
+import { PublicServicePackages } from "@/app/marketplace/components/ServicePackages";
+import { pricingLabel, serviceRate } from "@/lib/service-catalog/model";
 import { ProfileSections } from "@/app/components/ProfileSections";
 import { OfficialBusinessWork } from "@/app/components/OfficialBusinessWork";
 import { BusinessMark } from "@/app/components/BusinessMark";
@@ -14,7 +16,6 @@ import { useEffect, useState, type FormEvent } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import {
   listingOperation,
-  type ListingRecord,
   type ClaimRecord,
 } from "@/lib/repositories/listingsRepository";
 export function BusinessListing({
@@ -31,7 +32,7 @@ export function BusinessListing({
   const [eventId, setEventId] = useState(initialEventId ?? ""),
     [serviceId, setServiceId] = useState(initialServiceId ?? "");
   const [photos,setPhotos]=useState<PublicTableRow<"vendor_photos">[]>([]);
-  const [listing, setListing] = useState<ListingRecord | null>(null),
+  const [listing, setListing] = useState<PublicTableRow<"vendor_businesses"> | null>(null),
     [signedIn, setSignedIn] = useState(false),
     [events, setEvents] = useState<{ id: string; title: string }[]>([]),
     [services, setServices] = useState<PublicTableRow<"vendor_services">[]>(
@@ -140,7 +141,7 @@ export function BusinessListing({
           {listing.short_intro&&<p className="mt-3 font-medium">{listing.short_intro}</p>}<p className="mt-3 whitespace-pre-line">{listing.description}</p><ProfileSections sections={listing.profile_sections}/>
           {(listing.email||listing.phone)&&<p className="mt-3 flex flex-wrap gap-4">{listing.phone&&<a href={"tel:"+listing.phone} className="underline">{listing.phone}</a>}{listing.email&&<a href={"mailto:"+listing.email} className="underline">{listing.email}</a>}</p>}
           {photos.some(p=>p.media_kind==="business_photo")&&<section aria-label="Business photos" className="my-4 grid grid-cols-2 gap-3">{photos.filter(p=>p.media_kind==="business_photo").map((p,i)=><figure key={p.id} className={i===0?"col-span-2":""}><Image src={p.image_url} alt={p.alt_text||"Business photo"} width={900} height={500} unoptimized className="aspect-video w-full rounded-xl object-cover"/>{p.attribution&&<figcaption>{p.attribution}</figcaption>}</figure>)}</section>}
-          {services.length>0&&<details className="my-4"><summary>Services and pricing</summary>{services.map(s=><div key={s.id} className="mt-3"><strong>{s.service_name}</strong><p className="whitespace-pre-line">{s.description}</p><p>{s.pricing_type==="hourly"&&s.hourly_rate!=null?`$${s.hourly_rate} per hour`:s.base_price!=null?`$${s.base_price}${s.pricing_type==="per_guest"?" per guest":""}`:"Contact for pricing"}</p></div>)}</details>}
+          {services.length>0&&<details className="my-4"><summary>Services and pricing</summary>{services.map(s=><div key={s.id} className="mt-3"><strong>{s.service_name}</strong><p className="whitespace-pre-line">{s.description}</p><p>{pricingLabel(s.pricing_type, listing.owner_id ? serviceRate(s) : null, s.minimum_hours)}</p>{listing.owner_id && listing.approval_status === "approved" && !listing.vacation_mode && <PublicServicePackages business={id} service={s.id}/>}</div>)}</details>}
           <p className="mt-2 ui-muted">
             {listing.location_name} {listing.service_area_city || "Service area not confirmed"} {listing.base_address}
           </p>

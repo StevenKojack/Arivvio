@@ -2,10 +2,10 @@
 import {ProviderProfile} from "@/app/marketplace/components/ProviderProfile";
 import {mapServiceToMarketplaceItem} from "@/lib/supabase/marketplace";
 
+import { allServices } from "@/app/data/marketplace";
 import Link from "next/link";
 import { vendorBookingLink } from "@/lib/vendor-calendar/links";
 import { useMemo, useState } from "react";
-import { allServices, eventTypes } from "@/app/data/marketplace";
 import type { BookingRow } from "@/lib/repositories/bookingsRepository";
 import type { QuoteRequestRow } from "@/lib/repositories/quotesRepository";
 import type {
@@ -15,7 +15,6 @@ import type {
   VendorServiceRow,
 } from "@/lib/repositories/vendorsRepository";
 import type { PublicTableRow } from "@/lib/supabase/database.types";
-import type { PricingType } from "@/lib/types/domain";
 import { formatDate, formatMoney, formatTime } from "@/lib/utils/format";
 
 export type QuoteWithEvent = QuoteRequestRow & {
@@ -45,20 +44,6 @@ export const vendorDashboardTabs: VendorDashboardTab[] = [
   "Analytics",
 ];
 
-export type ServiceDraft = {
-  active: boolean;
-  basePrice: number;
-  category: string;
-  description: string;
-  eventTypesSupported: string[];
-  hourlyRate: number;
-  minimumHours: number;
-  pricingType: PricingType;
-  serviceName: string;
-  setupFee: number;
-  travelFee: number;
-};
-
 export type AvailabilityDraft = {
   date: string;
   endTime: string;
@@ -82,14 +67,10 @@ type VendorTabProps = {
   bookings: BookingRow[];
   message?: string;
   onCreateAvailability: (draft: AvailabilityDraft) => Promise<void>;
-  onCreateService: (draft: ServiceDraft) => Promise<void>;
   onDeleteAvailability: (availabilityId: string) => Promise<void>;
   onDeletePhoto: (photo: VendorPhotoRow) => Promise<void>;
-  onDeleteService: (service: VendorServiceRow) => Promise<void>;
-  onToggleService: (service: VendorServiceRow) => Promise<void>;
   onToggleVacationMode: (vendor: VendorBusinessRow) => Promise<void>;
   onUpdateBusiness: (vendorId: string, draft: BusinessDraft) => Promise<void>;
-  onUpdateService: (serviceId: string, draft: ServiceDraft) => Promise<void>;
   onReorderPhotos: (vendorId:string,ids:string[]) => Promise<void>;
   onUploadPhoto: (vendorId: string, file: File, altText:string) => Promise<boolean>;
   photos: VendorPhotoRow[];
@@ -148,244 +129,6 @@ export function DashboardTab({
           )}
         </Panel>
       </div>
-    </div>
-  );
-}
-
-export function ServicesTab({
-  onCreateService,
-  onDeleteService,
-  onToggleService,
-  onUpdateService,
-  services,
-  vendors,
-}: Pick<
-  VendorTabProps,
-  | "onCreateService"
-  | "onDeleteService"
-  | "onToggleService"
-  | "onUpdateService"
-  | "services"
-  | "vendors"
->) {
-  const [draft, setDraft] = useState<ServiceDraft>({
-    active: true,
-    basePrice: 300,
-    category: "DJ",
-    description: "",
-    eventTypesSupported: ["Birthday", "Wedding", "Private Party"],
-    hourlyRate: 100,
-    minimumHours: 3,
-    pricingType: "hourly",
-    serviceName: "DJ package",
-    setupFee: 0,
-    travelFee: 0,
-  });
-  const [editingId, setEditingId] = useState<string | null>(null);
-
-  function loadService(service: VendorServiceRow) {
-    setEditingId(service.id);
-    setDraft({
-      active: service.active,
-      basePrice: Number(service.base_price ?? 0),
-      category: service.category,
-      description: service.description ?? "",
-      eventTypesSupported: service.event_types_supported,
-      hourlyRate: Number(service.hourly_rate ?? 0),
-      minimumHours: Number(service.minimum_hours ?? 1),
-      pricingType: service.pricing_type,
-      serviceName: service.service_name,
-      setupFee: Number(service.setup_fee ?? 0),
-      travelFee: Number(service.travel_fee ?? 0),
-    });
-  }
-
-  function toggleEventType(eventType: string) {
-    setDraft((current) => ({
-      ...current,
-      eventTypesSupported: current.eventTypesSupported.includes(eventType)
-        ? current.eventTypesSupported.filter((item) => item !== eventType)
-        : [...current.eventTypesSupported, eventType],
-    }));
-  }
-
-  async function saveService() {
-    if (editingId) {
-      await onUpdateService(editingId, draft);
-      setEditingId(null);
-      return;
-    }
-
-    await onCreateService(draft);
-  }
-
-  return (
-    <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-      <Panel title={editingId ? "Edit service" : "Create service"}>
-        <div className="grid gap-3">
-          <Input label="Service name" value={draft.serviceName} onChange={(value) => setDraft({ ...draft, serviceName: value })} />
-          <label className="grid gap-2 text-sm font-semibold text-neutral-800">
-            Category
-            <select
-              value={draft.category}
-              onChange={(event) => setDraft({ ...draft, category: event.target.value })}
-              className="h-11 rounded-lg border border-neutral-300 bg-white px-3"
-            >
-              {allServices.map((service) => (
-                <option key={service}>{service}</option>
-              ))}
-            </select>
-          </label>
-          <label className="grid gap-2 text-sm font-semibold text-neutral-800">
-            Description
-            <textarea
-              value={draft.description}
-              onChange={(event) => setDraft({ ...draft, description: event.target.value })}
-              className="min-h-24 rounded-lg border border-neutral-300 px-3 py-2"
-            />
-          </label>
-          <label className="grid gap-2 text-sm font-semibold text-neutral-800">
-            Pricing
-            <select
-              value={draft.pricingType}
-              onChange={(event) =>
-                setDraft({ ...draft, pricingType: event.target.value as PricingType })
-              }
-              className="h-11 rounded-lg border border-neutral-300 bg-white px-3"
-            >
-              <option value="hourly">Hourly</option>
-              <option value="flat">Flat</option>
-              <option value="per_guest">Per guest</option>
-            </select>
-          </label>
-          <Input
-            label={draft.pricingType === "hourly" ? "Hourly rate" : "Base price"}
-            type="number"
-            value={String(draft.pricingType === "hourly" ? draft.hourlyRate : draft.basePrice)}
-            onChange={(value) =>
-              setDraft({
-                ...draft,
-                ...(draft.pricingType === "hourly"
-                  ? { hourlyRate: Number(value) }
-                  : { basePrice: Number(value) }),
-              })
-            }
-          />
-          {draft.pricingType === "hourly" ? (
-            <Input
-              label="Minimum hours"
-              type="number"
-              value={String(draft.minimumHours)}
-              onChange={(value) => setDraft({ ...draft, minimumHours: Number(value) })}
-            />
-          ) : null}
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Input
-              label="Setup fee"
-              type="number"
-              value={String(draft.setupFee)}
-              onChange={(value) => setDraft({ ...draft, setupFee: Number(value) })}
-            />
-            <Input
-              label="Travel fee"
-              type="number"
-              value={String(draft.travelFee)}
-              onChange={(value) => setDraft({ ...draft, travelFee: Number(value) })}
-            />
-          </div>
-          <label className="flex items-center gap-3 rounded-lg border border-neutral-200 p-3 text-sm font-semibold text-neutral-800">
-            <input
-              type="checkbox"
-              checked={draft.active}
-              onChange={(event) => setDraft({ ...draft, active: event.target.checked })}
-              className="h-4 w-4 accent-[#0D1321]"
-            />
-            Active in marketplace
-          </label>
-          <fieldset className="rounded-lg border border-neutral-200 p-3">
-            <legend className="px-1 text-sm font-semibold text-neutral-800">
-              Event types supported
-            </legend>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {eventTypes.map((eventType) => (
-                <button
-                  key={eventType}
-                  type="button"
-                  onClick={() => toggleEventType(eventType)}
-                  className={`rounded-full px-3 py-2 text-xs font-semibold ${
-                    draft.eventTypesSupported.includes(eventType)
-                      ? "bg-[#0D1321] text-white"
-                      : "border border-neutral-300 text-neutral-700"
-                  }`}
-                >
-                  {eventType}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-          <button
-            type="button"
-            onClick={saveService}
-            disabled={!vendors.length}
-            className="h-11 rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {editingId ? "Save service" : "Create service"}
-          </button>
-          {editingId ? (
-            <button
-              type="button"
-              onClick={() => setEditingId(null)}
-              className="h-11 rounded-full border border-neutral-300 px-4 text-sm font-semibold text-neutral-950"
-            >
-              Cancel edit
-            </button>
-          ) : null}
-        </div>
-      </Panel>
-      <Panel title="Services">
-        {services.length ? (
-          services.map((service) => (
-            <div key={service.id} className="rounded-lg border border-neutral-200 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-neutral-950">{service.service_name}</p>
-                  <p className="mt-1 text-sm text-neutral-500">
-                    {service.category} - {service.pricing_type}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onToggleService(service)}
-                  className="rounded-full border border-neutral-300 px-3 py-1 text-xs font-semibold"
-                >
-                  {service.active ? "Disable" : "Enable"}
-                </button>
-              </div>
-              <p className="mt-3 text-sm text-neutral-600">
-                {service.description || "No description added."}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => loadService(service)}
-                  className="rounded-full bg-[#0D1321] px-3 py-1 text-xs font-semibold text-white"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDeleteService(service)}
-                  className="rounded-full border border-red-200 px-3 py-1 text-xs font-semibold text-red-700"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <EmptyLine text="Create your first service to appear in the marketplace." />
-        )}
-      </Panel>
     </div>
   );
 }

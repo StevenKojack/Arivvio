@@ -1,3 +1,4 @@
+import { pricingLabel, serviceRate } from "@/lib/service-catalog/model";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   allServices,
@@ -283,7 +284,7 @@ export function mapServiceToMarketplaceItem(
     description:
       vendorService.description ??
       `${vendor.business_name} offers ${vendorService.service_name}.`,
-    estimateLabel: !vendor.owner_id || (vendorService.base_price === null && vendorService.hourly_rate === null) ? "Contact for pricing" : priceLabel(toPricingModel(vendorService)),
+    estimateLabel: pricingLabel(vendorService.pricing_type, vendor.owner_id ? serviceRate(vendorService) : null, vendorService.minimum_hours),
     service: toServiceName(vendorService.category),
     serviceId: vendorService.id,
     title: vendorService.service_name,
@@ -294,9 +295,9 @@ export function mapServiceToMarketplaceItem(
     );
   const pricing = toPricingModel(service);
   const city = vendor.service_area_city ?? "Service area not confirmed";
-  const pricingKnown = Boolean(vendor.owner_id) && (service.base_price !== null || service.hourly_rate !== null);
-  const basePrice = pricingKnown ? priceLabel(pricing) : "Contact for pricing";
-  if (!pricingKnown) pricing.label = "Contact for pricing";
+  const pricingKnown = Boolean(vendor.owner_id) && serviceRate(service) !== null;
+  const basePrice = pricingLabel(service.pricing_type, pricingKnown ? serviceRate(service) : null, service.minimum_hours);
+  pricing.label = basePrice;
 
   return {
     address: vendor.base_address ?? city,
@@ -455,7 +456,7 @@ function toServiceName(value: string): ServiceName {
 function toPricingModel(service: VendorServiceRow): PricingModel {
   if (service.pricing_type === "hourly") {
     const hourlyRate = Number(service.hourly_rate ?? service.base_price ?? 0);
-    const minHours = Number(service.minimum_hours ?? 1);
+    const minHours = Number(service.minimum_hours ?? 0);
 
     return {
       hourlyRate,
@@ -473,7 +474,7 @@ function toPricingModel(service: VendorServiceRow): PricingModel {
     return {
       kind: "perGuest",
       label: `$${perGuest.toLocaleString()} / guest`,
-      minimum: perGuest,
+      minimum: 0,
       perGuest,
       serviceFee: Number(service.setup_fee ?? 0),
       travelFee: Number(service.travel_fee ?? 0),
@@ -505,20 +506,6 @@ function toAvailabilityWindows(
     end: String(row.end_time).slice(0, 5),
     start: String(row.start_time).slice(0, 5),
   }));
-}
-
-function priceLabel(pricing: PricingModel) {
-  if (pricing.kind === "flat") {
-    return `$${(pricing.basePrice + (pricing.setupFee ?? 0) + (pricing.travelFee ?? 0)).toLocaleString()} estimate`;
-  }
-
-  if (pricing.kind === "hourly") {
-    const total = pricing.hourlyRate * pricing.minHours + (pricing.setupFee ?? 0) + (pricing.travelFee ?? 0);
-
-    return `$${total.toLocaleString()} / ${pricing.minHours} hours`;
-  }
-
-  return `$${pricing.perGuest.toLocaleString()} / guest`;
 }
 
 function numericId(value: string) {

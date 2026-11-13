@@ -13,10 +13,8 @@ import { ensureCurrentProfile } from "@/lib/repositories/profilesRepository";
 import { getBookingsForVendors, type BookingRow } from "@/lib/repositories/bookingsRepository";
 import {
   createAvailabilityWindow,
-  createVendorService,
   deleteAvailabilityWindow,
   deleteVendorPhoto,
-  deleteVendorService,
   getVendorAvailabilityByVendorIds,
   getVendorBusinessesByOwner,
   getVendorPhotosByVendorIds,
@@ -24,7 +22,6 @@ import {
   uploadVendorPhoto,
   updateVendorBusiness,
   updateVendorVacationMode,
-  updateVendorService,
   type VendorAvailabilityRow,
   type VendorBusinessRow,
   type VendorPhotoRow,
@@ -38,12 +35,10 @@ import {
   BusinessSettingsTab,
   PhotosTab,
   ProfileTab,
-  ServicesTab,
   vendorDashboardTabs,
   type AvailabilityDraft,
   type BusinessDraft,
   type QuoteWithEvent,
-  type ServiceDraft,
   type VendorDashboardTab,
 } from "./VendorDashboardTabs";
 
@@ -106,101 +101,6 @@ export function VendorDashboard({ initialTab, initialBusiness }: { initialTab: V
 
     loadDashboard();
   }, []);
-
-  async function handleCreateService(draft: ServiceDraft) {
-    const vendor = vendors[0];
-
-    if (!vendor) {
-      setMessage("Create a vendor profile before adding services.");
-      return;
-    }
-
-    try {
-      requireString(draft.serviceName, "Service name");
-      const supabase = createBrowserSupabaseClient();
-      const service = await createVendorService(supabase, {
-        active: draft.active,
-        basePrice: draft.pricingType === "hourly" ? null : draft.basePrice,
-        category: draft.category,
-        description: draft.description || null,
-        eventTypesSupported: draft.eventTypesSupported.length
-          ? draft.eventTypesSupported
-          : eventTypes,
-        hourlyRate: draft.pricingType === "hourly" ? draft.hourlyRate : null,
-        minimumHours: draft.pricingType === "hourly" ? draft.minimumHours : null,
-        pricingType: draft.pricingType,
-        serviceName: draft.serviceName,
-        setupFee: draft.setupFee,
-        travelFee: draft.travelFee,
-        vendorId: vendor.id,
-      });
-
-      setServices((current) => [service, ...current]);
-      setMessage("Service created.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to create service.");
-    }
-  }
-
-  async function handleUpdateService(serviceId: string, draft: ServiceDraft) {
-    try {
-      requireString(draft.serviceName, "Service name");
-      const supabase = createBrowserSupabaseClient();
-      const updatedService = await updateVendorService(supabase, {
-        active: draft.active,
-        basePrice: draft.pricingType === "hourly" ? null : draft.basePrice,
-        category: draft.category,
-        description: draft.description || null,
-        eventTypesSupported: draft.eventTypesSupported.length
-          ? draft.eventTypesSupported
-          : eventTypes,
-        hourlyRate: draft.pricingType === "hourly" ? draft.hourlyRate : null,
-        id: serviceId,
-        minimumHours: draft.pricingType === "hourly" ? draft.minimumHours : null,
-        pricingType: draft.pricingType,
-        serviceName: draft.serviceName,
-        setupFee: draft.setupFee,
-        travelFee: draft.travelFee,
-      });
-
-      setServices((current) =>
-        current.map((service) =>
-          service.id === serviceId ? updatedService : service,
-        ),
-      );
-      setMessage("Service updated.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to update service.");
-    }
-  }
-
-  async function handleDeleteService(service: VendorServiceRow) {
-    try {
-      const supabase = createBrowserSupabaseClient();
-      await deleteVendorService(supabase, service.id);
-      setServices((current) => current.filter((item) => item.id !== service.id));
-      setMessage("Service deleted.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to delete service.");
-    }
-  }
-
-  async function handleToggleService(service: VendorServiceRow) {
-    try {
-      const supabase = createBrowserSupabaseClient();
-      const updatedService = await updateVendorService(supabase, {
-        active: !service.active,
-        id: service.id,
-      });
-
-      setServices((current) =>
-        current.map((item) => (item.id === service.id ? updatedService : item)),
-      );
-      setMessage(updatedService.active ? "Service enabled." : "Service disabled.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to update service.");
-    }
-  }
 
   async function handleCreateAvailability(draft: AvailabilityDraft) {
     try {
@@ -390,14 +290,7 @@ export function VendorDashboard({ initialTab, initialBusiness }: { initialTab: V
           </div>
         ) : null}
         {activeTab === "Services" ? (
-          <ServicesTab
-            onCreateService={handleCreateService}
-            onDeleteService={handleDeleteService}
-            onToggleService={handleToggleService}
-            onUpdateService={handleUpdateService}
-            services={services}
-            vendors={vendors}
-          />
+          <Link className="hub-primary inline-flex" href={initialBusiness ? "/vendor/services?business=" + encodeURIComponent(initialBusiness) : "/vendor/services"}>Open service catalog</Link>
         ) : null}
         {activeTab === "Availability" ? (
           <AvailabilityTab

@@ -70,7 +70,7 @@ function BookingWorkspace({ business, initial, canEdit }: { business: string; in
           {booking.quote_request_id && <Link className="hub-button" href={vendorRequestLink(business, booking.quote_request_id)}>Open request</Link>}
           <Link className="hub-button" href={'/bookings/' + booking.id}>Shared booking and notes</Link>
         </div>
-        {canEdit && <PrivateOperationEditor key={booking.id} business={business} source={{ column: 'booking_id', id: booking.id }}/>}
+        {canEdit && <PrivateOperationEditor key={booking.id} business={business} service={row?.quote.service_id} source={{ column: 'booking_id', id: booking.id }}/>}
       </> : <p className="text-sm ui-muted">{selected ? 'This booking is unavailable for the selected business.' : 'Select a booking to see details and preparation.'}</p>}
     </section>
   </div>;

@@ -1,5 +1,6 @@
 "use client";
 
+import { PublicServicePackages } from "./ServicePackages";
 import { ProfileSections } from "@/app/components/ProfileSections";
 import { OfficialBusinessWork } from "@/app/components/OfficialBusinessWork";
 import { PricingDisclosure } from "./PricingDisclosure";
@@ -53,7 +54,9 @@ export function ProviderProfile({ eventId, item, quote, selected, onAdd, onClose
         <div className="mt-3 flex flex-wrap items-center gap-3"><h2 id={`provider-title-${item.id}`} className="text-3xl font-semibold tracking-tight">{name}</h2><BusinessStatusBadge item={item}/></div>
         <p className="mt-1 text-sm ui-muted">{item.type} · {item.branch||item.location}</p>
         <p className="my-4 max-w-prose leading-7">{item.shortIntro||summary}</p>{item.shortIntro&&summary&&summary!==item.shortIntro&&<p className="mb-4 leading-7">{summary}</p>}
-        <section className="profile-group"><h3>Services &amp; offerings</h3><p>{offerings||item.services.join(" · ")}</p>{item.serviceOptions?.map(o=><div key={o.title} className="mt-3"><strong>{o.title}</strong><p>{o.description}</p></div>)}
+        <section className="profile-group"><h3>Services &amp; offerings</h3><p>{offerings||item.services.join(" · ")}</p>{item.serviceOptions?.map(o=><div key={o.serviceId ?? o.title} className="mt-3"><strong>{o.title}</strong><p>{o.description}</p>
+        {!preview && item.listingState === "claimed" && item.vendorId && o.serviceId && <PublicServicePackages business={item.vendorId} service={o.serviceId}/>}</div>)}
+        {!preview && !item.serviceOptions?.length && item.listingState === "claimed" && item.vendorId && item.serviceId && <PublicServicePackages business={item.vendorId} service={item.serviceId}/>}
         {item.databaseSource&&<OfficialBusinessWork businessId={item.vendorId}/>}</section>
         <ProfileSections sections={item.profileSections}/>
         {gallery?.length?<section className="profile-group"><h3>Gallery</h3><div className="grid grid-cols-2 gap-3">{gallery.map(m=><figure key={m.url}><Image src={m.url} alt={m.alt} width={420} height={270} unoptimized className="aspect-video w-full rounded-xl object-cover"/>{m.attribution&&<figcaption>{m.attribution}</figcaption>}</figure>)}</div></section>:null}

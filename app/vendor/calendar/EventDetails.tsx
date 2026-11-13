@@ -1,5 +1,6 @@
 'use client';
 
+import { ApplyServiceChecklist } from '@/app/vendor/services/ApplyServiceChecklist';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { EventClientPicker } from './EventClientPicker';
@@ -148,6 +149,8 @@ export function EventDetails({ entry, business, vendorId, reviews, availabilityH
             <h3 className="font-semibold">Preparation</h3>
             <p className="text-sm ui-muted" aria-live="polite">{completed} of {tasks.length} complete</p>
           </div>
+          <ApplyServiceChecklist key={manual.id} business={vendorId} service={manual.service_id} tasks={tasks}
+            disabled={busy || !!edit} onApply={next => void save({ tasks: next })}/>
           {tasks.length ? (
             <ul className="divide-y ui-border">
               {tasks.map((task, index) => (

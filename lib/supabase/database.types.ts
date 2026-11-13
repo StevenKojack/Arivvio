@@ -122,6 +122,18 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["vendor_businesses"]["Insert"]>;
         Relationships: [];
       };
+      vendor_service_packages: {
+        Row: import('../service-catalog/model').ServicePackage;
+        Insert: import('../service-catalog/model').PackageFields & { vendor_id: string; service_id: string };
+        Update: Partial<import('../service-catalog/model').PackageFields>;
+        Relationships: [];
+      };
+      vendor_service_checklists: {
+        Row: import('../service-catalog/model').ServiceChecklist;
+        Insert: { vendor_id: string; service_id: string; tasks: string[] };
+        Update: { tasks: string[] };
+        Relationships: [];
+      };
       vendor_services: {
         Row: {
           active: boolean;

@@ -46,6 +46,7 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       "20261104160319_admin_profile_editor.sql",
       "20261104194822_profile_workspace.sql",
       "20261105064750_vendor_operational_calendar.sql",
+      "20261113010403_vendor_service_catalog.sql",
     ])
       await db.exec(readFileSync("supabase/migrations/" + f, "utf8"));
     const as = async (n) =>
@@ -548,6 +549,81 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       assert.deepEqual((await db.query('select * from bookings where id=$1', [booking.id])).rows[0], booking);
       await db.exec('set role anon');
       await assert.rejects(db.query('select * from vendor_private_operations'), /permission denied/);
+    });
+    await t.test('service catalog preserves package identity and enforces private checklist and public visibility boundaries', async () => {
+      await db.exec('reset role');
+      const source = (await db.query("select b.id as business, s.id as service from vendor_businesses b join vendor_services s on s.vendor_id=b.id where b.business_name='Activation safe fixture' limit 1")).rows[0];
+      const [business, service] = [source.business, source.service];
+      const counts = async () => (await db.query("select (select count(*) from quote_requests) quotes, (select count(*) from bookings) bookings, (select count(*) from messages) messages")).rows[0];
+      const before = await counts();
+      const original = (await db.query('select * from vendor_services where id=$1',[service])).rows[0];
+      await as(1);
+      const pkg = (await db.query("insert into vendor_service_packages(vendor_id,service_id,name,active,inclusions) values($1,$2,'Standard',true,array['Setup']) returning *",[business,service])).rows[0];
+      const second = (await db.query("insert into vendor_service_packages(vendor_id,service_id,name,pricing_model,amount,minimum_guests) values($1,$2,'Reception','per_guest',24.50,12) returning *",[business,service])).rows[0];
+      assert.notEqual(pkg.id, second.id);
+      assert.equal(second.minimum_guests, 12);
+      assert.equal((await db.query("update vendor_service_packages set name='Standard updated' where id=$1 and version=1 returning id,version",[pkg.id])).rows[0].id,pkg.id);
+      assert.equal((await db.query("update vendor_service_packages set name='Stale' where id=$1 and version=1 returning id",[pkg.id])).rows.length,0);
+      await db.query("insert into vendor_service_checklists(vendor_id,service_id,tasks) values($1,$2,array['Pack cables','Review timeline'])",[business,service]);
+      assert.deepEqual((await db.query('select tasks from vendor_service_checklists where service_id=$1',[service])).rows[0].tasks,['Pack cables','Review timeline']);
+      assert.equal((await db.query("update vendor_service_checklists set tasks=array['New checklist'] where service_id=$1 and version=1 returning version",[service])).rows[0].version,2);
+      assert.equal((await db.query("update vendor_service_checklists set tasks=array['Stale'] where service_id=$1 and version=1 returning version",[service])).rows.length,0);
+      await assert.rejects(db.query("insert into vendor_service_packages(vendor_id,service_id,name) values($1,$2,'Wrong branch')",[business,id(978)]), /foreign key/);
+      await assert.rejects(db.query("insert into vendor_service_checklists(vendor_id,service_id) values($1,$2)",[business,id(978)]), /foreign key/);
+      await as(2);
+      assert.equal((await db.query('select * from vendor_service_checklists')).rows.length,0);
+      assert.equal((await db.query('update vendor_service_packages set active=false where id=$1 returning id',[pkg.id])).rows.length,0);
+      await assert.rejects(db.query("insert into vendor_service_packages(vendor_id,service_id,name) values($1,$2,'Unauthorized')",[business,service]),/row-level security/);
+      const publicPackages = async () => {
+        await db.exec('reset role;set role anon');
+        return (await db.query('select name from vendor_service_packages where service_id=$1 order by name',[service])).rows;
+      };
+      assert.deepEqual(await publicPackages(),[{name:'Standard updated'}]);
+      await assert.rejects(db.query('select * from vendor_service_checklists'),/permission denied/);
+      await as(1);
+      await db.query('update vendor_service_packages set active=false where id=$1 and version=2',[pkg.id]);
+      assert.deepEqual(await publicPackages(),[]);
+      await as(1);
+      await db.query('update vendor_service_packages set active=true where id=$1 and version=3',[pkg.id]);
+      await db.exec('reset role');
+      await db.query('update vendor_services set active=false where id=$1',[service]);
+      assert.deepEqual(await publicPackages(),[]);
+      await db.exec('reset role');
+      await db.query('update vendor_services set active=true where id=$1',[service]);
+      await db.query('update vendor_businesses set vacation_mode=true where id=$1',[business]);
+      assert.deepEqual(await publicPackages(),[]);
+      await db.exec('reset role');
+      await db.query('update vendor_businesses set vacation_mode=false where id=$1',[business]);
+      assert.deepEqual((await db.query('select * from vendor_services where id=$1',[service])).rows[0], original);
+      const unclaimed = (await db.query("select b.id as business,s.id as service from vendor_businesses b join vendor_services s on s.vendor_id=b.id where b.owner_id is null and b.approval_status='approved' and s.active limit 1")).rows[0];
+      await db.query("insert into vendor_service_packages(vendor_id,service_id,name,active) values($1,$2,'Unclaimed test package',true)",[unclaimed.business,unclaimed.service]);
+      await db.exec('set role anon');
+      assert.equal((await db.query('select id from vendor_service_packages where service_id=$1',[unclaimed.service])).rows.length,0);
+      await db.exec('reset role');
+      await db.query("update vendor_businesses set approval_status='pending' where id=$1",[business]);
+      assert.deepEqual(await publicPackages(),[]);
+      await db.exec('reset role');
+      await db.query("update vendor_businesses set approval_status='approved' where id=$1",[business]);
+      const currentTemplate = (await db.query('select tasks from vendor_service_checklists where service_id=$1',[service])).rows[0].tasks;
+      const existingTasks = [{title:'Reserve equipment',done:true}];
+      const { checklistAdditions } = await import('../../lib/service-catalog/model.ts');
+      const copied = [...existingTasks, ...checklistAdditions(existingTasks,currentTemplate)];
+      await as(1);
+      const event = (await db.query(
+        "insert into vendor_calendar_events(vendor_id,name,date,end_date,start_time,end_time,timezone,status,service_id,tasks) values($1,'Catalog fixture','2026-11-25','2026-11-25','09:00','10:00','America/Los_Angeles','Confirmed',$2,$3::jsonb) returning id,version",
+        [business,service,JSON.stringify(existingTasks)],
+      )).rows[0];
+      await db.query('update vendor_calendar_events set tasks=$1::jsonb where vendor_id=$2 and id=$3 and version=$4',[JSON.stringify(copied),business,event.id,event.version]);
+      const booking = (await db.query('select * from bookings where id=$1',[id(7200)])).rows[0];
+      const prep = (await db.query('select * from vendor_private_operations where vendor_id=$1 and booking_id=$2',[business,booking.id])).rows[0];
+      const bookingTasks = [...prep.tasks, ...checklistAdditions(prep.tasks,currentTemplate)];
+      await db.query('update vendor_private_operations set tasks=$1::jsonb where vendor_id=$2 and id=$3 and version=$4',[JSON.stringify(bookingTasks),business,prep.id,prep.version]);
+      await db.query("update vendor_service_checklists set tasks=array['Changed after copying'] where service_id=$1 and version=2",[service]);
+      assert.deepEqual((await db.query('select tasks from vendor_calendar_events where id=$1',[event.id])).rows[0].tasks,copied);
+      assert.deepEqual((await db.query('select tasks from vendor_private_operations where id=$1',[prep.id])).rows[0].tasks,bookingTasks);
+      assert.deepEqual((await db.query('select * from bookings where id=$1',[booking.id])).rows[0],booking);
+      await db.exec('reset role');
+      assert.deepEqual(await counts(),before);
     });
   } finally {
     await db.close();
