@@ -1,4 +1,6 @@
 "use client";
+import { createCartItem, updateCartItemPackage } from "@/lib/repositories/cartRepository";
+import type { ServicePackage } from "@/lib/service-catalog/model";
 import { PublicServicePackages } from "@/app/marketplace/components/ServicePackages";
 import { pricingLabel, serviceRate } from "@/lib/service-catalog/model";
 import { ProfileSections } from "@/app/components/ProfileSections";
@@ -34,13 +36,14 @@ export function BusinessListing({
   const [photos,setPhotos]=useState<PublicTableRow<"vendor_photos">[]>([]);
   const [listing, setListing] = useState<PublicTableRow<"vendor_businesses"> | null>(null),
     [signedIn, setSignedIn] = useState(false),
-    [events, setEvents] = useState<{ id: string; title: string }[]>([]),
+    [events, setEvents] = useState<Pick<PublicTableRow<"events">, "id" | "title" | "start_time" | "end_time">[]>([]),
     [services, setServices] = useState<PublicTableRow<"vendor_services">[]>(
       [],
     ),
     [mode, setMode] = useState(initialMode === "claim" ? "claim" : "request"),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
+    [packageMessage, setPackageMessage] = useState(""),
     [claim, setClaim] = useState<ClaimRecord | null>(null);
   useEffect(() => {
     let live = true;
@@ -66,7 +69,7 @@ export function BusinessListing({
         const [ev, mine] = await Promise.all([
           client
             .from("events")
-            .select("id,title")
+            .select("id,title,start_time,end_time")
             .not("status", "in", "(cancelled,completed)"),
           listingOperation<{ claims: ClaimRecord[] }>("mine"),
         ]);
@@ -115,6 +118,29 @@ export function BusinessListing({
       setBusy(false);
     }
   }
+  async function selectPackage(offer: ServicePackage) {
+    const event = events.find(row => row.id === eventId);
+    if (!event || busy) return;
+    setBusy(true);
+    setPackageMessage("");
+    try {
+      const client = createBrowserSupabaseClient();
+      const { data: existing, error } = await client.from("cart_items").select("id")
+        .eq("event_id", event.id).eq("vendor_id", id).eq("service_id", offer.service_id)
+        .eq("status", "draft").limit(1).maybeSingle();
+      if (error) throw new Error(error.message);
+      if (existing) await updateCartItemPackage(client, event.id, existing.id, offer.id);
+      else await createCartItem(client, {
+        eventId: event.id, itemType: "vendor_service", vendorId: id, serviceId: offer.service_id,
+        packageId: offer.id, startTime: event.start_time, endTime: event.end_time,
+      });
+      setPackageMessage("Package saved to your event quote cart.");
+    } catch (error) {
+      setPackageMessage(error instanceof Error ? error.message : "Unable to save the package.");
+    } finally {
+      setBusy(false);
+    }
+  }
   const field = "mt-1 w-full rounded-lg border ui-border ui-surface p-3";
   const next = new URLSearchParams({
     mode,
@@ -141,7 +167,33 @@ export function BusinessListing({
           {listing.short_intro&&<p className="mt-3 font-medium">{listing.short_intro}</p>}<p className="mt-3 whitespace-pre-line">{listing.description}</p><ProfileSections sections={listing.profile_sections}/>
           {(listing.email||listing.phone)&&<p className="mt-3 flex flex-wrap gap-4">{listing.phone&&<a href={"tel:"+listing.phone} className="underline">{listing.phone}</a>}{listing.email&&<a href={"mailto:"+listing.email} className="underline">{listing.email}</a>}</p>}
           {photos.some(p=>p.media_kind==="business_photo")&&<section aria-label="Business photos" className="my-4 grid grid-cols-2 gap-3">{photos.filter(p=>p.media_kind==="business_photo").map((p,i)=><figure key={p.id} className={i===0?"col-span-2":""}><Image src={p.image_url} alt={p.alt_text||"Business photo"} width={900} height={500} unoptimized className="aspect-video w-full rounded-xl object-cover"/>{p.attribution&&<figcaption>{p.attribution}</figcaption>}</figure>)}</section>}
-          {services.length>0&&<details className="my-4"><summary>Services and pricing</summary>{services.map(s=><div key={s.id} className="mt-3"><strong>{s.service_name}</strong><p className="whitespace-pre-line">{s.description}</p><p>{pricingLabel(s.pricing_type, listing.owner_id ? serviceRate(s) : null, s.minimum_hours)}</p>{listing.owner_id && listing.approval_status === "approved" && !listing.vacation_mode && <PublicServicePackages business={id} service={s.id}/>}</div>)}</details>}
+          {!!services.length && <details className="my-4 space-y-3">
+            <summary>Services and pricing</summary>
+            {listing.verification_status === "verified" && listing.verified_at && listing.owner_id &&
+              listing.approval_status === "approved" && !listing.vacation_mode && (
+              events.length ? <label className="grid max-w-md gap-1 text-sm">Event for your quote cart
+                <select className="hub-input" value={eventId} disabled={busy} onChange={e => { setEventId(e.target.value); setPackageMessage(""); }}>
+                  <option value="">Choose an event</option>
+                  {events.map(event => <option value={event.id} key={event.id}>{event.title}</option>)}
+                </select>
+              </label> : <Link className="underline" href={signedIn ? "/account" : "/auth/login?next=" + encodeURIComponent("/business/" + id)}>
+                {signedIn ? "Choose or create an event to save packages" : "Sign in to save packages"}
+              </Link>
+            )}
+            {services.map(service => <div key={service.id} className="mt-3">
+              <strong>{service.service_name}</strong>
+              <p className="whitespace-pre-line">{service.description}</p>
+              <p>{pricingLabel(service.pricing_type, listing.owner_id ? serviceRate(service) : null, service.minimum_hours)}</p>
+              {listing.owner_id && listing.approval_status === "approved" && !listing.vacation_mode &&
+                <PublicServicePackages business={id} service={service.id}
+                  action={listing.verification_status === "verified" && listing.verified_at && events.some(event => event.id === eventId)
+                    ? offer => <button type="button" className="hub-button mt-2" disabled={busy} onClick={() => void selectPackage(offer)}>Select {offer.name}</button>
+                    : undefined}/>}
+            </div>)}
+            {packageMessage && <p role="status">{packageMessage}</p>}
+            {packageMessage.startsWith("Package saved") &&
+              <Link className="underline" href={"/marketplace?entryMode=event&openCart=1&eventId=" + encodeURIComponent(eventId)}>Review quote cart</Link>}
+          </details>}
           <p className="mt-2 ui-muted">
             {listing.location_name} {listing.service_area_city || "Service area not confirmed"} {listing.base_address}
           </p>

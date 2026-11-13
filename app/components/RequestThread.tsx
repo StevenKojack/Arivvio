@@ -1,4 +1,5 @@
 "use client";
+import { RequestedPackage } from "@/app/components/RequestedPackage";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -189,6 +190,7 @@ export function RequestThread({ requestId }: { requestId: string }) {
           </button>
         </div>
       </header>
+      {quote.package_snapshot && <RequestedPackage item={quote.package_snapshot} historical/>}
       {error && (
         <p className="hub-card p-4" role="alert">
           {error}

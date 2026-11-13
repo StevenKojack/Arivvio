@@ -124,6 +124,7 @@ export type MarketplaceItem = {
   sourceLabel: string;
   sourceUrl: string;
   serviceOptions?: MarketplaceServiceOption[];
+  serviceTitle?: string;
   serviceRadiusMiles?: number;
   vendorId?: string | null;
   serviceId?: string | null;

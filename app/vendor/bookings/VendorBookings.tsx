@@ -1,5 +1,6 @@
 'use client';
 
+import { RequestedPackage } from "@/app/components/RequestedPackage";
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { BusinessWorkspace } from '../BusinessWorkspace';
@@ -65,6 +66,7 @@ function BookingWorkspace({ business, initial, canEdit }: { business: string; in
           <div><dt className="ui-muted">Final recorded price</dt><dd>{booking.final_price == null ? 'Not recorded' : formatMoney(booking.final_price)}</dd></div>
           <div><dt className="ui-muted">Recorded payment status</dt><dd className="capitalize">{booking.payment_status?.replaceAll('_', ' ') ?? 'Not recorded'}</dd></div>
         </dl>
+        {row?.quote.package_snapshot && <RequestedPackage item={row.quote.package_snapshot} historical/>}
         <div className="flex flex-wrap gap-2">
           {canEdit && <Link className="hub-button" href={vendorCalendarLink(business, { event: 'ARIVVIO:' + booking.id })}>Open calendar entry</Link>}
           {booking.quote_request_id && <Link className="hub-button" href={vendorRequestLink(business, booking.quote_request_id)}>Open request</Link>}

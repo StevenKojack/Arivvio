@@ -30,7 +30,9 @@ export async function requestQuotesFromCart(
     supabase,
     quoteableItems.map((item) => ({
       endTime: item.end_time,
-      estimatedPrice: item.estimated_price,
+      estimatedPrice: item.package_id ? null : item.estimated_price,
+      packageId: item.package_id,
+      packageSnapshot: item.package_snapshot,
       eventId: input.event.id,
       guestCount: input.event.guest_count,
       message: input.message ?? null,

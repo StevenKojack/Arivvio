@@ -7,6 +7,8 @@ export type QuoteRequestCreateInput = {
   eventId: string;
   guestCount?: number | null;
   message?: string | null;
+  packageId?: string | null;
+  packageSnapshot?: PublicTableRow<"quote_requests">["package_snapshot"];
   plannerId: string;
   serviceId?: string | null;
   startTime?: string | null;
@@ -25,6 +27,8 @@ export async function createQuoteRequest(
       event_id: input.eventId,
       guest_count: input.guestCount ?? null,
       message: input.message ?? null,
+      package_id: input.packageId ?? null,
+      package_snapshot: input.packageSnapshot ?? null,
       planner_id: input.plannerId,
       requested_end_time: input.endTime ?? null,
       requested_start_time: input.startTime ?? null,
@@ -60,6 +64,8 @@ export async function createQuoteRequests(
         event_id: record.eventId,
         guest_count: record.guestCount ?? null,
         message: record.message ?? null,
+        package_id: record.packageId ?? null,
+        package_snapshot: record.packageSnapshot ?? null,
         planner_id: record.plannerId,
         requested_end_time: record.endTime ?? null,
         requested_start_time: record.startTime ?? null,

@@ -244,6 +244,8 @@ export type Database = {
       };
       cart_items: {
         Row: {
+          package_id: string | null;
+          package_snapshot: import('../service-catalog/model').PackageSnapshot | null;
           end_time: string | null;
           estimated_price: number | null;
           event_id: string;
@@ -265,6 +267,8 @@ export type Database = {
       };
       quote_requests: {
         Row: RowWithTimestamps & {
+          package_id: string | null;
+          package_snapshot: import('../service-catalog/model').PackageSnapshot | null;
           quote_revision: number;
           updated_at: string;
           request_context: Json | null;

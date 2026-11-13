@@ -334,6 +334,7 @@ export function mapServiceToMarketplaceItem(
     rating: 0,
     reviewCount: 0,
     serviceId: service.id,
+    serviceTitle: service.service_name,
     serviceRadiusMiles: vendor.owner_id ? vendor.service_radius_miles : undefined,
     serviceOptions: serviceOptions.length > 1 ? serviceOptions : undefined,
     services: Array.from(new Set(vendorServices.map((vendorService) => toServiceName(vendorService.category)))),

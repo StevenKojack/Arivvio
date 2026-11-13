@@ -625,6 +625,101 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       await db.exec('reset role');
       assert.deepEqual(await counts(),before);
     });
+    await t.test('package cart and request snapshots enforce eligibility, ownership and history', async () => {
+      await db.exec('reset role');
+      await db.exec(readFileSync('supabase/migrations/20261113065732_customer_package_selection.sql', 'utf8'));
+      const { business, service } = (await db.query("select b.id business,s.id service from vendor_businesses b join vendor_services s on s.vendor_id=b.id where b.business_name='Activation safe fixture' limit 1")).rows[0];
+      const event = id(600);
+      const pkg = async (name, active = true) => (await db.query(
+        'insert into vendor_service_packages(vendor_id,service_id,name,active) values($1,$2,$3,$4) returning id',
+        [business,service,name,active],
+      )).rows[0].id;
+      const a = await pkg('First');
+      const b = await pkg('Second');
+      const c = await pkg('Third');
+      const inactive = await pkg('Inactive',false);
+      const originalCounts = async () => (await db.query('select (select count(*) from messages) messages,(select count(*) from bookings) bookings,(select count(*) from quote_requests) requests')).rows[0];
+      const before = await originalCounts();
+      const originalBooking = (await db.query('select * from bookings where id=$1',[id(7200)])).rows[0];
+      await as(2);
+      assert.equal((await db.query("select id from vendor_service_packages where id=any($1::uuid[])",[[a,b,c,inactive]])).rows.length,3);
+      const add = (packageId, vendor = business, serviceId = service) => db.query(
+        "insert into cart_items(event_id,item_type,vendor_id,service_id,package_id,start_time,end_time,package_snapshot) values($1,'vendor_service',$2,$3,$4,'13:00','15:00','{\"name\":\"forged\"}') returning *",
+        [event,vendor,serviceId,packageId],
+      );
+      await assert.rejects(add(inactive),/unavailable/);
+      await assert.rejects(add(a,id(9999)),/unavailable/);
+      await assert.rejects(add(a,business,id(978)),/unavailable/);
+      const first = (await add(a)).rows[0];
+      assert.equal(first.package_snapshot.name,'First');
+      assert.equal(first.package_snapshot.amount,null);
+      assert.equal(first.package_snapshot.version,undefined);
+      const change = (packageId) => db.query('update cart_items set package_id=$1,package_snapshot=null where id=$2 returning *',[packageId,first.id]);
+      const second = (await change(b)).rows[0];
+      assert.equal(second.id,first.id);
+      assert.equal(second.start_time,first.start_time);
+      assert.equal(second.end_time,first.end_time);
+      assert.equal((await change(null)).rows[0].package_snapshot,null);
+      await change(a);
+      const restored = (await db.query('select * from cart_items where id=$1',[first.id])).rows[0];
+      assert.equal(restored.package_id,a);
+      await as(3);
+      assert.equal((await db.query('select * from cart_items where id=$1',[first.id])).rows.length,0);
+      await assert.rejects(add(a),/active event you own|row-level security/);
+      await db.exec('reset role');
+      assert.deepEqual(await originalCounts(),before);
+      const send = (snapshot, packageId = a) => db.query(
+        'insert into quote_requests(event_id,planner_id,vendor_id,service_id,package_id,package_snapshot,estimated_price) values($1,$2,$3,$4,$5,$6::jsonb,999) returning *',
+        [event,id(12),business,service,packageId,JSON.stringify(snapshot)],
+      );
+      await as(2);
+      await assert.rejects(send({ ...restored.package_snapshot, name:'Fake' }),/changed/);
+      await as(1);
+      await db.query("update vendor_service_packages set active=false where id=$1",[a]);
+      await as(2);
+      await assert.rejects(send(restored.package_snapshot),/unavailable/);
+      await as(1);
+      await db.query("update vendor_service_packages set active=true,name='Revised' where id=$1",[a]);
+      await as(2);
+      await assert.rejects(send(restored.package_snapshot),/changed/);
+      const reviewed = (await change(a)).rows[0].package_snapshot;
+      const request = (await send(reviewed)).rows[0];
+      assert.equal(request.package_id,a);
+      assert.deepEqual(request.package_snapshot,reviewed);
+      assert.equal(request.estimated_price,null);
+      assert.equal(request.vendor_final_price,null);
+      assert.equal(request.quote_revision,0);
+      const serviceOnly = (await send(null,null)).rows[0];
+      assert.equal(serviceOnly.package_id,null);
+      assert.equal(serviceOnly.package_snapshot,null);
+      assert.equal(serviceOnly.estimated_price,'999.00');
+      const thread = async () => (await db.query('select public.get_quote_thread($1) r',[request.id])).rows[0].r;
+      assert.deepEqual((await thread()).quote.package_snapshot,reviewed);
+      await as(1);
+      assert.deepEqual((await thread()).quote.package_snapshot,reviewed);
+      await db.query("update vendor_service_packages set name='Changed after request',active=false where id=$1",[a]);
+      assert.deepEqual((await thread()).quote.package_snapshot,reviewed);
+      await as(3);
+      assert.equal((await db.query('select * from quote_requests where id=$1',[request.id])).rows.length,0);
+      await db.exec('reset role;set role anon');
+      await assert.rejects(db.query('select * from quote_requests where id=$1',[request.id]),/permission denied/);
+      await db.exec('reset role');
+      await assert.rejects(db.query('update quote_requests set package_snapshot=null where id=$1',[request.id]),/cannot change/);
+      assert.deepEqual((await db.query('select * from bookings where id=$1',[id(7200)])).rows[0],originalBooking);
+      const after = await originalCounts();
+      assert.equal(after.messages,before.messages);
+      assert.equal(after.bookings,before.bookings);
+      assert.equal(Number(after.requests),Number(before.requests)+2);
+      // Exercise the existing acceptance function only inside the in-memory fixture.
+      await db.query("update quote_requests set status='sent',vendor_final_price=450,quote_revision=1 where id=$1",[request.id]);
+      await as(2);
+      const accepted = (await db.query('select (public.accept_quote_and_create_booking($1,1)).*',[request.id])).rows[0];
+      assert.equal(accepted.quote_request_id,request.id);
+      assert.equal(Number(accepted.final_price),450);
+      assert.equal(accepted.payment_status,'not_started');
+      assert.equal((await thread()).booking.id,accepted.id);
+      assert.deepEqual((await thread()).quote.package_snapshot,reviewed);
+    });
   } finally {
     await db.close();
   }

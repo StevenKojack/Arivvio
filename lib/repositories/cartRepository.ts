@@ -7,6 +7,7 @@ export type CartItemCreateInput = {
   estimatedPrice?: number | null;
   eventId: string;
   itemType: ItemType;
+  packageId?: string | null;
   quantity?: number;
   serviceId?: string | null;
   startTime?: string | null;
@@ -20,6 +21,8 @@ export type CartItemQuoteInput = Pick<
   | "estimated_price"
   | "event_id"
   | "id"
+  | "package_id"
+  | "package_snapshot"
   | "service_id"
   | "start_time"
   | "vendor_id"
@@ -37,6 +40,7 @@ export async function createCartItem(
       estimated_price: input.estimatedPrice ?? null,
       event_id: input.eventId,
       item_type: input.itemType,
+      package_id: input.packageId ?? null,
       quantity: input.quantity ?? 1,
       service_id: input.serviceId ?? null,
       start_time: input.startTime ?? null,
@@ -58,7 +62,7 @@ export async function updateCartItemTime(
   input: {
     cartItemId: string;
     endTime: string;
-    estimatedPrice: number;
+    estimatedPrice: number | null;
     eventId: string;
     startTime: string;
   },
@@ -95,4 +99,19 @@ export async function markCartItemsQuoteRequested(
   if (error) {
     throw error;
   }
+}
+
+export async function updateCartItemPackage(
+  supabase: ArivvioSupabaseClient,
+  eventId: string,
+  id: string,
+  packageId: string | null,
+  estimatedPrice: number | null = null,
+) {
+  // Clearing the prior snapshot also requests fresh catalog terms when the ID stays the same.
+  const { data, error } = await supabase.from('cart_items')
+    .update({ package_id: packageId, package_snapshot: null, estimated_price: estimatedPrice })
+    .eq('id', id).eq('event_id', eventId).eq('status', 'draft').select('*').single();
+  if (error) throw new Error(error.message);
+  return data;
 }

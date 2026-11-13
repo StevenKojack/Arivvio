@@ -7,6 +7,7 @@ import Link from "next/link";
 import { listingPresentation } from "@/lib/marketplace/listing-state";
 import { memo, useState } from "react";
 import { ListingImage } from "./ListingImage";
+import type { ServicePackage } from "@/lib/service-catalog/model";
 import { ProviderProfile } from "./ProviderProfile";
 import {BusinessMark} from "@/app/components/BusinessMark";
 import type { MarketplaceItem } from "@/app/data/marketplace";
@@ -24,6 +25,7 @@ type VendorCardProps = {
   matchReason?: string;
   quote: number;
   onAdd: (item: MarketplaceItem) => void;
+  onPackage?: (item: MarketplaceItem, offer: ServicePackage) => void;
   onHover?: (itemId: number | null) => void;
   onSelect?: (item: MarketplaceItem) => void;
 };
@@ -42,6 +44,7 @@ function VendorCardComponent({
   onSelect,
   quote,
   onAdd,
+  onPackage,
 }: VendorCardProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const media = profileCover(item);
@@ -112,7 +115,7 @@ function VendorCardComponent({
         {matchLabel && <p className="mt-3 text-xs ui-muted">{matchLabel}</p>}
 
       </div>
-    </article>{profileOpen ? <ProviderProfile eventId={eventId} preview={preview} item={item} quote={quote} matchReason={preview ? matchReason : item.services.slice(0, 2).join(" · ") || matchReason} selected={Boolean(disableAdd ?? isSelected)} onAdd={() => { setProfileOpen(false); if (!preview) onAdd(item); }} onClose={() => setProfileOpen(false)} /> : null}</>
+    </article>{profileOpen ? <ProviderProfile eventId={eventId} preview={preview} item={item} quote={quote} matchReason={preview ? matchReason : item.services.slice(0, 2).join(" · ") || matchReason} selected={Boolean(disableAdd ?? isSelected)} onPackage={onPackage && !preview ? offer => { setProfileOpen(false); onPackage(item, offer); } : undefined} onAdd={() => { setProfileOpen(false); if (!preview) onAdd(item); }} onClose={() => setProfileOpen(false)} /> : null}</>
   );
 }
 

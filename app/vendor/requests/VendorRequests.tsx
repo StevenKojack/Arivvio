@@ -1,5 +1,6 @@
 'use client';
 
+import { RequestedPackage } from "@/app/components/RequestedPackage";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BusinessWorkspace } from '../BusinessWorkspace';
@@ -80,6 +81,7 @@ function RequestCard({ row, business, canEdit, initialOpen }: {
       <div><dt className="ui-muted">Request status</dt><dd className="capitalize">{quote.status}{quote.quote_revision > 0 && ' · Revision ' + quote.quote_revision}</dd></div>
       <div><dt className="ui-muted">Booking</dt><dd className="capitalize">{booking?.booking_status ?? (bookingId ? 'Recorded' : 'Not recorded')}</dd></div>
     </dl>
+    {quote.package_snapshot && <RequestedPackage item={quote.package_snapshot} historical/>}
     <div className="mt-4 flex flex-wrap gap-2">
       <Link className="hub-button" href={'/account/requests/' + quote.id}>Open existing conversation</Link>
       {bookingId && <Link className="hub-button" href={vendorBookingLink(business, bookingId)}>Open booking operations</Link>}

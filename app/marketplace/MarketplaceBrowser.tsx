@@ -8,6 +8,7 @@ import Link from "next/link";
 import { loadCloudCart, removeCloudCartItem, sendCloudCart } from "@/lib/customer-cloud/marketplace";
 import { SaveEventToAccount } from "@/app/components/SaveEventToAccount";
 import { profileFromEvent } from "@/lib/customer-cloud/profile";
+import { RequestedPackage } from "@/app/components/RequestedPackage";
 import { CustomerDialog } from "@/app/components/CustomerDialog";
 import { EventPartsSummary } from "@/app/discover/components/EventParts";
 
@@ -58,6 +59,7 @@ import {
 import {
   createCartItem,
   updateCartItemTime,
+  updateCartItemPackage,
 } from "@/lib/repositories/cartRepository";
 import { ensureCurrentProfile } from "@/lib/repositories/profilesRepository";
 import { loadDemoQuoteRequests, type DemoQuoteRequest } from "@/lib/event-intelligence/demo-quotes";
@@ -80,6 +82,7 @@ import { ZoneMapEditor } from "@/app/components/maps/ZoneMapEditor";
 import { FilterDrawer, MarketplaceFilters } from "./components/FilterDrawer";
 import { MarketplaceMap, type MarketplaceMapPin } from "./components/MarketplaceMap";
 import { VendorCard } from "./components/VendorCard";
+import type { ServicePackage, PackageSnapshot } from "@/lib/service-catalog/model";
 import { QuoteCartDrawer } from "./components/QuoteCartDrawer";
 
 type MarketplaceFilter = (typeof marketplaceTypes)[number];
@@ -87,6 +90,7 @@ type EventRow = PublicTableRow<"events">;
 type ProfileRow = PublicTableRow<"profiles">;
 type CartLine = {
   cartItemId?: string;
+  packageSnapshot?: PackageSnapshot | null;
   id: number;
   item: MarketplaceItem;
   persisted: boolean;
@@ -218,6 +222,7 @@ function MarketplaceBody() {
   const [isZoneEditorOpen, setIsZoneEditorOpen] = useState(false);
   const [locationStatus, setLocationStatus] = useState("");
   const nextCartLineId = useRef(0);
+  const pendingCartWrites = useRef(new Set<string>());
   const [cart, setCart] = useState<CartLine[]>([]);
   const [isCartRestored, setIsCartRestored] = useState(false);
   const [eventIntelligence, setEventIntelligence] = useState<EventIntelligenceProfile | null>(null);
@@ -227,7 +232,7 @@ function MarketplaceBody() {
   const hoverFrameRef = useRef<number | null>(null);
   const activeRowFrameRef = useRef<number | null>(null);
   const [isMobileMapOpen, setIsMobileMapOpen] = useState(false);
-  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState(searchParams.get("openCart") === "1");
   function applyLocationProfile(profile: LocationProfile, message?: string) {
     setLocationProfile(profile);
     setSearchZone(profile.zone ?? null);
@@ -652,7 +657,29 @@ function MarketplaceBody() {
         const composed = composeProviders(databaseProviders,demoItems(),sourceMode);
         setProviders(composed);
         if(!eventId){const restored=loadDemoCart<CartLine[]>()??[];setCart(current=>[...current.filter(l=>!l.item.databaseSource),...restored.filter(l=>l.item.databaseSource).flatMap(line=>{const item=composed.find(p=>p.databaseSource&&p.vendorId===line.item.vendorId&&p.serviceId===line.item.serviceId);return item?[{...line,item,persisted:false,cartItemId:undefined}]:[];})]);}
-        if(eventId){const rows=await loadCloudCart(supabase,eventId);const realLines=(rows??[]).flatMap((row,index)=>{const item=composed.find(p=>p.databaseSource && (row.service_id?p.serviceId===row.service_id:p.vendorId===row.vendor_id));return item?[{id:-(index+1),item,persisted:true,cartItemId:row.id,priceAdjustment:0,serviceId:row.service_id,serviceName:item.services[0],serviceTitle:item.name,serviceStart:row.start_time?.slice(0,5)??'',serviceEnd:row.end_time?.slice(0,5)??''}]:[];});setCart(current=>[...current.filter(l=>!l.item.databaseSource),...realLines]);}
+        if (eventId && user) {
+          const rows = await loadCloudCart(supabase, eventId);
+          const realLines = rows.flatMap((row, index) => {
+            const item = databaseProviders.find(provider => row.service_id
+              ? provider.serviceId === row.service_id : provider.vendorId === row.vendor_id);
+            // A hidden service still needs a removable cart line so customers can resolve it.
+            const fallback: MarketplaceItem | undefined = row.package_snapshot ? {
+              id: -(index + 1), databaseSource: true, vendorId: row.vendor_id, serviceId: row.service_id,
+              name: 'Unavailable provider', type: allServices[0], services: [], events: [],
+              location: '', address: '', coordinates: { lat: 0, lng: 0 }, availability: [], tags: [],
+              description: '', price: 'Unavailable', pricing: { kind: 'flat', basePrice: 0, label: 'Unavailable' },
+              pricingKnown: false, rating: 0, reviewCount: 0, sourceLabel: '', sourceUrl: '#',
+            } : undefined;
+            const provider = item ?? fallback;
+            return provider ? [{
+              id: -(index + 1), item: provider, persisted: true, packageSnapshot: row.package_snapshot,
+              cartItemId: row.id, priceAdjustment: 0, serviceId: row.service_id,
+              serviceName: provider.type, serviceTitle: provider.serviceTitle ?? (item ? provider.type : 'Unavailable service'),
+              serviceStart: row.start_time?.slice(0, 5) ?? '', serviceEnd: row.end_time?.slice(0, 5) ?? '',
+            }] : [];
+          });
+          setCart(current => [...current.filter(line => !line.item.databaseSource), ...realLines]);
+        }
         setMarketplaceMessage("");
       } catch (error) {
         setSessionUserId(null);
@@ -922,13 +949,33 @@ function MarketplaceBody() {
   const addCartLine = useCallback(async (
     item: MarketplaceItem,
     serviceOption: MarketplaceServiceOption,
+    offer?: ServicePackage,
   ) => {
-    if (
-      cart.some(
-        (line) =>
-          line.item.id === item.id && line.serviceName === serviceOption.service,
-      )
-    ) {
+    const serviceId = serviceOption.serviceId ?? item.serviceId ?? null;
+    const writeKey = [savedEvent?.id, item.vendorId ?? item.id, serviceId ?? serviceOption.service].join('/');
+    if (pendingCartWrites.current.has(writeKey)) return;
+    const existing = cart.find(line => item.databaseSource
+      ? line.item.vendorId === item.vendorId && line.serviceId === serviceId
+      : line.item.id === item.id && line.serviceName === serviceOption.service);
+    if (offer && (!profile || !savedEvent || ["cancelled", "completed"].includes(savedEvent.status) || offer.vendor_id !== item.vendorId || offer.service_id !== serviceId)) {
+      setCartMessage("Choose an active saved account event before adding this package.");
+      setIsMobileCartOpen(true);
+      return;
+    }
+    if (existing) {
+      if (offer && existing.cartItemId && savedEvent) {
+        pendingCartWrites.current.add(writeKey);
+        try {
+          const row = await updateCartItemPackage(createBrowserSupabaseClient(), savedEvent.id, existing.cartItemId, offer.id);
+          setCart(current => current.map(line => line.id === existing.id ? { ...line, packageSnapshot: row.package_snapshot } : line));
+          setCartMessage("Package selection saved.");
+        } catch (error) {
+          setCartMessage(error instanceof Error ? error.message : "Unable to save this package.");
+        } finally {
+          pendingCartWrites.current.delete(writeKey);
+        }
+        setIsMobileCartOpen(true);
+      }
       return;
     }
 
@@ -946,7 +993,7 @@ function MarketplaceBody() {
       serviceTitle: serviceOption.title,
     };
 
-    setCart((current) => [...current, line]);
+    if (!offer) setCart((current) => [...current, line]);
 
     if (!profile || !savedEvent) {
       setCartMessage(item.databaseSource ? "Choose a saved account event from My events before sending real business requests." : getCartAuthMessage(isAuthLoading, isLoggedIn, Boolean(savedEvent)));
@@ -958,6 +1005,7 @@ function MarketplaceBody() {
       return;
     }
 
+    pendingCartWrites.current.add(writeKey);
     try {
       const supabase = createBrowserSupabaseClient();
       const estimatedPrice = Math.max(
@@ -972,7 +1020,8 @@ function MarketplaceBody() {
       );
       const cartItem = await createCartItem(supabase, {
         endTime,
-        estimatedPrice,
+        estimatedPrice: offer ? null : estimatedPrice,
+        packageId: offer?.id,
         eventId: savedEvent.id,
         itemType: serviceOption.service === "Venue" ? "venue" : "vendor_service",
         serviceId: line.serviceId ?? null,
@@ -981,7 +1030,10 @@ function MarketplaceBody() {
         venueId: item.venueId ?? null,
       });
 
-      setCart((current) =>
+      if (offer) {
+        setCart(current => [...current, { ...line, cartItemId: cartItem.id, persisted: true, packageSnapshot: cartItem.package_snapshot }]);
+        setIsMobileCartOpen(true);
+      } else setCart((current) =>
         current.map((currentLine) =>
           currentLine.id === lineId
             ? { ...currentLine, cartItemId: cartItem.id, persisted: true }
@@ -990,11 +1042,14 @@ function MarketplaceBody() {
       );
       setCartMessage("Real business selection saved to your event.");
     } catch (error) {
+      if (offer) setIsMobileCartOpen(true);
       setCartMessage(
         error instanceof Error
           ? error.message
           : "Unable to save this cart item yet.",
       );
+    } finally {
+      pendingCartWrites.current.delete(writeKey);
     }
   }, [
     cart,
@@ -1022,16 +1077,33 @@ function MarketplaceBody() {
     await addCartLine(item, serviceOptions[0]);
   }, [addCartLine]);
 
+  const selectPackage = useCallback((item: MarketplaceItem, offer: ServicePackage) => {
+    if (!listingPresentation(item).canRequest || !item.databaseSource) return;
+    const option = getSelectableServiceOptions(item).find(row => row.serviceId === offer.service_id);
+    const serviceItem = providers.find(row => row.vendorId === offer.vendor_id && row.serviceId === offer.service_id);
+    if (option && serviceItem) void addCartLine(serviceItem, option, offer);
+  }, [addCartLine, providers]);
+
+  async function changeCartPackage(lineId: number, packageId: string | null) {
+    const line = cart.find(row => row.id === lineId);
+    if (!savedEvent || !line?.cartItemId) throw new Error("Choose a saved event before changing packages.");
+    const row = await updateCartItemPackage(createBrowserSupabaseClient(), savedEvent.id, line.cartItemId, packageId, packageId ? null : getLineQuote(line));
+    setCart(current => current.map(item => item.id === lineId ? { ...item, packageSnapshot: row.package_snapshot } : item));
+    setCartMessage("Package selection saved.");
+  }
+
   const addSelectedServicesToCart = useCallback(async (
     item: MarketplaceItem,
     serviceOptions: MarketplaceServiceOption[],
   ) => {
     for (const serviceOption of serviceOptions) {
-      await addCartLine(item, serviceOption);
+      const serviceItem = item.databaseSource && serviceOption.serviceId
+        ? providers.find(row => row.vendorId === item.vendorId && row.serviceId === serviceOption.serviceId) ?? item : item;
+      await addCartLine(serviceItem, serviceOption);
     }
 
     setPendingServiceItem(null);
-  }, [addCartLine]);
+  }, [addCartLine, providers]);
 
   const removeFromCart = useCallback((lineId: number) => {
     const line=cart.find(l=>l.id===lineId);
@@ -1067,6 +1139,7 @@ function MarketplaceBody() {
         onRemove={removeFromCart}
         onRequestQuotes={requestQuotes}
         onUpdateTime={updateCartTime}
+        onChangePackage={changeCartPackage}
       />
     );
   }
@@ -1099,7 +1172,7 @@ function MarketplaceBody() {
       await updateCartItemTime(supabase, {
         cartItemId: nextLine.cartItemId,
         endTime: nextLine.serviceEnd,
-        estimatedPrice: quoteItem(nextLine.item, getLineContext(nextLine)),
+        estimatedPrice: nextLine.packageSnapshot ? null : quoteItem(nextLine.item, getLineContext(nextLine)),
         eventId: savedEvent.id,
         startTime: nextLine.serviceStart,
       });
@@ -1143,7 +1216,7 @@ function MarketplaceBody() {
   if(eventId && !savedEvent)return <section className="hub-card m-5 p-6"><p role="status">{isAuthLoading?"Loading your account event…":marketplaceMessage}</p><Link className="hub-button mt-4" href={`/auth/login?next=${encodeURIComponent(`/marketplace?eventId=${eventId}`)}`}>Sign in to continue</Link></section>;
   return (
     <>
-      {cloudReview&&savedEvent&&<CustomerDialog title="Send provider requests" onClose={()=>{if(!cloudSending)setCloudReview(false);}}><p>Send {cartGroups(cart).real.length} real request(s) for {savedEvent.title} to the providers below?</p><ul className="my-4 space-y-2">{cartGroups(cart).real.map(line=><li key={line.id}>{line.item.name} · {line.serviceTitle}</li>)}</ul><label className="text-sm">Message to providers<textarea className="hub-input mt-2 w-full" value={cloudMessage} onChange={e=>setCloudMessage(e.target.value)} maxLength={2000}/></label><p className="my-4 text-sm ui-muted">Your event name, date, location, guest count and stage schedule will accompany these requests. Providers can respond in their account. This does not book or pay anyone.</p><button className="hub-primary" disabled={cloudSending} onClick={async()=>{setCloudSending(true);try{await sendCloudCart(createBrowserSupabaseClient(),savedEvent.id,cartGroups(cart).real.map(l=>l.cartItemId!),cloudMessage);setCart(current=>current.filter(l=>!l.item.databaseSource));setCloudReview(false);setCartMessage("Requests sent. Open your Event Hub to see responses.");}catch(e){setCartMessage(e instanceof Error?e.message:"Unable to send requests.");}finally{setCloudSending(false);}}}>{cloudSending?"Sending…":"Send requests"}</button><p role="status" className="mt-3 text-sm">{cartMessage}</p></CustomerDialog>}
+      {cloudReview&&savedEvent&&<CustomerDialog title="Send provider requests" onClose={()=>{if(!cloudSending)setCloudReview(false);}}><p>Send {cartGroups(cart).real.length} real request(s) for {savedEvent.title} to the providers below?</p><ul className="my-4 space-y-2">{cartGroups(cart).real.map(line=><li key={line.id}>{line.item.name} · {line.serviceTitle}{line.packageSnapshot ? <RequestedPackage item={line.packageSnapshot}/> : <p className="text-sm ui-muted">Custom service request</p>}</li>)}</ul><label className="text-sm">Message to providers<textarea className="hub-input mt-2 w-full" value={cloudMessage} onChange={e=>setCloudMessage(e.target.value)} maxLength={2000}/></label><p className="my-4 text-sm ui-muted">Your event name, date, location, guest count and stage schedule will accompany these requests. Providers can respond in their account. This does not book or pay anyone.</p><button className="hub-primary" disabled={cloudSending} onClick={async()=>{setCloudSending(true);try{await sendCloudCart(createBrowserSupabaseClient(),savedEvent.id,cartGroups(cart).real.map(l=>({id:l.cartItemId!,packageSnapshot:l.packageSnapshot??null})),cloudMessage);setCart(current=>current.filter(l=>!l.item.databaseSource));setCloudReview(false);setCartMessage("Requests sent. Open your Event Hub to see responses.");}catch(e){setCloudReview(false);setCartMessage(e instanceof Error?e.message:"Unable to send requests.");}finally{setCloudSending(false);}}}>{cloudSending?"Sending…":"Send requests"}</button><p role="status" className="mt-3 text-sm">{cartMessage}</p></CustomerDialog>}
       {!eventId&&eventIntelligence&&<div className="mb-4"><SaveEventToAccount profile={eventIntelligence}/></div>}
       {eventId&&<Link className="hub-button mb-4" href={`/events/${eventId}`}>Back to account Event Hub</Link>}
       {quoteReview && <DemoQuoteJourney key={quoteReview.id} request={quoteReview} alreadySubmitted={quoteReview.id === lastRequest?.id} onClose={() => setQuoteReview(null)} onSubmitted={setLastRequest} />}
@@ -1221,7 +1294,7 @@ function MarketplaceBody() {
           <div className="hub-card flex flex-wrap items-center gap-3 p-3"><input aria-label="Search providers" className="hub-input min-w-0 flex-1" placeholder="Name, location or specialty" value={query} onChange={e=>setQuery(e.target.value)} /><span className="hub-muted text-xs">{selectedServices.length ? selectedServices.join(", ") : "All services"}</span></div>
 
           {filteredItems.length > matching.exactCount && <p className="hub-card p-4 text-sm" role="status">Some listings have unconfirmed schedules or broader service areas. Your service, event, capacity and explicit filters still apply. Check the details on each listing.</p>}
-          {filteredItems.length ? <div className="space-y-10">{discoveryGroups.map(group=>{const groupItems=filteredItems.filter(item=>discoveryGroup(item).title===group.title).sort((a,b)=>sourcePriority(a)-sourcePriority(b) || matching.details[a.id].order-matching.details[b.id].order || (sort==="Price: low to high"?quoteItem(a,globalQuoteContext)-quoteItem(b,globalQuoteContext):sort==="Name"?a.name.localeCompare(b.name):0));return groupItems.length ? <section key={group.title} aria-label={group.title}><div className="mb-4 flex items-baseline justify-between gap-3"><h2 className="text-xl font-semibold">{group.title}</h2><span className="text-xs ui-muted">{groupItems.length} listings</span></div><div className="listing-grid" data-marketplace-row="best-matches">{groupItems.map(item=><div key={item.sourceKey ?? item.id} data-vendor-id={item.id} data-row-id="best-matches" id={`vendor-card-best-matches-${item.id}`}><VendorCard eventId={eventId ?? undefined} item={item} quote={quoteItem(item,globalQuoteContext)} isSelected={cartedIds.includes(item.id)} disableAdd={cart.filter(line=>line.item.id===item.id).length >= (item.serviceOptions?.length ?? item.services.length)} buttonLabel={cartedIds.includes(item.id)?"Added ✓":item.databaseSource?"Request Quote":"Add Demo to cart"} matchLabel={matching.details[item.id]?.label} matchReason={matching.details[item.id]?.tier !== "exact" ? matching.details[item.id]?.reason : planMatchReasons[item.id] ?? matching.details[item.id]?.reason} onAdd={addToCart} onSelect={selectMapItem} onHover={setMapHoverItem} /></div>)}</div></section>:null;})}</div> : <div className="hub-card p-8 text-center"><h2 className="text-xl font-semibold">No exact match here yet</h2><p className="hub-muted mt-2">We haven’t found a defensible alternative within your requirements. Your filters are still applied.</p><div className="mt-5 flex flex-wrap justify-center gap-2">{query&&<button className="hub-button" onClick={()=>setQuery("")}>Clear search text</button>}{language&&<button className="hub-button" onClick={()=>setLanguage("")}>Remove language filter</button>}{specialty&&<button className="hub-button" onClick={()=>setSpecialty("")}>Remove specialty filter</button>}{maxEstimate&&<button className="hub-button" onClick={()=>setMaxEstimate("")}>Remove price limit</button>}<button className="hub-button" onClick={()=>setIsFilterDrawerOpen(true)}>Adjust filters and area</button></div></div>}
+          {filteredItems.length ? <div className="space-y-10">{discoveryGroups.map(group=>{const groupItems=filteredItems.filter(item=>discoveryGroup(item).title===group.title).sort((a,b)=>sourcePriority(a)-sourcePriority(b) || matching.details[a.id].order-matching.details[b.id].order || (sort==="Price: low to high"?quoteItem(a,globalQuoteContext)-quoteItem(b,globalQuoteContext):sort==="Name"?a.name.localeCompare(b.name):0));return groupItems.length ? <section key={group.title} aria-label={group.title}><div className="mb-4 flex items-baseline justify-between gap-3"><h2 className="text-xl font-semibold">{group.title}</h2><span className="text-xs ui-muted">{groupItems.length} listings</span></div><div className="listing-grid" data-marketplace-row="best-matches">{groupItems.map(item=><div key={item.sourceKey ?? item.id} data-vendor-id={item.id} data-row-id="best-matches" id={`vendor-card-best-matches-${item.id}`}><VendorCard eventId={eventId ?? undefined} item={item} quote={quoteItem(item,globalQuoteContext)} isSelected={cartedIds.includes(item.id)} disableAdd={cart.filter(line=>line.item.id===item.id).length >= (item.serviceOptions?.length ?? item.services.length)} buttonLabel={cartedIds.includes(item.id)?"Added ✓":item.databaseSource?"Request Quote":"Add Demo to cart"} matchLabel={matching.details[item.id]?.label} matchReason={matching.details[item.id]?.tier !== "exact" ? matching.details[item.id]?.reason : planMatchReasons[item.id] ?? matching.details[item.id]?.reason} onAdd={addToCart} onPackage={selectPackage} onSelect={selectMapItem} onHover={setMapHoverItem} /></div>)}</div></section>:null;})}</div> : <div className="hub-card p-8 text-center"><h2 className="text-xl font-semibold">No exact match here yet</h2><p className="hub-muted mt-2">We haven’t found a defensible alternative within your requirements. Your filters are still applied.</p><div className="mt-5 flex flex-wrap justify-center gap-2">{query&&<button className="hub-button" onClick={()=>setQuery("")}>Clear search text</button>}{language&&<button className="hub-button" onClick={()=>setLanguage("")}>Remove language filter</button>}{specialty&&<button className="hub-button" onClick={()=>setSpecialty("")}>Remove specialty filter</button>}{maxEstimate&&<button className="hub-button" onClick={()=>setMaxEstimate("")}>Remove price limit</button>}<button className="hub-button" onClick={()=>setIsFilterDrawerOpen(true)}>Adjust filters and area</button></div></div>}
 
         </section>
 
@@ -1438,6 +1511,9 @@ function getSelectableServiceOptions(item: MarketplaceItem): MarketplaceServiceO
     return item.serviceOptions;
   }
 
+  if (item.databaseSource && item.serviceId) {
+    return [{ description: item.description, estimateLabel: item.price, service: item.type, serviceId: item.serviceId, title: item.serviceTitle ?? item.type }];
+  }
   const services = [item.type, ...item.services].filter(
     (service, index, allServices) => allServices.indexOf(service) === index,
   );

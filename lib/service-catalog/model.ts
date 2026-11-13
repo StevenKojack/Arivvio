@@ -39,3 +39,18 @@ export function checklistAdditions(tasks: PreparationTask[], template: string[])
     return [{ title, done: false }];
   });
 }
+
+export type PackageSnapshot = Pick<ServicePackage,
+  'id' | 'service_id' | 'name' | 'description' | 'inclusions' | 'pricing_model' |
+  'amount' | 'minimum_hours' | 'minimum_guests'>;
+
+export function samePackageSnapshot(left: PackageSnapshot | null, right: PackageSnapshot | null) {
+  if (!left || !right) return left === right;
+  const keys: (keyof PackageSnapshot)[] = [
+    'id', 'service_id', 'name', 'description', 'inclusions', 'pricing_model',
+    'amount', 'minimum_hours', 'minimum_guests',
+  ];
+  return keys.every(key => key === 'inclusions'
+    ? left.inclusions.length === right.inclusions.length && left.inclusions.every((entry, index) => entry === right.inclusions[index])
+    : left[key] === right[key]);
+}
