@@ -1,17 +1,19 @@
 import { createBrowserSupabaseClient } from '@/lib/supabase/client';
+import { loadSchedulingSettings } from './vendorSchedulingRepository';
 import { getRequestInbox } from './messagesRepository';
 import { getBookingsForVendors } from './bookingsRepository';
 import { bookingEntry, manualEntry, sortEntries, type ManualEvent, type CalendarEntry } from '@/lib/vendor-calendar/model';
 
 export async function loadCalendar(vendorId: string) {
   const client = createBrowserSupabaseClient();
-  const [events, availability, services, inbox, bookings, business] = await Promise.all([
+  const [events, availability, services, inbox, bookings, business, scheduling] = await Promise.all([
     client.from('vendor_calendar_events').select('*').eq('vendor_id', vendorId).order('date'),
     client.from('vendor_availability').select('*').eq('vendor_id', vendorId),
     client.from('vendor_services').select('*').eq('vendor_id', vendorId),
     getRequestInbox(client, 'vendor'),
     getBookingsForVendors(client, [vendorId]),
     client.from('vendor_businesses').select('vacation_mode').eq('id', vendorId).single(),
+    loadSchedulingSettings(vendorId),
   ]);
   for (const result of [events, availability, services, business]) {
     if (result.error) throw Error(result.error.message);
@@ -30,7 +32,7 @@ export async function loadCalendar(vendorId: string) {
     const row = bookingContext.get(booking.id);
     entries.push(bookingEntry(booking, row?.context, row?.service_name || serviceNames.get(booking.service_id ?? '')));
   }
-  return { inbox, bookings: [...uniqueBookings.values()], vacation: business.data?.vacation_mode ?? false, entries: sortEntries(entries), availability: availability.data ?? [], services: serviceRows };
+  return { inbox, scheduling, bookings: [...uniqueBookings.values()], vacation: business.data?.vacation_mode ?? false, entries: sortEntries(entries), availability: availability.data ?? [], services: serviceRows };
 }
 
 export type EventChanges = Partial<Pick<ManualEvent,

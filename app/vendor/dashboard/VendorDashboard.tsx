@@ -5,15 +5,12 @@ import {CalendarWorkspace} from "../calendar/CalendarWorkspace";
 import {mediaOperation} from "@/lib/repositories/acquisitionRepository";
 import {ActivationChecklist} from "./ActivationChecklist";
 import { useEffect, useState } from "react";
-import { eventTypes } from "@/app/data/marketplace";
 import { createBrowserSupabaseClient, hasSupabaseConfig } from "@/lib/supabase/client";
 import { getRequestInbox } from "@/lib/repositories/messagesRepository";
 import { RequestInbox } from "@/app/components/RequestInbox";
 import { ensureCurrentProfile } from "@/lib/repositories/profilesRepository";
 import { getBookingsForVendors, type BookingRow } from "@/lib/repositories/bookingsRepository";
 import {
-  createAvailabilityWindow,
-  deleteAvailabilityWindow,
   deleteVendorPhoto,
   getVendorAvailabilityByVendorIds,
   getVendorBusinessesByOwner,
@@ -21,7 +18,6 @@ import {
   getVendorServicesByVendorIds,
   uploadVendorPhoto,
   updateVendorBusiness,
-  updateVendorVacationMode,
   type VendorAvailabilityRow,
   type VendorBusinessRow,
   type VendorPhotoRow,
@@ -30,13 +26,11 @@ import {
 import { optionalUrl, requirePositiveNumber, requireString } from "@/lib/validators/forms";
 import {
   AnalyticsTab,
-  AvailabilityTab,
   BookingsTab,
   BusinessSettingsTab,
   PhotosTab,
   ProfileTab,
   vendorDashboardTabs,
-  type AvailabilityDraft,
   type BusinessDraft,
   type QuoteWithEvent,
   type VendorDashboardTab,
@@ -101,48 +95,6 @@ export function VendorDashboard({ initialTab, initialBusiness }: { initialTab: V
 
     loadDashboard();
   }, []);
-
-  async function handleCreateAvailability(draft: AvailabilityDraft) {
-    try {
-      requireString(draft.date, "Date");
-      const supabase = createBrowserSupabaseClient();
-      const window = await createAvailabilityWindow(supabase, draft);
-
-      setAvailability((current) => [window, ...current]);
-      setMessage("Availability saved.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to save availability.");
-    }
-  }
-
-  async function handleDeleteAvailability(availabilityId: string) {
-    try {
-      const supabase = createBrowserSupabaseClient();
-      await deleteAvailabilityWindow(supabase, availabilityId);
-      setAvailability((current) =>
-        current.filter((window) => window.id !== availabilityId),
-      );
-      setMessage("Availability removed.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to delete availability.");
-    }
-  }
-
-  async function handleToggleVacationMode(vendor: VendorBusinessRow) {
-    try {
-      const supabase = createBrowserSupabaseClient();
-      const updatedVendor = await updateVendorVacationMode(supabase, {
-        id: vendor.id,
-        vacationMode: !vendor.vacation_mode,
-      });
-      setVendors((current) =>
-        current.map((item) => (item.id === vendor.id ? updatedVendor : item)),
-      );
-      setMessage(updatedVendor.vacation_mode ? "Vacation mode enabled." : "Vacation mode disabled.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to update vacation mode.");
-    }
-  }
 
   async function handleUploadPhoto(vendorId: string, file: File, altText:string) {
     try {
@@ -293,14 +245,7 @@ export function VendorDashboard({ initialTab, initialBusiness }: { initialTab: V
           <Link className="hub-primary inline-flex" href={initialBusiness ? "/vendor/services?business=" + encodeURIComponent(initialBusiness) : "/vendor/services"}>Open service catalog</Link>
         ) : null}
         {activeTab === "Availability" ? (
-          <AvailabilityTab
-            initialBusiness={initialBusiness}
-            availability={availability}
-            onCreateAvailability={handleCreateAvailability}
-            onDeleteAvailability={handleDeleteAvailability}
-            onToggleVacationMode={handleToggleVacationMode}
-            vendors={vendors}
-          />
+          <Link className="hub-primary inline-flex" href={initialBusiness ? "/vendor/availability?business=" + encodeURIComponent(initialBusiness) : "/vendor/availability"}>Open availability settings</Link>
         ) : null}
         {activeTab === "Photos" ? (
           <PhotosTab

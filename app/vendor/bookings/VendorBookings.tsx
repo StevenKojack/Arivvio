@@ -7,7 +7,7 @@ import { BusinessWorkspace } from '../BusinessWorkspace';
 import { PrivateOperationEditor } from '../PrivateOperationEditor';
 import { loadCalendar } from '@/lib/repositories/vendorCalendarRepository';
 import { formatMoney } from '@/lib/utils/format';
-import { timeRange } from '@/lib/vendor-calendar/operations';
+import { reviewLabels, scheduleReviews, timeRange } from '@/lib/vendor-calendar/operations';
 import { vendorBookingLink, vendorCalendarLink, vendorRequestLink } from '@/lib/vendor-calendar/links';
 import { submittedQuote } from '@/lib/vendor-operations/model';
 
@@ -66,6 +66,15 @@ function BookingWorkspace({ business, initial, canEdit }: { business: string; in
           <div><dt className="ui-muted">Final recorded price</dt><dd>{booking.final_price == null ? 'Not recorded' : formatMoney(booking.final_price)}</dd></div>
           <div><dt className="ui-muted">Recorded payment status</dt><dd className="capitalize">{booking.payment_status?.replaceAll('_', ' ') ?? 'Not recorded'}</dd></div>
         </dl>
+        {canEdit && <details className="rounded-lg border ui-border p-3">
+          <summary className="cursor-pointer font-medium">Scheduling review</summary>
+          <ul className="mt-2 space-y-2 text-sm">
+            {scheduleReviews(entry, data.entries, data.availability, data.scheduling).map(review =>
+              <li key={review.key}><strong>{reviewLabels[review.kind]}</strong><p>{review.message}</p></li>)}
+            <li className="ui-muted">Scheduling review is advisory.</li>
+          </ul>
+          <Link className="mt-2 inline-block underline" href={'/vendor/availability?business=' + business}>Availability settings</Link>
+        </details>}
         {row?.quote.package_snapshot && <RequestedPackage item={row.quote.package_snapshot} historical/>}
         <div className="flex flex-wrap gap-2">
           {canEdit && <Link className="hub-button" href={vendorCalendarLink(business, { event: 'ARIVVIO:' + booking.id })}>Open calendar entry</Link>}

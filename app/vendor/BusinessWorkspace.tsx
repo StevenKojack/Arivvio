@@ -5,12 +5,13 @@ import Link from 'next/link';
 import { trustOperation, type TrustWorkspace } from '@/lib/repositories/businessTrustRepository';
 import { createBrowserSupabaseClient } from '@/lib/supabase/client';
 
-export function BusinessWorkspace({ initial, title, path, children, readOnly = false }: {
+export function BusinessWorkspace({ initial, title, path, children, readOnly = false, beforeSwitch }: {
   initial?: string;
   title: string;
   path: string;
   children: (business: string, canEdit: boolean) => ReactNode;
   readOnly?: boolean;
+  beforeSwitch?: () => boolean;
 }) {
   const [rows, setRows] = useState<TrustWorkspace['businesses']>([]);
   const [operationEditors, setOperationEditors] = useState<string[]>([]);
@@ -57,6 +58,7 @@ export function BusinessWorkspace({ initial, title, path, children, readOnly = f
     {!loading && !error && !rows.length && <p>No businesses are available.</p>}
     {!!rows.length && <label className="grid max-w-md gap-1 text-sm">Business and branch
       <select className="hub-input" value={selected} onChange={event => {
+        if (beforeSwitch && !beforeSwitch()) return;
         setSelected(event.target.value);
         window.history.replaceState(null, '', event.target.value ? path + '?' + new URLSearchParams({ business: event.target.value }) : path);
       }}>

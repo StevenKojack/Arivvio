@@ -110,8 +110,8 @@ function RequestSchedule({ row, business }: { row: RequestInboxItem; business: s
   }, [business, known]);
 
   // Reuse the existing calendar review with a provisional, non-persisted entry.
-  const entry = bookingEntry({ id: row.booking_id ?? row.quote.id, booking_status: 'pending' }, row.context, row.service_name);
-  const reviews = data ? scheduleReviews(entry, data.entries, data.availability) : [];
+  const entry = bookingEntry({ id: row.booking_id ?? row.quote.id, booking_status: row.booking?.booking_status ?? 'pending', service_id: row.quote.service_id }, row.context, row.service_name);
+  const reviews = data ? scheduleReviews(entry, data.entries, data.availability, data.scheduling) : [];
   return <section className="space-y-2 rounded-xl border ui-border p-4">
     <h2 className="font-semibold">Scheduling review</h2>
     {!known ? <p className="text-sm ui-muted">A complete date and time are needed to review scheduling.</p>
@@ -120,9 +120,9 @@ function RequestSchedule({ row, business }: { row: RequestInboxItem; business: s
       : <ul className="space-y-2 text-sm">
         {reviews.map(review => <li key={review.key}>
           <strong>{reviewLabels[review.kind]}</strong>
-          <p>{review.key === 'missing-zone' ? 'Request timezone is not recorded. Time comparisons are provisional.' : review.message}</p>
+          <p>{review.message}</p>
         </li>)}
-        {reviews.every(review => review.kind === 'incomplete') && <li className="ui-muted">No overlap found in recorded times. This does not confirm availability.</li>}
+        <li className="ui-muted">Scheduling review is advisory.</li>
       </ul>}
   </section>;
 }

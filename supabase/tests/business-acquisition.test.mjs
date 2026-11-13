@@ -720,6 +720,38 @@ test("business acquisition drafts, publication and authorization", async (t) => 
       assert.equal((await thread()).booking.id,accepted.id);
       assert.deepEqual((await thread()).quote.package_snapshot,reviewed);
     });
+    await t.test('private scheduling settings persist, validate and isolate business branches', async () => {
+      await db.exec('reset role');
+      await db.exec(readFileSync('supabase/migrations/20261113125821_vendor_scheduling.sql','utf8'));
+      const {business,service} = (await db.query("select b.id business,s.id service from vendor_businesses b join vendor_services s on s.vendor_id=b.id where b.business_name='Activation safe fixture' limit 1")).rows[0];
+      const before = (await db.query('select (select count(*) from messages) messages,(select count(*) from bookings) bookings,(select count(*) from quote_requests) requests')).rows[0];
+      await as(1);
+      const weekly = [{day:1,start:'09:00',end:'12:00'},{day:1,start:'13:00',end:'17:00'},{day:6,start:'22:00',end:'02:00'}];
+      await db.query('insert into vendor_working_hours(vendor_id,timezone,weekly_hours) values($1,$2,$3::jsonb)',[business,'America/Los_Angeles',JSON.stringify(weekly)]);
+      assert.deepEqual((await db.query('select weekly_hours from vendor_working_hours where vendor_id=$1',[business])).rows[0].weekly_hours,weekly);
+      await assert.rejects(db.query("update vendor_working_hours set timezone='EST' where vendor_id=$1",[business]),/IANA/);
+      await assert.rejects(db.query('update vendor_working_hours set weekly_hours=$2::jsonb where vendor_id=$1',[business,JSON.stringify([...weekly,{day:0,start:'01:00',end:'03:00'}])]),/overlap/);
+      await db.query("update vendor_working_hours set timezone='America/New_York' where vendor_id=$1 and version=1",[business]);
+      assert.equal((await db.query('update vendor_working_hours set weekly_hours=null where vendor_id=$1 and version=1 returning version',[business])).rows.length,0);
+      await db.query('insert into vendor_service_scheduling(vendor_id,service_id,capacity,setup_minutes,breakdown_minutes) values($1,$2,3,90,45)',[business,service]);
+      assert.equal((await db.query('select capacity from vendor_service_scheduling where vendor_id=$1',[business])).rows[0].capacity,3);
+      await assert.rejects(db.query('insert into vendor_service_scheduling(vendor_id,service_id) values($1,$2)',[business,id(978)]),/foreign key/);
+      await assert.rejects(db.query('update vendor_service_scheduling set capacity=0 where vendor_id=$1',[business]),/check constraint/);
+      const exception = (await db.query("insert into vendor_availability(vendor_id,date,start_time,end_time,status) values($1,'2026-11-21','15:00','19:00','blocked') returning *",[business])).rows[0];
+      assert.equal(exception.start_time,'15:00:00');
+      assert.equal(exception.end_time,'19:00:00');
+      await db.query("update vendor_availability set end_time='20:00' where vendor_id=$1 and id=$2",[business,exception.id]);
+      assert.equal((await db.query('select end_time from vendor_availability where id=$1',[exception.id])).rows[0].end_time,'20:00:00');
+      await as(2);
+      assert.equal((await db.query('select * from vendor_working_hours where vendor_id=$1',[business])).rows.length,0);
+      assert.equal((await db.query('update vendor_service_scheduling set capacity=8 where vendor_id=$1 returning capacity',[business])).rows.length,0);
+      assert.equal((await db.query('delete from vendor_availability where id=$1 returning id',[exception.id])).rows.length,0);
+      await db.exec('reset role;set role anon');
+      await assert.rejects(db.query('select * from vendor_working_hours'),/permission denied/);
+      await assert.rejects(db.query('select * from vendor_service_scheduling'),/permission denied/);
+      await db.exec('reset role');
+      assert.deepEqual((await db.query('select (select count(*) from messages) messages,(select count(*) from bookings) bookings,(select count(*) from quote_requests) requests')).rows[0],before);
+    });
   } finally {
     await db.close();
   }

@@ -15,7 +15,7 @@ import type {
   VendorServiceRow,
 } from "@/lib/repositories/vendorsRepository";
 import type { PublicTableRow } from "@/lib/supabase/database.types";
-import { formatDate, formatMoney, formatTime } from "@/lib/utils/format";
+import { formatDate, formatMoney } from "@/lib/utils/format";
 
 export type QuoteWithEvent = QuoteRequestRow & {
   event?: Pick<PublicTableRow<"events">,"title"|"event_type"|"date"|"guest_count">;
@@ -44,14 +44,6 @@ export const vendorDashboardTabs: VendorDashboardTab[] = [
   "Analytics",
 ];
 
-export type AvailabilityDraft = {
-  date: string;
-  endTime: string;
-  startTime: string;
-  status: "available" | "blocked" | "tentative";
-  vendorId: string;
-};
-
 export type BusinessDraft = {
   businessName: string;
   category: string;
@@ -66,10 +58,7 @@ type VendorTabProps = {
   availability: VendorAvailabilityRow[];
   bookings: BookingRow[];
   message?: string;
-  onCreateAvailability: (draft: AvailabilityDraft) => Promise<void>;
-  onDeleteAvailability: (availabilityId: string) => Promise<void>;
   onDeletePhoto: (photo: VendorPhotoRow) => Promise<void>;
-  onToggleVacationMode: (vendor: VendorBusinessRow) => Promise<void>;
   onUpdateBusiness: (vendorId: string, draft: BusinessDraft) => Promise<void>;
   onReorderPhotos: (vendorId:string,ids:string[]) => Promise<void>;
   onUploadPhoto: (vendorId: string, file: File, altText:string) => Promise<boolean>;
@@ -129,154 +118,6 @@ export function DashboardTab({
           )}
         </Panel>
       </div>
-    </div>
-  );
-}
-
-export function AvailabilityTab({
-  availability,
-  initialBusiness,
-  onDeleteAvailability,
-  onCreateAvailability,
-  onToggleVacationMode,
-  vendors,
-}: Pick<
-  VendorTabProps,
-  | "availability"
-  | "onCreateAvailability"
-  | "onDeleteAvailability"
-  | "onToggleVacationMode"
-  | "vendors"
-> & { initialBusiness?: string }) {
-  const [draft, setDraft] = useState<AvailabilityDraft>({
-    date: "",
-    endTime: "17:00",
-    startTime: "09:00",
-    status: "available",
-    vendorId: initialBusiness ? (vendors.some(vendor => vendor.id === initialBusiness) ? initialBusiness : "") : (vendors[0]?.id ?? ""),
-  });
-  const businessWindows = availability.filter(window => window.vendor_id === draft.vendorId);
-  const weeklyDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-  return (
-    <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-      <Panel title="Business hours">
-        <div className="grid gap-3">
-          <div className="grid gap-2">
-            {vendors.map((vendor) => (
-              <div
-                key={vendor.id}
-                className="flex items-center justify-between rounded-lg border border-neutral-200 p-3"
-              >
-                <div>
-                  <p className="text-sm font-semibold text-neutral-950">
-                    {vendor.business_name}
-                  </p>
-                  <p className="mt-1 text-xs text-neutral-500">
-                    {vendor.vacation_mode
-                      ? "Vacation mode hides this business from marketplace"
-                      : "Accepting marketplace inquiries"}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onToggleVacationMode(vendor)}
-                  className={`rounded-full px-3 py-2 text-xs font-semibold ${
-                    vendor.vacation_mode
-                      ? "bg-[#0D1321] text-white"
-                      : "border border-neutral-300 text-neutral-950"
-                  }`}
-                >
-                  {vendor.vacation_mode ? "Vacation on" : "Vacation off"}
-                </button>
-              </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-7 gap-2">
-            {weeklyDays.map((day) => (
-              <span
-                key={day}
-                className="rounded-lg border border-neutral-200 bg-[#F6F3EA] px-2 py-3 text-center text-xs font-semibold"
-              >
-                {day}
-              </span>
-            ))}
-          </div>
-          <Input label="Default start" type="time" value={draft.startTime} onChange={(value) => setDraft({ ...draft, startTime: value })} />
-          <Input label="Default end" type="time" value={draft.endTime} onChange={(value) => setDraft({ ...draft, endTime: value })} />
-          <div className="rounded-lg border border-dashed border-neutral-300 p-4 text-sm text-neutral-600">
-            Use available windows for specific bookable dates and blackout dates for unavailable dates. Vacation mode hides the entire business from the marketplace.
-          </div>
-        </div>
-      </Panel>
-      <Panel title="Manual availability">
-        <div className="grid gap-3">
-          <label className="grid gap-2 text-sm font-semibold text-neutral-800">
-            Vendor
-            <select
-              value={draft.vendorId}
-              onChange={(event) => setDraft({ ...draft, vendorId: event.target.value })}
-              className="h-11 rounded-lg border border-neutral-300 bg-white px-3"
-            >
-              <option value="">Select a business</option>
-              {vendors.map((vendor) => (
-                <option key={vendor.id} value={vendor.id}>
-                  {vendor.business_name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <Input label="Date" type="date" value={draft.date} onChange={(value) => setDraft({ ...draft, date: value })} />
-          <label className="grid gap-2 text-sm font-semibold text-neutral-800">
-            Status
-            <select
-              value={draft.status}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  status: event.target.value as AvailabilityDraft["status"],
-                })
-              }
-              className="h-11 rounded-lg border border-neutral-300 bg-white px-3"
-            >
-              <option value="available">Available</option>
-              <option value="blocked">Blackout date</option>
-              <option value="tentative">Tentative</option>
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={() => onCreateAvailability(draft)}
-            disabled={!draft.date || !draft.vendorId}
-            className="h-11 rounded-full bg-[#0D1321] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Save availability
-          </button>
-        </div>
-        <div className="mt-5 space-y-2">
-          {businessWindows.length ? (
-            businessWindows.map((window) => (
-              <div key={window.id} className="rounded-lg border border-neutral-200 p-4">
-                <p className="font-semibold text-neutral-950">
-                  {formatDate(window.date)} - {window.status}
-                </p>
-                <p className="mt-1 text-sm text-neutral-500">
-                  {formatTime(window.start_time)} to {formatTime(window.end_time)}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => onDeleteAvailability(window.id)}
-                  className="mt-3 rounded-full border border-red-200 px-3 py-1 text-xs font-semibold text-red-700"
-                >
-                  Delete
-                </button>
-              </div>
-            ))
-          ) : (
-            <EmptyLine text="No availability rows saved yet." />
-          )}
-        </div>
-      </Panel>
     </div>
   );
 }

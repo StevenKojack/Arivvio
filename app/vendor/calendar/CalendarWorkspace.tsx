@@ -6,7 +6,7 @@ import { createBrowserSupabaseClient } from '@/lib/supabase/client';
 import { trustOperation, type TrustWorkspace } from '@/lib/repositories/businessTrustRepository';
 import { loadCalendar, saveCalendarEvent, updateCalendarEvent, type EventChanges } from '@/lib/repositories/vendorCalendarRepository';
 import { localDate, todayIn, shiftDate, onDay, manualEntry, sortEntries, type CalendarEntry, type ManualEvent } from '@/lib/vendor-calendar/model';
-import { entryKey, reviewLabels, scheduleReviews, timeRange, unfinishedCount, upcomingWork } from '@/lib/vendor-calendar/operations';
+import { entryKey, exceptionEndDate, exceptionLabel, hoursOnDate, reviewLabels, scheduleReviews, timeRange, unfinishedCount, upcomingWork } from '@/lib/vendor-calendar/operations';
 import { loadBookingPreparation } from '@/lib/repositories/vendorOperationsRepository';
 import { vendorBookingLink } from '@/lib/vendor-calendar/links';
 import { vendorRequestsForBranch, vendorRequestStage } from '@/lib/requests/vendor-workspace';
@@ -160,7 +160,7 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialClient, 
   const remainingTasks = prepEvents.reduce((count, entry) => count + unfinishedCount(entry), 0);
   const branchRequests = compact && data ? vendorRequestsForBranch(data.inbox, id) : [];
   const selected = entries.find(entry => entryKey(entry) === selectedKey);
-  const reviews = (entry: CalendarEntry) => scheduleReviews(entry, entries, data?.availability ?? []);
+  const reviews = (entry: CalendarEntry) => scheduleReviews(entry, entries, data?.availability ?? [], data?.scheduling);
 
   function mark(value: boolean) { setDirty(value); onDirty(value); }
 
@@ -200,7 +200,7 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialClient, 
   function add() {
     leave(() => {
       select('');
-      setDraft(blankEvent(id, date, zone));
+      setDraft(blankEvent(id, date, data?.scheduling.timezone ?? zone));
     });
   }
 
@@ -278,7 +278,7 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialClient, 
 
           {selected && !draft && (
             <EventDetails key={entryKey(selected) + ':' + revision} entry={selected} business={business} vendorId={id} reviews={reviews(selected)}
-              availabilityHref={'/vendor/dashboard?' + new URLSearchParams({ tab: 'availability', business: id })}
+              availabilityHref={'/vendor/availability?' + new URLSearchParams({ business: id })}
               busy={busy} onDirty={mark} onClose={() => leave(() => select(''))}
               onEdit={setDraft} onOpen={open} onSave={(event, changes: EventChanges) => persist(() => updateCalendarEvent(id, event, changes))}/>
           )}
@@ -295,11 +295,11 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialClient, 
             <>
               <div className="flex flex-wrap items-center gap-2">
                 <button aria-label="Previous date" className="hub-button" onClick={() => move(-1)}>←</button>
-                <button className="hub-button" onClick={() => setDate(todayIn(zone))}>Today</button>
+                <button className="hub-button" onClick={() => setDate(todayIn(data?.scheduling.timezone ?? zone))}>Today</button>
                 <button aria-label="Next date" className="hub-button" onClick={() => move(1)}>→</button>
                 <label className="text-sm">Selected date <input className="hub-input" type="date" value={date}
                   onChange={event => { if (event.target.value) setDate(event.target.value); }}/></label>
-                <span className="text-sm ui-muted">{zone || 'Local dates as entered'}</span>
+                <span className="text-sm ui-muted">{data.scheduling.timezone ?? 'Business timezone not configured'}</span>
               </div>
               {view === 'Month' && (
                 <div className="overflow-hidden rounded-xl border ui-border">
@@ -309,11 +309,12 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialClient, 
                   <div className="grid grid-cols-7">
                     {cells.map(day => {
                       const list = entries.filter(entry => onDay(entry, day));
-                      return <button key={day} aria-label={day + ', ' + list.length + ' events. Open day schedule'}
+                      const hasException = data.availability.some(row => row.date === day);
+                      return <button key={day} aria-label={day + ', ' + list.length + ' events' + (hasException ? ', dated exception' : '') + '. Open day schedule'}
                         aria-pressed={date === day} onClick={() => { setDate(day); setView('Day'); }}
                         className={'min-h-16 min-w-0 border ui-border p-1 text-left sm:min-h-24 sm:p-2 ' +
                           (day === date ? 'bg-blue-50 text-neutral-900' : day.slice(0, 7) !== date.slice(0, 7) ? 'opacity-60' : '')}>
-                        <span className="text-sm">{Number(day.slice(-2))}</span>
+                        <span className="text-sm">{Number(day.slice(-2))}{hasException && <span aria-label="Dated exception"> ·</span>}</span>
                         {list.slice(0, 2).map(entry => <span key={entryKey(entry)} className="mt-1 hidden truncate text-xs sm:block">{entry.start_time?.slice(0, 5)} {entry.name}</span>)}
                         {!!list.length && <span className="block text-[10px] sm:text-xs">{list.length} event{list.length === 1 ? '' : 's'}</span>}
                       </button>;
@@ -352,9 +353,19 @@ function BusinessCalendar({ id, business, compact, initialEvent, initialClient, 
               </button>
             )}
           </div>
+          {!compact && view === 'Day' && !prepOnly && <div className="space-y-1 text-sm">
+            <p className="font-medium">Weekly hours · {data.scheduling.timezone ?? 'Timezone not configured'}</p>
+            <p>{data.scheduling.weeklyHours === null ? 'Hours not configured' : hoursOnDate(data.scheduling.weeklyHours, date)
+              .map(slot => slot.start + ' to ' + (slot.end < slot.start ? 'next day ' : '') + slot.end).join(' · ') || 'No intervals start on this day'}</p>
+            {data.scheduling.weeklyHours && hoursOnDate(data.scheduling.weeklyHours, shiftDate(date, -1))
+              .filter(slot => slot.end < slot.start && slot.end !== '00:00').map(slot => <p key={slot.start}>Overnight hours continue until {slot.end}</p>)}
+            {data.availability.filter(row => row.date === date || (row.date < date && exceptionEndDate(row) === date && row.end_time.slice(0, 5) !== '00:00'))
+              .map(row => <p key={row.id}>{row.date} · {exceptionLabel(row)}</p>)}
+            <Link className="inline-block underline" href={'/vendor/availability?business=' + id}>Availability settings</Link>
+          </div>}
           {!shown.length && <p className="py-2 text-sm ui-muted">{prepOnly ? 'No incomplete tasks on upcoming events.' : 'No events scheduled for this view.'}</p>}
           {shown.map(entry => {
-            const labels = [...new Set(reviews(entry).map(review => reviewLabels[review.kind]))];
+            const labels = [...new Set(reviews(entry).filter(review => review.kind !== 'within').map(review => reviewLabels[review.kind]))];
             const count = unfinishedCount(entry);
             const content = <>
               <span className="flex flex-wrap justify-between gap-2">

@@ -198,6 +198,18 @@ export type Database = {
         Update: Partial<import('../vendor-calendar/model').ManualEvent>;
         Relationships: [];
       };
+      vendor_working_hours: {
+        Row: { vendor_id: string; timezone: string; weekly_hours: import('../vendor-calendar/operations').WeeklyInterval[] | null; version: number };
+        Insert: Omit<Database["public"]["Tables"]["vendor_working_hours"]["Row"], "version">;
+        Update: Partial<Omit<Database["public"]["Tables"]["vendor_working_hours"]["Insert"], "vendor_id">>;
+        Relationships: [];
+      };
+      vendor_service_scheduling: {
+        Row: { vendor_id: string; service_id: string; capacity: number | null; setup_minutes: number; breakdown_minutes: number; version: number };
+        Insert: Omit<Database["public"]["Tables"]["vendor_service_scheduling"]["Row"], "version">;
+        Update: Partial<Omit<Database["public"]["Tables"]["vendor_service_scheduling"]["Insert"], "vendor_id" | "service_id">>;
+        Relationships: [];
+      };
       vendor_availability: {
         Row: {
           date: string;
