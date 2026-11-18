@@ -1,5 +1,6 @@
 "use client";
 
+import { useNextExperience } from "@/app/components/Experience";
 import {BusinessStatusBadge} from "@/app/components/BusinessStatusBadge";
 import {profileCover} from "@/lib/marketplace/vendorImages";
 
@@ -46,6 +47,7 @@ function VendorCardComponent({
   onAdd,
   onPackage,
 }: VendorCardProps) {
+  const next = useNextExperience();
   const [profileOpen, setProfileOpen] = useState(false);
   const media = profileCover(item);
   const imageUrl = media.src;
@@ -68,6 +70,7 @@ function VendorCardComponent({
           sizes="(max-width: 768px) 74vw, 326px"
           className={media.label === "Business logo" ? "object-contain p-5 ui-surface" : "object-cover transition duration-500 hover:scale-105"}
         />
+        {next && <button className="discovery-photo-link" onClick={()=>setProfileOpen(true)} aria-label={`Explore ${name} profile`}/>}
         {media.illustrative&&<span className="absolute bottom-2 right-2 rounded ui-surface px-2 py-1 text-[10px]">{media.label}</span>}
         {isSelected && <span className="absolute left-3 top-3 rounded-md ui-primary px-3 py-1 text-xs font-semibold">Selected</span>}
 

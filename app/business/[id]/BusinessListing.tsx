@@ -1,4 +1,5 @@
 "use client";
+import { useNextExperience } from "@/app/components/Experience";
 import { createCartItem, updateCartItemPackage } from "@/lib/repositories/cartRepository";
 import type { ServicePackage } from "@/lib/service-catalog/model";
 import { PublicServicePackages } from "@/app/marketplace/components/ServicePackages";
@@ -31,6 +32,7 @@ export function BusinessListing({
   initialServiceId?: string;
   initialMode?: string;
 }) {
+  const redesigned = useNextExperience();
   const [eventId, setEventId] = useState(initialEventId ?? ""),
     [serviceId, setServiceId] = useState(initialServiceId ?? "");
   const [photos,setPhotos]=useState<PublicTableRow<"vendor_photos">[]>([]);
@@ -147,8 +149,9 @@ export function BusinessListing({
     ...(eventId ? { eventId } : {}),
     ...(serviceId ? { serviceId } : {}),
   });
+  const cover = photos.find(photo => photo.media_kind === "business_photo");
   return (
-    <main id="main-content" tabIndex={-1} className="mx-auto max-w-3xl px-5 py-12">
+    <main id="main-content" tabIndex={-1} className="mx-auto max-w-3xl discovery-business px-5 py-12">
       <Link href={initialMode === "claim" ? "/claim-business" : "/marketplace"} className="text-sm underline">
         {initialMode === "claim" ? "Back to business search" : "Back to Marketplace"}
       </Link>
@@ -158,6 +161,7 @@ export function BusinessListing({
         </p>
       ) : (
         <>
+          {redesigned && cover && <figure className="business-cover"><Image src={cover.image_url} alt={cover.alt_text || listing.business_name} width={1100} height={500} unoptimized/>{cover.attribution && <figcaption>{cover.attribution}</figcaption>}</figure>}
           {!photos.some(p=>p.media_kind==="business_photo")&&<figure className="relative mt-6 overflow-hidden rounded-2xl"><Image src={representativePhoto(listing.category,listing.description||"")} alt="Representative event photograph" width={800} height={360} unoptimized className="aspect-[2.65] w-full object-cover"/><figcaption className="cover-caption">AI-generated representative photo</figcaption></figure>}
           <div className="mt-5 flex items-center gap-3">{!photos.some(p=>p.media_kind==="logo")&&<BusinessMark name={listing.business_name}/>}<BusinessStatusBadge item={{databaseSource:true,listingState:listing.owner_id?"claimed":"unclaimed",verificationStatus:listing.verification_status}}/></div>
           <h1 className="mt-2 text-3xl font-semibold">
@@ -166,7 +170,7 @@ export function BusinessListing({
           {photos.filter(p=>p.media_kind==="logo").slice(0,1).map(p=><figure key={p.id}><Image unoptimized src={p.image_url} alt={p.alt_text||"Business logo"} width={96} height={96} className="my-3 h-24 w-24 object-contain"/>{p.attribution&&<figcaption>{p.attribution}</figcaption>}</figure>)}
           {listing.short_intro&&<p className="mt-3 font-medium">{listing.short_intro}</p>}<p className="mt-3 whitespace-pre-line">{listing.description}</p><ProfileSections sections={listing.profile_sections}/>
           {(listing.email||listing.phone)&&<p className="mt-3 flex flex-wrap gap-4">{listing.phone&&<a href={"tel:"+listing.phone} className="underline">{listing.phone}</a>}{listing.email&&<a href={"mailto:"+listing.email} className="underline">{listing.email}</a>}</p>}
-          {photos.some(p=>p.media_kind==="business_photo")&&<section aria-label="Business photos" className="my-4 grid grid-cols-2 gap-3">{photos.filter(p=>p.media_kind==="business_photo").map((p,i)=><figure key={p.id} className={i===0?"col-span-2":""}><Image src={p.image_url} alt={p.alt_text||"Business photo"} width={900} height={500} unoptimized className="aspect-video w-full rounded-xl object-cover"/>{p.attribution&&<figcaption>{p.attribution}</figcaption>}</figure>)}</section>}
+          {photos.some(p=>p.media_kind==="business_photo")&&<section aria-label="Business photos" className="my-4 grid grid-cols-2 gap-3">{photos.filter(p=>p.media_kind==="business_photo" && (!redesigned || p.id !== cover?.id)).map((p,i)=><figure key={p.id} className={i===0?"col-span-2":""}><Image src={p.image_url} alt={p.alt_text||"Business photo"} width={900} height={500} unoptimized className="aspect-video w-full rounded-xl object-cover"/>{p.attribution&&<figcaption>{p.attribution}</figcaption>}</figure>)}</section>}
           {!!services.length && <details className="my-4 space-y-3">
             <summary>Services and pricing</summary>
             {listing.verification_status === "verified" && listing.verified_at && listing.owner_id &&

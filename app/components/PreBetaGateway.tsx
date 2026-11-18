@@ -1,4 +1,7 @@
 "use client";
+import { useNextExperience } from "./Experience";
+import Image from "next/image";
+import { EventDiscoverySearch } from "./EventDiscoverySearch";
 import Link from "next/link";
 import { useState } from "react";
 import { OccasionHero } from "./OccasionHero";
@@ -9,9 +12,16 @@ import { SupportProjectForm } from "./SupportProjectForm";
 import { PlatformStatus } from "./PlatformStatus";
 import { CustomerDialog } from "./CustomerDialog";
 export function PreBetaGateway() {
+  const next = useNextExperience();
   const [showSupport, setShowSupport] = useState(false);
   return <main id="main-content" tabIndex={-1} className="customer-experience customer-home ui-page min-h-screen"><Navigation />
-    <OccasionHero />
+    {next ? <section className="discovery-hero">
+      <div className="discovery-copy"><h1>Plan your<br/><em>next gathering.</em></h1>
+        <EventDiscoverySearch pageHidden={false}/>
+        <Link href="/marketplace?entryMode=browse">Explore the Marketplace ↗</Link>
+      </div>
+      <figure><Image src="/photography/garden.webp" alt="" fill priority sizes="(min-width: 760px) 48vw, 100vw"/><figcaption>Illustrative event photography</figcaption></figure>
+    </section> : <OccasionHero />}
     <OccasionDiscovery />
     <HowItWorks />
     <ServicesDiscovery />

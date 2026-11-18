@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./experience.css";
+import { ExperienceProvider } from "./components/Experience";
 import { Footer } from "./components/Footer";
 import { EventAssistant } from "./components/EventAssistant";
 import { ThemeInitializer } from "./components/ThemeControl";
@@ -20,13 +22,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const enabled = process.env.ARIVVIO_NEXT_EXPERIENCE === "true" ||
+    (process.env.ARIVVIO_NEXT_EXPERIENCE === undefined &&
+      process.env.VERCEL_ENV === "preview" &&
+      process.env.VERCEL_GIT_COMMIT_REF === "codex/arivvio-next-generation-revamp");
   return (
     <html
-      lang="en"
+      lang="en" data-experience={enabled ? "next" : undefined}
       className="h-full antialiased"
       data-build-commit={process.env.VERCEL_GIT_COMMIT_SHA ?? "local"}
     >
-      <body className="min-h-full flex flex-col"><a className="skip-link" href="#main-content">Skip to main content</a>{children}<Footer /><ThemeInitializer /><EventAssistant /></body>
+      <body className="min-h-full flex flex-col"><a className="skip-link" href="#main-content">Skip to main content</a><ExperienceProvider enabled={enabled}>{children}</ExperienceProvider><Footer /><ThemeInitializer /><EventAssistant /></body>
     </html>
   );
 }

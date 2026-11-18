@@ -1,0 +1,43 @@
+[data-experience="next"] {
+  --discovery-paper: #fbf4e9;
+  --discovery-ink: #33231f;
+  --discovery-accent: #93402b;
+  --discovery-display: Georgia, "Times New Roman", serif;
+}
+.discovery-hero {display:grid;grid-template-columns:1.1fr 1fr;background:var(--discovery-paper);color:var(--discovery-ink)}
+.discovery-copy {align-self:center;padding:clamp(2rem,5vw,6rem);min-width:0}
+.discovery-copy h1,[data-experience="next"] :is(.profile-window h2,.listing-grid h3,.marketplace-intro + h2) {font-family:var(--discovery-display);font-weight:normal}
+.discovery-copy h1 {font-size:clamp(3.2rem,6.6vw,7rem);line-height:.98;letter-spacing:-.055em;margin-bottom:2rem}
+.discovery-copy h1 em {color:var(--discovery-accent)}
+.discovery-copy > a {display:inline-block;padding:.85rem 0;text-decoration:underline;text-underline-offset:.3em}
+.discovery-hero figure {position:relative;min-height:24rem}
+.discovery-hero figure img {object-fit:cover}
+.discovery-hero figcaption {position:absolute;bottom:.7rem;right:.7rem;background:#261d19db;color:white;font-size:.7rem;padding:.25rem .5rem}
+.discovery-nav {display:none}
+.discovery-photo-link {position:absolute;inset:0;cursor:pointer}
+.discovery-photo-link:focus-visible {outline:3px solid white;outline-offset:-5px}
+[data-experience="next"] .listing-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,17rem),1fr));gap:clamp(1rem,2vw,2rem)}
+[data-experience="next"] .listing-grid .provider-card {border-radius:1.25rem;box-shadow:none}
+[data-experience="next"] .listing-grid h3 {font-size:1.45rem;line-height:1.12}
+[data-experience="next"] .profile-window {width:min(56rem,96vw)}
+[data-experience="next"] .profile-window h2 {font-size:clamp(2rem,5vw,3.7rem);line-height:1.04}
+.profile-jumps {display:flex;gap:1.3rem;flex-wrap:wrap;border-block:1px solid var(--hub-border)}
+.profile-jumps button,.discovery-nav a {padding:.8rem .2rem;font-weight:600}
+.profile-jumps button:hover,.discovery-nav [aria-current] {text-decoration:underline;text-underline-offset:.3em}
+@media(max-width:767px){
+  .discovery-hero {grid-template-columns:1fr}
+  .discovery-copy {padding:2rem 1.25rem 1rem}
+  .discovery-hero figure {min-height:12rem}
+  .discovery-nav {display:flex;justify-content:space-between;font-size:.87rem}
+  [data-experience="next"] .profile-window {width:100vw;max-width:100vw}
+}
+.discovery-copy .occasion-strip-group button {background:transparent;border-color:#bba79b;color:var(--discovery-ink)}
+.discovery-categories {display:flex;gap:1.1rem;overflow-x:auto;margin:1rem 0;align-items:center;border-block:1px solid var(--hub-border)}
+.discovery-categories a {white-space:nowrap;padding:.85rem 0;font-size:.88rem;text-underline-offset:.3em}
+.discovery-categories a:hover {text-decoration:underline}
+[data-experience="next"] section[id^="category-"] {scroll-margin-top:9rem}
+[data-experience="next"] .discovery-business {max-width:58rem}
+[data-experience="next"] .discovery-business h1 {font:normal clamp(2.6rem,6vw,5rem)/1.08 var(--discovery-display);letter-spacing:-.045em}
+.business-cover {margin-top:1rem}
+.business-cover img {width:100%;aspect-ratio:2.2;object-fit:cover;border-radius:1rem}
+.business-cover figcaption {font-size:.8rem;padding-block:.4rem}

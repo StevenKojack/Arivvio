@@ -1,5 +1,6 @@
 "use client";
 
+import { useNextExperience } from "./Experience";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -23,6 +24,7 @@ const centerLinks = [
 ];
 
 export function Navigation() {
+  const next = useNextExperience();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [navState, setNavState] = useState<SessionNavState>({
@@ -167,6 +169,8 @@ export function Navigation() {
         </div>
       </nav>
 
+      {next && <nav aria-label="Quick navigation" className="discovery-nav">{[...centerLinks, {href:"/account", label:"My events"}].map(link =>
+        <Link key={link.href} href={link.href} aria-current={pathname === link.href.split("?")[0] ? "page" : undefined}>{link.label}</Link>)}</nav>}
     </header>
   );
 }
