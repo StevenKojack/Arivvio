@@ -1,8 +1,12 @@
+import { redirect } from "next/navigation";
+import { directionEnabled } from "../explore/model";
 import { Suspense } from "react";
 import { Navigation } from "../components/Navigation";
 import { MarketplaceBrowser } from "./MarketplaceBrowser";
 
-export default function MarketplacePage() {
+export default async function MarketplacePage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
+  const params=await searchParams;
+  if(directionEnabled() && Object.keys(params).every(k=>k==="entryMode") && (!params.entryMode || params.entryMode==="browse")) redirect("/explore");
   return (
     <main id="main-content" tabIndex={-1} className="customer-experience min-h-screen ui-page">
       <Navigation />

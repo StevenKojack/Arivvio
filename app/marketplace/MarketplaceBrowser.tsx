@@ -274,7 +274,7 @@ function MarketplaceBody() {
 
 
   useEffect(()=>{if(!isMobileMapOpen && !isMobileCartOpen) return; const close=(event:KeyboardEvent)=>{if(event.key === "Escape"){setIsMobileMapOpen(false);setIsMobileCartOpen(false);}};window.addEventListener("keydown",close);return()=>window.removeEventListener("keydown",close);},[isMobileMapOpen,isMobileCartOpen]);
-  const [pendingServiceItem, setPendingServiceItem] = useState<MarketplaceItem | null>(null);
+  const [pendingServiceItem, setPendingServiceItem] = useState<MarketplaceItem | null>(() => sourceMode === "demo" && !eventId ? marketplaceItems.find(item => String(item.id) === searchParams.get("quoteDemo")) ?? null : null);
   const [selectedMapItemId, setSelectedMapItemId] = useState<number | null>(null);
   const [quoteReview, setQuoteReview] = useState<DemoQuoteRequest | null>(null);
   const [lastRequest, setLastRequest] = useState<DemoQuoteRequest | null>(null);

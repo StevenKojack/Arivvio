@@ -1,3 +1,5 @@
+import { Home } from "./explore/Surfaces";
+import { directionEnabled } from "./explore/model";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PreBetaGateway } from "./components/PreBetaGateway";
@@ -9,6 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default function PreBetaGatewayPage() {
+  if(directionEnabled()) return <Home/>;
   return (
     <Suspense fallback={<GatewayFallback />}>
       <PreBetaGateway />

@@ -1,0 +1,677 @@
+.studio {
+  --ink: #171724;
+  --accent: #5540d9;
+  --line: #dadbe3;
+  --mist: #f4f4f8;
+  color: var(--ink);
+  background: #fff;
+  font:
+    16px/1.45 "Inter",
+    system-ui,
+    sans-serif;
+  min-height: 85vh;
+}
+.studio *,
+.studio *:before,
+.studio *:after {
+  box-sizing: border-box;
+}
+.studio a {
+  text-decoration: none;
+  color: inherit;
+}
+.studio button,
+.studio summary {
+  cursor: pointer;
+}
+.studio :focus-visible {
+  outline: 3px solid #826ff2;
+  outline-offset: 3px;
+}
+.studio-nav,
+.studio-section,
+.studio-foot,
+.profile-sheet,
+.occasion-layout {
+  width: min(100% - 7vw, 1360px);
+  margin: auto;
+}
+.studio-nav,
+.studio-nav nav,
+.section-line,
+.studio-foot,
+.switcher,
+.market-tools,
+.gallery-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.studio-nav {
+  height: 72px;
+  border-bottom: 1px solid var(--line);
+}
+.studio-nav nav {
+  margin-left: auto;
+}
+.studio-nav .brand-wordmark {
+  color: var(--ink);
+}
+.studio-nav a[aria-current] {
+  color: var(--accent);
+}
+.studio .plan-link,
+.studio .solid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 650;
+  padding: 12px 18px;
+  border-radius: 7px;
+  transition:
+    transform 0.18s,
+    background 0.18s;
+}
+.studio .plan-link {
+  background: var(--ink);
+}
+.studio :is(button, a):active {
+  transform: translateY(1px);
+}
+.home-stage {
+  display: grid;
+  grid-template-columns: 0.86fr 1.14fr;
+  max-width: 1440px;
+  margin: auto;
+  padding: 26px 3.5vw 4px;
+  gap: 2px;
+}
+.home-intro {
+  background: #e3e0ff;
+  border-radius: 12px 0 0 12px;
+  padding: clamp(24px, 4vw, 64px);
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: center;
+}
+.local {
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+.home-intro h1,
+.market h1,
+.profile-head h1,
+.occasion-info h1 {
+  font-family: inherit;
+  font-weight: 760;
+  letter-spacing: -0.05em;
+  line-height: 1.02;
+}
+.home-intro h1 {
+  font-size: clamp(44px, 5.8vw, 86px);
+  margin: 20px 0;
+}
+.home-intro h1 em {
+  font-style: normal;
+  color: #4c35c0;
+}
+.home-intro p {
+  max-width: 31ch;
+  margin: 0 0 22px;
+  font-size: 1.08rem;
+}
+.studio .text-action {
+  display: inline-block;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  padding: 12px 0;
+}
+.feature-stage {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 12px 12px 0;
+  background: #141329;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+.feature-stage > a {
+  display: grid;
+}
+.poster {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: white;
+  min-height: 245px;
+  background: #1a1326;
+}
+.poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, #190d30b8, transparent),
+    linear-gradient(0deg, #120c2080, transparent 55%);
+  z-index: -1;
+}
+.poster img {
+  z-index: -2;
+}
+.poster-ink {
+  position: relative;
+  min-height: inherit;
+  height: 100%;
+  padding: clamp(22px, 4vw, 64px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.poster-ink > span,
+.poster time {
+  font-weight: 650;
+}
+.poster strong {
+  display: block;
+  font-size: clamp(40px, 5vw, 78px);
+  line-height: 0.9;
+  letter-spacing: -0.065em;
+  max-width: 7ch;
+  font-weight: 850;
+}
+.poster.night strong {
+  color: #e3ff85;
+}
+.poster.garden strong {
+  color: #ffe3cb;
+}
+.poster time i {
+  color: #c1b4ff;
+  padding: 0 6px;
+}
+.poster.large {
+  min-height: 365px;
+}
+.switcher {
+  padding: 9px 18px;
+  color: #fff;
+  font-size: 0.8rem;
+  gap: 6px;
+}
+.switcher span {
+  margin-right: auto;
+}
+.switcher button {
+  width: 44px;
+  height: 44px;
+  border-bottom: 2px solid transparent;
+}
+.switcher [aria-pressed="true"] {
+  border-color: #d6ff79;
+}
+.studio-section {
+  padding-block: 36px;
+}
+.section-line,
+.studio-foot,
+.market-tools,
+.gallery-controls {
+  justify-content: space-between;
+}
+.section-line {
+  margin-bottom: 15px;
+}
+.section-line a,
+.occasion-info dd a {
+  color: var(--accent);
+  font-weight: 650;
+}
+.studio h2 {
+  font-size: clamp(23px, 2.5vw, 38px);
+  font-weight: 720;
+  letter-spacing: -0.04em;
+}
+.studio h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 28px 18px;
+}
+.studio-tile figure,
+.portfolio-peek,
+.gallery-photo,
+.profile-cover {
+  position: relative;
+  overflow: hidden;
+}
+.studio-tile figure {
+  aspect-ratio: 1.5;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.studio-tile figure img {
+  transition: transform 0.25s;
+}
+.studio-tile:hover img {
+  transform: scale(1.035);
+}
+.studio small,
+.studio-tile p,
+.event-count,
+.profile-content aside p {
+  color: #545568;
+}
+.studio-tile small {
+  font-size: 0.82rem;
+}
+.studio-tile h3 {
+  margin: 4px 0;
+}
+.studio-tile b small {
+  font-weight: 400;
+}
+.studio-tile p {
+  font-size: 0.87rem;
+  margin-bottom: 5px;
+}
+.studio-foot {
+  padding: 20px 0 calc(20px + env(safe-area-inset-bottom));
+  font-size: 0.8rem;
+  border-top: 1px solid var(--line);
+  color: #535165;
+}
+.studio-foot a {
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+.market h1,
+.occasion-info h1 {
+  font-size: clamp(40px, 5vw, 76px);
+  margin: 10px 0 24px;
+}
+.market-tools {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.view-switch {
+  display: flex;
+  background: var(--mist);
+  padding: 3px;
+  border-radius: 8px;
+}
+.view-switch button,
+.rail button,
+.filters summary,
+.gallery-controls button {
+  padding: 10px 14px;
+  min-height: 44px;
+}
+.view-switch [aria-pressed="true"] {
+  background: var(--ink);
+  color: white;
+  border-radius: 6px;
+}
+.market input,
+.filters select {
+  border: 1px solid var(--line);
+  padding: 10px 14px;
+  border-radius: 6px;
+  min-height: 44px;
+}
+.rail {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+  margin: 16px 0;
+  scrollbar-width: thin;
+}
+.rail button {
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+.rail [aria-pressed="true"] {
+  color: var(--accent);
+  border-color: var(--accent);
+  font-weight: 700;
+}
+.filters {
+  margin: 10px 0;
+}
+.filters summary {
+  width: fit-content;
+  padding-left: 0;
+}
+.filters label {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0 16px 12px 0;
+}
+.filters input {
+  width: 6em;
+}
+.market .section-line p,
+.event-count {
+  font-size: 0.85rem;
+}
+.event-count {
+  margin: 18px 0;
+}
+.event-grid,
+.occasion-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+.event-grid p {
+  margin-top: 8px;
+}
+.profile-cover {
+  height: clamp(180px, 24vw, 330px);
+  margin-top: 18px;
+  border-radius: 10px;
+}
+.studio .back {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: white;
+  color: #171724;
+  padding: 9px 14px;
+  border-radius: 5px;
+}
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 0;
+}
+.avatar {
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  background: #ddd9ff;
+  color: #372594;
+  border-radius: 18px;
+  font-size: 1.7rem;
+  font-weight: 750;
+}
+.profile-head h1 {
+  font-size: clamp(32px, 4vw, 60px);
+  margin: 3px 0;
+}
+.profile-head .solid {
+  margin-left: auto;
+}
+.profile-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 7vw;
+  padding: 18px 0 44px;
+  min-height: 240px;
+}
+.profile-content h2 {
+  margin-bottom: 12px;
+}
+.profile-content aside {
+  align-self: start;
+  padding: 20px;
+  background: var(--mist);
+  border-left: 3px solid var(--accent);
+}
+.profile-content aside h3 {
+  font-size: 1.8rem;
+  margin: 6px 0;
+}
+.portfolio-peek,
+.gallery-photo {
+  display: block;
+  width: 100%;
+  height: clamp(160px, 24vw, 310px);
+  margin-top: 18px;
+  border-radius: 8px;
+}
+.portfolio-peek span {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  background: white;
+  padding: 8px 13px;
+  border-radius: 4px;
+}
+.occasion-layout {
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: center;
+  padding: 20px 0 40px;
+}
+.occasion-layout .poster {
+  border-radius: 10px;
+  min-height: clamp(340px, 38vw, 570px);
+}
+.occasion-layout .poster strong {
+  font-size: clamp(62px, 7vw, 100px);
+}
+.occasion-info {
+  padding: 30px;
+}
+.occasion-info dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px 22px;
+  border-block: 1px solid var(--line);
+  margin: 22px 0;
+  padding: 18px 0;
+}
+.occasion-info dt {
+  color: #626173;
+}
+.occasion-info .solid {
+  margin-top: 20px;
+}
+.registration {
+  margin-top: 12px;
+  padding: 14px;
+  background: var(--mist);
+}
+@keyframes studio-in {
+  from {
+    opacity: 0.3;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.studio
+  :is(.profile-content, .gallery-photo, .registration, .poster, .tile-grid) {
+  animation: studio-in 0.22s ease-out;
+}
+@media (max-width: 900px) {
+  .tile-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .occasion-info {
+    padding: 12px;
+  }
+  .home-stage {
+    grid-template-columns: 1fr 1fr;
+  }
+  .home-intro {
+    padding: 24px;
+  }
+}
+@media (max-width: 640px) {
+  .studio-nav {
+    height: 60px;
+    gap: 10px;
+  }
+  .studio-nav nav {
+    font-size: 0.83rem;
+    gap: 12px;
+  }
+  .studio-nav .brand-wordmark {
+    font-size: 0.94rem;
+    gap: 4px;
+  }
+  .studio-nav .brand-symbol {
+    width: 24px;
+  }
+  .studio .plan-link {
+    font-size: 0.8rem;
+    padding: 10px;
+  }
+  .plan-link span {
+    display: none;
+  }
+  .home-stage {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-top: 12px;
+  }
+  .home-intro {
+    display: block;
+    background: white;
+    padding: 6px 0 12px;
+  }
+  .home-intro h1 {
+    font-size: 42px;
+    margin: 7px 0;
+  }
+  .home-intro h1 br {
+    display: none;
+  }
+  .home-intro h1 em:before {
+    content: " ";
+  }
+  .home-intro p {
+    font-size: 0.95rem;
+    max-width: 38ch;
+    margin-bottom: 12px;
+  }
+  .home-intro .text-action {
+    margin-left: 15px;
+    font-size: 0.85rem;
+  }
+  .feature-stage {
+    border-radius: 8px;
+  }
+  .poster.large {
+    min-height: 215px;
+  }
+  .poster-ink {
+    padding: 20px;
+  }
+  .poster strong {
+    font-size: 48px;
+  }
+  .switcher {
+    padding: 0 12px;
+  }
+  .studio-section {
+    padding-block: 22px;
+  }
+  .tile-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 12px;
+  }
+  .studio-tile h3 {
+    font-size: 1.05rem;
+  }
+  .market-tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .rail {
+    margin: 10px 0;
+  }
+  .rail button {
+    padding: 9px 7px;
+  }
+  .market .section-line {
+    gap: 8px;
+    font-size: 0.8rem;
+  }
+  .profile-head {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 10px;
+  }
+  .avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 1rem;
+  }
+  .profile-head .solid {
+    grid-column: 1/-1;
+    margin: 4px 0 0;
+  }
+  .profile-content,
+  .event-grid,
+  .occasion-layout {
+    grid-template-columns: 1fr;
+  }
+  .profile-content {
+    gap: 18px;
+  }
+  .occasion-layout {
+    gap: 0;
+  }
+  .occasion-layout .poster {
+    min-height: 280px;
+  }
+  .occasion-info {
+    padding: 20px 0;
+  }
+  .occasion-info h1 {
+    margin: 7px 0;
+  }
+  .studio-foot {
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .studio-foot a {
+    white-space: nowrap;
+  }
+  .studio-section .section-line h2 {
+    font-size: 22px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .studio * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+@media (max-width: 640px) {
+  .studio-nav .brand-wordmark {
+    letter-spacing: 0.04em;
+  }
+  .studio-nav nav,
+  .studio-nav .plan-link {
+    white-space: nowrap;
+  }
+  .studio-nav nav {
+    gap: 9px;
+  }
+  .studio-nav .plan-link {
+    padding: 10px 8px;
+  }
+  .home-intro h1 em:before {
+    content: none;
+  }
+}
