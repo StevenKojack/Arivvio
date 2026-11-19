@@ -29,7 +29,7 @@ export function validateActions(input: unknown, profile: EventIntelligenceProfil
       if (!allServices.includes(a.value as ServiceName)) throw new Error('Unknown service.');
       if (a.kind === 'add_service' && profile.recognition.excludedServices.includes(a.value as ServiceName)) throw new Error('This service is excluded from this event.');
     } else if (a.kind === 'venue_status') {
-      if (!['secured','home','needed'].includes(a.value)) throw new Error('Unknown venue status.');
+      if (!['secured','home','needed','outdoor'].includes(a.value)) throw new Error('Unknown venue status.');
     } else throw new Error('Unsupported action. No bookings or external actions can be changed.');
     return {kind:a.kind,field:a.field,value:a.value,stageId:a.stageId};
   });
@@ -67,6 +67,7 @@ export function applyPlanActions(profile: EventIntelligenceProfile | null, input
     } else if (a.kind === 'remove_service') {
       removeService(next,a.value as ServiceName); changes.push(`Removed ${a.value} from planning only`);
     } else if (a.kind === 'venue_status') {
+      if(a.value==='outdoor'){next.venuePreferences=[...new Set([...next.venuePreferences,'Outdoor'])];changes.push('Venue preference: outdoor');continue;}
       next.homeEvent = a.value === 'home'; next.commercialVenue = a.value === 'secured'; next.venueRequired = a.value === 'needed';
       if (a.value !== 'needed') removeService(next,'Venue');
       else next.excludedServices = next.excludedServices.filter(service => service !== 'Venue');

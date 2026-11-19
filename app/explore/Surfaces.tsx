@@ -2,8 +2,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { usePathname } from "next/navigation";
-import { Logo } from "../components/Logo";
+import { Navigation } from "../components/Navigation";
+import { BookVendor } from "./Journey";
+import { usePublicRecords } from "./records";
+import { BusinessMark } from "../components/BusinessMark";
+import { BusinessStatusBadge } from "../components/BusinessStatusBadge";
+import { PublicServicePackages } from "../marketplace/components/ServicePackages";
+
 import type { MarketplaceItem, ServiceName } from "../data/marketplace";
 import { matchesListingRequirements } from "@/lib/marketplace/matching-tiers";
 import { profileCover } from "@/lib/marketplace/vendorImages";
@@ -23,6 +28,7 @@ function Photo({
     <Image
       src={src}
       alt={alt}
+      unoptimized={src.startsWith("https:")}
       fill
       priority={priority}
       sizes="(max-width:640px) 100vw, (max-width:1000px) 60vw, 800px"
@@ -30,28 +36,19 @@ function Photo({
     />
   );
 }
-function Frame({ children }: { children: React.ReactNode }) {
-  const path = usePathname();
+export function Frame({
+  children,
+  eventId,
+}: {
+  children: React.ReactNode;
+  eventId?: string;
+}) {
   return (
     <main className="studio" id="main-content" tabIndex={-1}>
-      <header className="studio-nav">
-        <Logo />
-        <nav aria-label="Main">
-          <Link
-            href="/explore"
-            aria-current={path === "/explore" ? "page" : undefined}
-          >
-            Explore
-          </Link>
-          <Link href="/account">My events</Link>
-        </nav>
-        <Link className="plan-link" href="/plan">
-          Plan an event <span>↗</span>
-        </Link>
-      </header>
+      <Navigation discovery eventId={eventId} />
       {children}
       <footer className="studio-foot">
-        Design preview · Fictional hosts and events · AI-generated photography
+        Demo and fallback images are AI illustrations.
         <Link href="/vendor/login">For businesses ↗</Link>
       </footer>
     </main>
@@ -77,74 +74,102 @@ function Poster({
     </div>
   );
 }
-function StudioCard({ item }: { item: MarketplaceItem }) {
+function StudioCard({
+  item,
+  eventId,
+}: {
+  item: MarketplaceItem;
+  eventId?: string;
+}) {
   const media = profileCover(item);
   return (
-    <Link className="studio-tile" href={"/explore/studios/" + item.id}>
+    <Link
+      className="studio-tile"
+      href={
+        "/explore/studios/" +
+        (item.serviceId || item.id) +
+        (eventId ? "?eventId=" + encodeURIComponent(eventId) : "")
+      }
+    >
       <figure>
         <Photo src={media.src} alt={media.alt} />
       </figure>
       <small>
         {item.type} · {item.location}
       </small>
-      <h3>{item.name}</h3>
+      <h3>{item.businessName || item.name}</h3>
       <p>{item.tags?.slice(0, 2).join(" · ")}</p>
       <b>
-        {item.price.replace(" demo estimate", "")} <small>sample pricing</small>
+        {item.price.replace(" demo estimate", "")}{" "}
+        <small>{item.databaseSource ? "" : "sample pricing"}</small>
       </b>
     </Link>
   );
 }
 export function Home() {
-  const [index, setIndex] = useState(0);
-  const event = events[index];
+  const { records } = usePublicRecords();
   return (
     <Frame>
-      <div className="home-stage">
-        <div className="home-intro">
-          <span className="local">Los Angeles &amp; nearby</span>
-          <h1>
-            Find your <br />
-            next <em>occasion.</em>
-          </h1>
-          <p>
-            Discover local events, find your vendors, and pull your own event
-            together.
-          </p>
-          <Link className="solid" href="/plan">
-            Start planning ↗
-          </Link>
-          <Link className="text-action" href="/explore">
-            Browse Marketplace
-          </Link>
+      <section className="planning-entry">
+        <Photo src="/photography/garden.webp" priority />
+        <div>
+          <h1>What’s the occasion?</h1>
+          <p>Plan your event and find the people to make it happen.</p>
+          <form action="/plan">
+            <input
+              name="idea"
+              aria-label="Your event idea"
+              required
+              placeholder="A graduation party for 80 in Santa Clarita…"
+              maxLength={2000}
+            />
+            <button className="solid">Start planning</button>
+          </form>
+          <Link href="/plan?mode=advanced">Describe your full plan ↗</Link>
         </div>
-        <section className="feature-stage" aria-label="Featured events">
-          <Link key={event.slug} href={"/explore/events/" + event.slug}>
-            <Poster event={event} large />
-          </Link>
-          <div className="switcher">
-            <span>Featured events · Demo</span>
-            {events.map((e, i) => (
-              <button
-                key={e.slug}
-                aria-label={"Show " + e.title}
-                aria-pressed={index === i}
-                onClick={() => setIndex(i)}
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
-        </section>
-      </div>
+      </section>
+      <section className="studio-section service-discovery">
+        <h2>Find your event team</h2>
+        <div>
+          {[
+            ["Venue", "Venues", "garden"],
+            ["Catering", "Catering", "catering"],
+            ["DJ", "Entertainment", "dj"],
+            ["Photography", "Photography", "photo"],
+          ].map(([type, label, img]) => (
+            <Link key={type} href={"/explore?category=" + type}>
+              <Photo src={"/photography/" + img + ".webp"} />
+              <span>{label}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
       <section className="studio-section">
         <div className="section-line">
           <h2>Meet the event makers</h2>
           <Link href="/explore">See all ↗</Link>
         </div>
         <div className="tile-grid">
-          {[60, 64, 62, 66].map((id) => (
-            <StudioCard key={id} item={studios.find((s) => s.id === id)!} />
+          {[
+            ...records,
+            ...[60, 64, 62, 66].map((id) => studios.find((s) => s.id === id)!),
+          ]
+            .slice(0, 4)
+            .map((item) => (
+              <StudioCard key={item.serviceId || item.id} item={item} />
+            ))}
+        </div>
+      </section>
+      <section className="studio-section">
+        <div className="section-line">
+          <h2>Community events</h2>
+          <Link href="/explore?view=events">See events ↗</Link>
+        </div>
+        <div className="event-grid">
+          {events.map((e) => (
+            <Link key={e.slug} href={"/explore/events/" + e.slug}>
+              <Poster event={e} />
+            </Link>
           ))}
         </div>
       </section>
@@ -162,15 +187,21 @@ const discoveryOrder = [
 ];
 export function Explore({
   initialEvents = false,
+  initialCategory = "",
+  eventId,
 }: {
   initialEvents?: boolean;
+  initialCategory?: ServiceName | "";
+  eventId?: string;
 }) {
   const [view, setView] = useState(initialEvents ? "Public events" : "Vendors"),
     [query, setQuery] = useState(""),
-    [category, setCategory] = useState<ServiceName | "">(""),
+    [category, setCategory] = useState<ServiceName | "">(initialCategory),
     [guests, setGuests] = useState(""),
     [language, setLanguage] = useState("");
-  const results = discoveryOrder.filter((item) =>
+  const { records, status } = usePublicRecords();
+  const directory = [...records, ...discoveryOrder];
+  const results = directory.filter((item) =>
     matchesListingRequirements(item, {
       event: "All",
       services: category ? [category] : [],
@@ -189,7 +220,7 @@ export function Explore({
       .includes(query.toLowerCase().trim()),
   );
   return (
-    <Frame>
+    <Frame eventId={eventId}>
       <section className="studio-section market">
         <span className="local">Los Angeles &amp; nearby</span>
         <h1>Explore Marketplace</h1>
@@ -223,7 +254,7 @@ export function Explore({
         {view === "Vendors" ? (
           <>
             <div className="rail" aria-label="Service categories">
-              {(["", ...new Set(studios.map((s) => s.type))] as const).map(
+              {(["", ...new Set(directory.map((s) => s.type))] as const).map(
                 (c) => (
                   <button
                     key={c}
@@ -254,7 +285,7 @@ export function Explore({
                 >
                   <option value="">Any language</option>
                   {Array.from(
-                    new Set(studios.flatMap((s) => s.languages ?? [])),
+                    new Set(directory.flatMap((s) => s.languages ?? [])),
                   ).map((l) => (
                     <option key={l}>{l}</option>
                   ))}
@@ -262,14 +293,24 @@ export function Explore({
               </label>
             </details>
             <div className="section-line">
-              <p>{results.length} demonstration vendors</p>
-              <Link href="/marketplace?entryMode=browse&workspace=1">
+              <p>{results.length} listings · Demo businesses labeled</p>
+              <Link
+                href={
+                  "/marketplace?entryMode=browse&workspace=1" +
+                  (eventId ? "&eventId=" + encodeURIComponent(eventId) : "")
+                }
+              >
                 Full vendor directory ↗
               </Link>
             </div>
+            {status && <small role="status">{status}</small>}
             <div className="tile-grid">
               {results.map((s) => (
-                <StudioCard key={s.id} item={s} />
+                <StudioCard
+                  key={s.serviceId || s.id}
+                  item={s}
+                  eventId={eventId}
+                />
               ))}
             </div>
             {!results.length && (
@@ -319,60 +360,96 @@ const updates: Record<number, { title: string; body: string }> = {
     body: "An example of a DJ sharing a set announcement and inviting guests to an upcoming session.",
   },
 };
-export function Profile({ item }: { item: MarketplaceItem }) {
+export function Profile({
+  item,
+  eventId,
+}: {
+  item: MarketplaceItem;
+  eventId?: string;
+}) {
   const [section, setSection] = useState("Overview"),
     [slide, setSlide] = useState(0);
   const media = profileCover(item),
-    gallery = portfolio[item.id] ?? [],
-    hostEvents = events.filter((e) => e.host === item.id),
-    update = updates[item.id];
-  const quote =
-    "/marketplace?mode=demo&entryMode=browse&workspace=1&quoteDemo=" + item.id;
+    gallery = item.databaseSource
+      ? (item.media ?? [])
+          .filter((m) => m.kind === "business_photo" && m.status === "approved")
+          .sort((a, b) => a.order - b.order)
+          .map((m) => m.url)
+      : (portfolio[item.id] ?? []).map(
+          (scene) => "/photography/" + scene + ".webp",
+        ),
+    hostEvents = item.databaseSource
+      ? []
+      : events.filter((e) => e.host === item.id),
+    update = item.databaseSource ? undefined : updates[item.id];
   return (
-    <Frame>
+    <Frame eventId={eventId}>
       <article className="profile-sheet">
         <div className="profile-cover">
           <Photo src={media.src} alt={media.alt} priority />
-          <Link className="back" href="/explore">
+          <Link
+            className="back"
+            href={
+              eventId
+                ? "/explore?eventId=" + encodeURIComponent(eventId)
+                : "/explore"
+            }
+          >
             ← Vendors
           </Link>
         </div>
         <header className="profile-head">
-          <span className="avatar">
-            {item.name
-              .split(" ")
-              .slice(0, 2)
-              .map((w) => w[0])
-              .join("")}
-          </span>
+          <BusinessMark
+            large
+            name={item.businessName || item.name}
+            logo={
+              item.media?.find(
+                (m) => m.status === "approved" && m.kind === "logo",
+              )?.url
+            }
+          />
           <div>
             <small>
               {item.type} · {item.location}
             </small>
-            <h1>{item.name}</h1>
-            <p>{item.tags?.join(" · ")}</p>
+            <h1>{item.businessName || item.name}</h1>
+            <p>{item.shortIntro || item.description.split(". ")[0]}</p>
+            <b>{item.price}</b>
+            {item.databaseSource && (
+              <>
+                <BusinessStatusBadge item={item} />
+                {media.illustrative ? (
+                  <small>Illustrative cover</small>
+                ) : (
+                  media.attribution && <small>{media.attribution}</small>
+                )}
+              </>
+            )}
           </div>
-          <Link className="solid" href={quote}>
-            Build demo quote ↗
-          </Link>
+          <BookVendor item={item} currentEvent={eventId} />
         </header>
         <nav aria-label="Business content" className="rail">
-          {[
-            "Overview",
-            "Portfolio",
-            "Posts",
-            "Services",
-            "Events",
-            "About",
-          ].map((t) => (
-            <button
-              key={t}
-              aria-pressed={section === t}
-              onClick={() => setSection(t)}
-            >
-              {t}
-            </button>
-          ))}
+          {["Overview", "Portfolio", "Posts", "Services", "Events", "About"]
+            .filter((t) =>
+              t === "Portfolio"
+                ? gallery.length
+                : t === "Posts"
+                  ? update
+                  : t === "Events"
+                    ? hostEvents.length
+                    : t === "Services"
+                      ? item.serviceOptions?.length || item.serviceId
+                      : true,
+            )
+            .map((t) => (
+              <button
+                key={t}
+                aria-pressed={section === t}
+                onClick={() => setSection(t)}
+              >
+                {t}
+              </button>
+            ))}
         </nav>
         <section key={section} className="profile-content">
           <div>
@@ -385,7 +462,7 @@ export function Profile({ item }: { item: MarketplaceItem }) {
                     className="portfolio-peek"
                     onClick={() => setSection("Portfolio")}
                   >
-                    <Photo src={"/photography/" + gallery[1] + ".webp"} />
+                    <Photo src={gallery[1] || gallery[0]} />
                     <span>Explore portfolio ↗</span>
                   </button>
                 )}
@@ -396,8 +473,12 @@ export function Profile({ item }: { item: MarketplaceItem }) {
                 <>
                   <div className="gallery-photo" key={slide}>
                     <Photo
-                      src={"/photography/" + gallery[slide] + ".webp"}
-                      alt={"Illustrative " + gallery[slide] + " scene"}
+                      src={gallery[slide]}
+                      alt={
+                        item.databaseSource
+                          ? "Business portfolio photograph"
+                          : "Illustrative event scene"
+                      }
                     />
                   </div>
                   <div className="gallery-controls">
@@ -435,6 +516,19 @@ export function Profile({ item }: { item: MarketplaceItem }) {
                 <p>No updates yet.</p>
               ))}
             {section === "Services" &&
+              item.databaseSource &&
+              item.serviceId &&
+              item.vendorId && (
+                <>
+                  <h3>{item.serviceTitle}</h3>
+                  <p>{item.description}</p>
+                  <PublicServicePackages
+                    business={item.vendorId}
+                    service={item.serviceId}
+                  />
+                </>
+              )}
+            {section === "Services" &&
               item.serviceOptions?.map((o) => (
                 <div key={o.title}>
                   <h3>{o.title}</h3>
@@ -461,7 +555,11 @@ export function Profile({ item }: { item: MarketplaceItem }) {
           <aside>
             <small>Booking details</small>
             <h3>{item.price.replace(" demo estimate", "")}</h3>
-            <p>Sample estimate · Confirm availability</p>
+            <p>
+              {item.databaseSource
+                ? "Confirm availability with the business"
+                : "Sample estimate · Confirm availability"}
+            </p>
             <p>
               {item.capacity ||
                 "Service area · " + (item.serviceRadiusMiles ?? 0) + " miles"}
@@ -515,6 +613,27 @@ export function Occasion({ event }: { event: PublicOccasion }) {
             </div>
           )}
         </div>
+      </section>
+    </Frame>
+  );
+}
+
+export function RecordProfile({
+  id,
+  eventId,
+}: {
+  id: string;
+  eventId?: string;
+}) {
+  const { records, status } = usePublicRecords();
+  const item = records.find((r) => r.serviceId === id);
+  return item ? (
+    <Profile item={item} eventId={eventId} />
+  ) : (
+    <Frame>
+      <section className="studio-section">
+        <p role="status">{status || "This listing is no longer available."}</p>
+        <Link href="/explore">Back to vendors</Link>
       </section>
     </Frame>
   );

@@ -25,6 +25,7 @@ export function previewPlanningTurn(text: string, profile: EventIntelligenceProf
    actions.push(action('stage','startTime',time,matchingStages[0].id));
   }
  }
+ if(/\b(?:move|switch|change|prefer|want)\b[^.!?]{0,45}\b(?:an? )?outdoor venue\b/i.test(text))actions.push(action('venue_status','','outdoor'));
  if(hasSecuredVenue(text))actions.push(action('venue_status','','secured'));
  if(/\b(?:at|to) (?:my|our|the) (?:house|home|backyard)\b/i.test(text))actions.push(action('venue_status','','home'));
  const removal=/\b(don['’]t need|do not need|no longer need|remove|cancel)\b/i.test(text);

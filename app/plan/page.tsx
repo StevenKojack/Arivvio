@@ -1,3 +1,5 @@
+import {Intake} from "../explore/Intake";
+import {directionEnabled} from "../explore/model";
 import { EventDiscoverySearch } from "../components/EventDiscoverySearch";
 import { Navigation } from "../components/Navigation";
 
@@ -16,7 +18,8 @@ const suggestionGroups = [
   "Pool Party",
 ];
 
-export default function PlanPage() {
+export default async function PlanPage({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}) {
+  const q=await searchParams; if(directionEnabled())return <Intake key={JSON.stringify(q)} idea={q.idea} advanced={q.mode==="advanced"} vendor={/^\d+$/.test(q.vendor??"")?q.vendor:""} business={/^[0-9a-f-]{36}$/i.test(q.business??"")?q.business:""} service={q.service}/>;
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen overflow-x-clip bg-[#FFFCF7] text-[#0D1321]">
       <Navigation />

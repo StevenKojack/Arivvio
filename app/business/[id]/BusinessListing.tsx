@@ -337,7 +337,7 @@ export function BusinessListing({
             <div className="mt-6 space-y-4">
               <p>This business is already managed on ARIVVIO.</p><AccessRequest vendorId={id}/>
               <div className="flex flex-wrap gap-4"><Link className="hub-button" href="/vendor/login">Vendor sign in</Link><Link className="hub-button" href="/support-project">Contact ARIVVIO</Link></div>
-              <Link href="/marketplace" className="underline">
+              <Link href={eventId&&serviceId?"/marketplace?entryMode=event&eventId="+encodeURIComponent(eventId)+"&requestService="+encodeURIComponent(serviceId):"/marketplace?workspace=1"} className="underline">
                 View services and request a quote in Marketplace.
               </Link>
             </div>

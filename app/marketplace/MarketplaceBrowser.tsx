@@ -276,6 +276,16 @@ function MarketplaceBody() {
   useEffect(()=>{if(!isMobileMapOpen && !isMobileCartOpen) return; const close=(event:KeyboardEvent)=>{if(event.key === "Escape"){setIsMobileMapOpen(false);setIsMobileCartOpen(false);}};window.addEventListener("keydown",close);return()=>window.removeEventListener("keydown",close);},[isMobileMapOpen,isMobileCartOpen]);
   const [pendingServiceItem, setPendingServiceItem] = useState<MarketplaceItem | null>(() => sourceMode === "demo" && !eventId ? marketplaceItems.find(item => String(item.id) === searchParams.get("quoteDemo")) ?? null : null);
   const [selectedMapItemId, setSelectedMapItemId] = useState<number | null>(null);
+  const openedService = useRef("");
+  useEffect(() => {
+    const service = searchParams.get("requestService");
+    if (!service || !savedEvent || savedEvent.id !== eventId || openedService.current === eventId+service) return;
+    const item = providers.find(row => row.databaseSource && row.serviceId === service);
+    if (!item || !listingPresentation(item).canRequest) return;
+    openedService.current = eventId+service;
+    const options=getSelectableServiceOptions(item).filter(option=>option.serviceId===service);
+    queueMicrotask(()=>setPendingServiceItem({...item,serviceOptions:options}));
+  },[eventId,providers,savedEvent,searchParams]);
   const [quoteReview, setQuoteReview] = useState<DemoQuoteRequest | null>(null);
   const [lastRequest, setLastRequest] = useState<DemoQuoteRequest | null>(null);
   useEffect(() => { queueMicrotask(() => setLastRequest(loadDemoQuoteRequests()[0] ?? null)); }, []);

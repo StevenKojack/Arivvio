@@ -675,3 +675,133 @@
     content: none;
   }
 }
+.planning-entry {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  align-items: end;
+  min-height: clamp(330px, 34vw, 470px);
+  color: white;
+  padding: clamp(22px, 5vw, 76px);
+}
+.planning-entry > img {
+  z-index: -2;
+}
+.planning-entry:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #171329df, #17132950);
+  z-index: -1;
+}
+.planning-entry h1,
+.intake-panel h1 {
+  font: 750 clamp(36px, 4.8vw, 70px)/1.05 system-ui;
+  letter-spacing: -0.045em;
+  margin: 10px 0;
+}
+.planning-entry form {
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  background: white;
+  max-width: 660px;
+  border-radius: 10px;
+  margin: 18px 0 10px;
+}
+.planning-entry input {
+  min-width: 0;
+  flex: 1;
+  color: #181826;
+  padding: 10px;
+}
+.planning-entry a {
+  text-decoration: underline;
+}
+.service-discovery > div {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+.service-discovery a {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  aspect-ratio: 2.4;
+}
+.service-discovery span {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  border-radius: 4px;
+  background: #171724df;
+  color: white;
+  padding: 5px 10px;
+}
+.intake-panel {
+  width: min(92vw, 680px);
+  margin: clamp(24px, 6vw, 90px) auto;
+  min-height: 50vh;
+}
+.intake-panel .view-switch {
+  width: fit-content;
+  margin: 12px 0 24px;
+}
+.intake-panel :is(input, textarea) {
+  width: 100%;
+  border: 1px solid #a5a2bb;
+  border-radius: 8px;
+  padding: 14px;
+  margin: 15px 0;
+}
+.intake-panel textarea {
+  min-height: 110px;
+}
+.intake-panel dl > div {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+.intake-panel dt {
+  text-transform: capitalize;
+}
+.intake-actions,
+.booking-options {
+  display: flex;
+  gap: 16px;
+  margin: 16px 0;
+  align-items: center;
+}
+.booking-options {
+  align-items: stretch;
+  flex-direction: column;
+}
+.profile-head > div {
+  max-width: 65ch;
+}
+.studio .profile-head > .solid {
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .service-discovery > div {
+    grid-template-columns: 1fr 1fr;
+  }
+  .planning-entry form {
+    flex-wrap: wrap;
+  }
+  .planning-entry .solid {
+    padding: 10px;
+  }
+  .profile-head > div {
+    max-width: 100%;
+  }
+  .studio .profile-head > .solid {
+    grid-column: 1/-1;
+  }
+  .studio {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

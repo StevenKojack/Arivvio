@@ -1,8 +1,9 @@
 "use client";
 
+import {useDiscoveryNavigation} from "./DiscoveryNavigationContext";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname,useSearchParams } from "next/navigation";
+import { Suspense,useEffect, useState } from "react";
 import { isAdminEmail } from "@/lib/auth/roles";
 import { getCurrentProfile } from "@/lib/repositories/profilesRepository";
 import { getVendorBusinessesByOwner } from "@/lib/repositories/vendorsRepository";
@@ -17,12 +18,25 @@ type SessionNavState = {
   isLoggedIn: boolean;
 };
 
-const centerLinks = [
+const originalLinks = [
   { href: "/plan", label: "Plan an event" },
   { href: "/marketplace?entryMode=browse", label: "Marketplace" },
 ];
 
-export function Navigation() {
+type NavProps={discovery?:boolean;eventId?:string};
+export function Navigation(props:NavProps={}) {
+ return <Suspense fallback={<NavigationBar {...props}/>}><ContextNavigation {...props}/></Suspense>;
+}
+function ContextNavigation(props:NavProps){
+ const params=useSearchParams();const path=usePathname();
+ const id=props.eventId||params.get("eventId")||path.match(/^\/events\/([^/]+)/)?.[1];
+ return <NavigationBar {...props} eventId={id}/>;
+}
+function NavigationBar({discovery=false,eventId}:NavProps) {
+  const globalDiscovery=useDiscoveryNavigation();
+  discovery=discovery||globalDiscovery;
+  const choices=discovery?[{href:"/plan",label:"Plan an Event"},{href:"/explore?category=Venue",label:"Venues"},{href:"/explore",label:"Vendors"},{href:"/explore?view=events",label:"Public Events"}]:originalLinks;
+  const centerLinks=choices.map(link=>!eventId?link:{...link,href:link.href==="/plan"?"/discover?eventId="+encodeURIComponent(eventId):link.href+(link.href.includes("?")?"&":"?")+"eventId="+encodeURIComponent(eventId)});
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [navState, setNavState] = useState<SessionNavState>({
@@ -105,7 +119,7 @@ export function Navigation() {
         <Logo />
 
         <div className="hidden items-center gap-1 p-1 text-sm font-semibold ui-muted  backdrop-blur md:flex">
-          {[...centerLinks, {href: "/account", label: "My events"}].map((item) => (
+          {(discovery?centerLinks:[...centerLinks, {href: "/account", label: "My events"}]).map((item) => (
             <Link
               key={item.href}
               href={item.href}

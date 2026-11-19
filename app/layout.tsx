@@ -1,3 +1,5 @@
+import {directionEnabled} from "./explore/model";
+import { DiscoveryNavigationProvider } from "./components/DiscoveryNavigationContext";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Footer } from "./components/Footer";
@@ -26,7 +28,7 @@ export default function RootLayout({
       className="h-full antialiased"
       data-build-commit={process.env.VERCEL_GIT_COMMIT_SHA ?? "local"}
     >
-      <body className="min-h-full flex flex-col"><a className="skip-link" href="#main-content">Skip to main content</a>{children}<Footer /><ThemeInitializer /><EventAssistant /></body>
+      <body className="min-h-full flex flex-col"><a className="skip-link" href="#main-content">Skip to main content</a><DiscoveryNavigationProvider enabled={directionEnabled()}>{children}</DiscoveryNavigationProvider><Footer /><ThemeInitializer /><EventAssistant /></body>
     </html>
   );
 }
