@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { canRotateAtmosphere, eventAtmospheres } from "@/lib/event-intelligence/atmosphere";
 import { EventAtmosphere } from "./EventAtmosphere";
@@ -16,7 +17,7 @@ function subscribeVisibility(callback: () => void) {
 }
 // Respectful occasions are available in discovery but never used as a promotional slideshow.
 const scenes = eventAtmospheres.slice(0, 6);
-export function OccasionHero() {
+export function OccasionHero({ simplified = false }: { simplified?: boolean }) {
   const [scene, setScene] = useState(0);
   const reduced = useSyncExternalStore(subscribeMotion, reducedMotion, () => true);
   const hidden = useSyncExternalStore(subscribeVisibility, () => document.hidden, () => false);
@@ -35,7 +36,8 @@ export function OccasionHero() {
       <p className="hero-kicker"><span className="brand-angle" aria-hidden="true" /> A reason to get together</p>
       <h1>It starts with<br /><em>your occasion.</em></h1>
       <p className="hero-intro">Tell us what you have in mind. Find your people, your place, and a plan for it all.</p>
-      <EventDiscoverySearch pageHidden={hidden} />
+      <EventDiscoverySearch pageHidden={hidden} simplified={simplified} />
+      {simplified && <Link className="hero-advanced" href="/plan?mode=advanced">Describe your full plan ↗</Link>}
       <p className="hero-disclosure">Pre-beta · Plan, find providers and keep it together. Payments are not connected.</p>
     </div>
     <div className="atmosphere-caption">

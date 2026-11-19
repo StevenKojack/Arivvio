@@ -675,49 +675,10 @@
     content: none;
   }
 }
-.planning-entry {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  display: grid;
-  align-items: end;
-  min-height: clamp(330px, 34vw, 470px);
-  color: white;
-  padding: clamp(22px, 5vw, 76px);
-}
-.planning-entry > img {
-  z-index: -2;
-}
-.planning-entry:before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, #171329df, #17132950);
-  z-index: -1;
-}
-.planning-entry h1,
 .intake-panel h1 {
   font: 750 clamp(36px, 4.8vw, 70px)/1.05 system-ui;
   letter-spacing: -0.045em;
   margin: 10px 0;
-}
-.planning-entry form {
-  display: flex;
-  gap: 6px;
-  padding: 5px;
-  background: white;
-  max-width: 660px;
-  border-radius: 10px;
-  margin: 18px 0 10px;
-}
-.planning-entry input {
-  min-width: 0;
-  flex: 1;
-  color: #181826;
-  padding: 10px;
-}
-.planning-entry a {
-  text-decoration: underline;
 }
 .service-discovery > div {
   display: grid;
@@ -804,4 +765,15 @@
   .studio {
     padding-bottom: env(safe-area-inset-bottom);
   }
+}
+
+.studio .occasion-hero { min-height: clamp(560px, 75svh, 760px); }
+.hero-advanced { display: inline-block; margin-top: 1rem; color: white; text-decoration: underline; text-underline-offset: 4px; }
+.section-line h2 small { font: 500 .8rem system-ui; vertical-align: middle; }
+.vendor-invitation { padding: clamp(28px, 5vw, 72px); background: #eceae1; color: #19251f; }
+.vendor-invitation h2 { font-size: clamp(24px, 3vw, 40px); }
+.vendor-invitation a { display: inline-block; padding-block: 12px; text-decoration: underline; }
+@media (max-width: 640px) {
+  .studio .occasion-hero { min-height: 650px; padding: 42px 18px 100px; }
+  .studio .occasion-hero .event-search-control { gap: 6px; padding-inline: 9px; }
 }

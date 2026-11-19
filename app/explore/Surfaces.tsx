@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { OccasionHero } from "../components/OccasionHero";
 import { Navigation } from "../components/Navigation";
 import { BookVendor } from "./Journey";
 import { usePublicRecords } from "./records";
@@ -48,7 +49,7 @@ export function Frame({
       <Navigation discovery eventId={eventId} />
       {children}
       <footer className="studio-foot">
-        Demo and fallback images are AI illustrations.
+        <small>Demo and representative images may be AI-generated.</small>
         <Link href="/vendor/login">For businesses ↗</Link>
       </footer>
     </main>
@@ -110,24 +111,7 @@ export function Home() {
   const { records } = usePublicRecords();
   return (
     <Frame>
-      <section className="planning-entry">
-        <Photo src="/photography/garden.webp" priority />
-        <div>
-          <h1>What’s the occasion?</h1>
-          <p>Plan your event and find the people to make it happen.</p>
-          <form action="/plan">
-            <input
-              name="idea"
-              aria-label="Your event idea"
-              required
-              placeholder="A graduation party for 80 in Santa Clarita…"
-              maxLength={2000}
-            />
-            <button className="solid">Start planning</button>
-          </form>
-          <Link href="/plan?mode=advanced">Describe your full plan ↗</Link>
-        </div>
-      </section>
+      <OccasionHero simplified />
       <section className="studio-section service-discovery">
         <h2>Find your event team</h2>
         <div>
@@ -150,10 +134,7 @@ export function Home() {
           <Link href="/explore">See all ↗</Link>
         </div>
         <div className="tile-grid">
-          {[
-            ...records,
-            ...[60, 64, 62, 66].map((id) => studios.find((s) => s.id === id)!),
-          ]
+          {(records.length ? records : discoveryOrder)
             .slice(0, 4)
             .map((item) => (
               <StudioCard key={item.serviceId || item.id} item={item} />
@@ -162,7 +143,7 @@ export function Home() {
       </section>
       <section className="studio-section">
         <div className="section-line">
-          <h2>Community events</h2>
+          <h2>Community events <small>Preview</small></h2>
           <Link href="/explore?view=events">See events ↗</Link>
         </div>
         <div className="event-grid">
@@ -173,6 +154,7 @@ export function Home() {
           ))}
         </div>
       </section>
+      <aside className="vendor-invitation"><h2>Bring your business to ARIVVIO</h2><p>Manage your listing, requests, and event calendar in the Vendor Hub.</p><Link href="/vendor/dashboard">Open Vendor Hub ↗</Link></aside>
     </Frame>
   );
 }
@@ -200,7 +182,7 @@ export function Explore({
     [guests, setGuests] = useState(""),
     [language, setLanguage] = useState("");
   const { records, status } = usePublicRecords();
-  const directory = [...records, ...discoveryOrder];
+  const directory = records.length ? records : discoveryOrder;
   const results = directory.filter((item) =>
     matchesListingRequirements(item, {
       event: "All",

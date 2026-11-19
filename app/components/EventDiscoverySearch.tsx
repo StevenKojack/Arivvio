@@ -9,7 +9,7 @@ import { SearchLogoMark } from "./SearchLogoMark";
 
 const loopExamples = defaultDiscoveryEvents;
 
-export function EventDiscoverySearch({ pageHidden = false }: { pageHidden?: boolean }) {
+export function EventDiscoverySearch({ pageHidden = false, simplified = false }: { pageHidden?: boolean; simplified?: boolean }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
@@ -36,9 +36,9 @@ export function EventDiscoverySearch({ pageHidden = false }: { pageHidden?: bool
     let cleanQuery = nextQuery.trim() || placeholder;
     if (complete && cleanQuery.split(/\s+/).length <= 2 && suggestions[0] && suggestions[0].label.toLowerCase().startsWith(cleanQuery.toLowerCase())) cleanQuery = suggestions[0].label;
     if (getDiscoveryFamily(cleanQuery)) { setFocused(true); return; }
-    const params = new URLSearchParams({ query: cleanQuery });
+    const params = new URLSearchParams(simplified ? { idea: cleanQuery } : { query: cleanQuery });
 
-    router.push(`/discover?${params.toString()}`);
+    router.push(`${simplified ? "/plan" : "/discover"}?${params.toString()}`);
   }
 
   return (
@@ -87,9 +87,9 @@ export function EventDiscoverySearch({ pageHidden = false }: { pageHidden?: bool
             type="submit"
             className="h-12 rounded-lg bg-[#0D1321] px-5 text-sm font-semibold text-white  transition hover:-translate-y-0.5 hover:bg-[#111A2E] sm:px-7"
           >
-            Search
+            {simplified ? "Plan event" : "Search"}
           </button>
-          <AskArivvioButton attached />
+          {!simplified && <AskArivvioButton attached />}
         </div>
 
         {focused ? (
